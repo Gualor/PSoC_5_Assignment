@@ -12,6 +12,7 @@
 
 /* Include project dependencies. */
 #include "InterruptRoutines.h"
+#include "AccelUtils.h"
 
 
 /* Store status register reading. */
@@ -19,6 +20,12 @@ uint8 statusReg;
 
 /* Store I2C communication error. */
 ErrorCode error;
+
+/* Data buffer to store message to be sent over UART. */
+uint8_t dataBuffer[8];
+
+/* Temporary data buffer to store low and high data registers. */
+uint8_t tempBuffer[2];
 
 
 /* Custom ISR function to read LIS3DH data with I2C and send
@@ -36,9 +43,25 @@ CY_ISR(ISR_ACC_CUSTOM)
     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
     {
         /* 
-         * TODO: read x,y,z values, process data, send data over uart
+         * TODO: Read X axis values over I2C communication and process the data. 
          */ 
+        error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuffer[0]);
+        if (error == ERROR) return; // If error occurs return from the function
+        int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers data
         
+        /* 
+         * TODO: Read Y axis values over I2C communication and process the data. 
+         */
+        error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuffer[0]);
+        if (error == ERROR) return; // If error occurs return from the function
+        int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data    
+        
+        /* 
+         * TODO: Read Z axis values over I2C communication and process the data. 
+         */
+        error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuffer[0]);
+        if (error == ERROR) return; // If error occurs return from the function
+        int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data
     }
 }
 
