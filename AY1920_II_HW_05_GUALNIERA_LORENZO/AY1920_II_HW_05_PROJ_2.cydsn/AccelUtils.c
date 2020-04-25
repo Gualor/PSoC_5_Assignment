@@ -1,11 +1,33 @@
 /* ========================================
  *
- * DESCRIZIONE DATA UTILS
+ * This file contains utility functions to
+ * process and convert raw LIS3DH inertial
+ * measurements data.
+ *
+ * MinMaxScaler:
+ * Convert accelerometer axis value to a new scale.
+ * NB: The raw value is a signed 10-bit integer, which means it ranges
+ * from -512 to 511 (1024 values total, including zero) but in order to
+ * line up the zeros in the two scales a max values of 512 has been adopted.
+ * 
+ * RightAdjustVal:
+ * Merge 2-bit lower and 8-bit higher registers into a single signed
+ * 16-bit right adjusted integer.
+ * 
+ * LoadAxesData:
+ * Given 3-axes measurements data, header and tail,
+ * pack the data in a 64-bit data buffer divided
+ * in 8-bit chunks of data.
+ *
+ * UnpackAxisData:
+ * Given a 16-bit axis value, unpack the data into
+ * two 8-bit values and place them in two consecutive
+ * addresses pointed by dataPtr.
  *
  * ========================================
 */
 
-/* Include project dependecies. */
+/* Include project dependencies. */
 #include "AccelUtils.h"
 
 

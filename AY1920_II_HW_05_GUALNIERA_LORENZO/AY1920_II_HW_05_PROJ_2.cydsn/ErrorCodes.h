@@ -1,27 +1,29 @@
-/**
-*   \file ErrorCodes.h
-*   \brief Error codes definition.
-*   
-*   This file contains several definition of error codes to be used throughout
-*   the project to be consisted with the written firmware.
-*
-*   \author Davide Marzorati
-*   \date September 12, 2019
+/* ========================================
+ *
+ * Error codes definition.
+ * This file contains several definition of 
+ * error codes to be used throughout the 
+ * project to be consisted with the written 
+ * firmware.
+ *
+ * ========================================
 */
 
-/**
-*   \brief Error codes.
-* 
-*   This definition defines several error codes that will
-*   be used throughout the project.
-*/
+
 #ifndef __ERRORCODES_H
+    
+    /* Header guard. */
     #define __ERRORCODES_H
     
+    /* ErrorCode
+     * NO_ERROR -> 0
+     * ERROR    -> 1 */
     typedef enum {
-        NO_ERROR,           ///< No error generated
-        ERROR               ///< Error generated
+        NO_ERROR,   
+        ERROR    
     } ErrorCode;
 
 #endif
+
+
 /* [] END OF FILE */

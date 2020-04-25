@@ -1,8 +1,20 @@
-/* todo
- * 
-* This file includes all the required source code to interface
-* the I2C peripheral.
+/* ========================================
+ *
+ * This file includes all the required source 
+ * code to interface the I2C peripheral.
+ *
+ * Functions:
+ * -> I2C_Peripheral_Start
+ * -> I2C_Peripheral_Stop
+ * -> I2C_Peripheral_ReadRegister
+ * -> I2C_Peripheral_ReadRegisterMulti
+ * -> I2C_Peripheral_WriteRegister
+ * -> I2C_Peripheral_WriteRegisterMulti
+ * -> I2C_Peripheral_IsDeviceConnected
+ *
+ * ========================================
 */
+
 
 
 /* Value returned if device present on I2C bus. */

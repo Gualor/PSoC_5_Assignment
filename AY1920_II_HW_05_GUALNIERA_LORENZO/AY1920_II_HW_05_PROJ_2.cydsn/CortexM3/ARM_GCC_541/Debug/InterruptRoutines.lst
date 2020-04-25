@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 1
 
 
    1              		.syntax unified
@@ -30,25 +30,54 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   27              		.file 1 "InterruptRoutines.c"
    1:InterruptRoutines.c **** /* ========================================
    2:InterruptRoutines.c ****  *
-   3:InterruptRoutines.c ****  * MINMAXSCALER:
-   4:InterruptRoutines.c ****  * Convert read accelerometer axis value into +- 2000mG scale.
-   5:InterruptRoutines.c ****  * NB: The variable is a signed 10-bit integer, which means it ranges
-   6:InterruptRoutines.c ****  * from -512 to 511 (1024 values total, including zero) but in order to
-   7:InterruptRoutines.c ****  * line up the zeros in the two scales a max values of 512 has been adopted.
-   8:InterruptRoutines.c ****  *
-   9:InterruptRoutines.c ****  * ========================================
-  10:InterruptRoutines.c **** */
-  11:InterruptRoutines.c **** 
-  12:InterruptRoutines.c **** 
-  13:InterruptRoutines.c **** /* Include project dependencies. */
-  14:InterruptRoutines.c **** #include "InterruptRoutines.h"
-  15:InterruptRoutines.c **** 
-  16:InterruptRoutines.c **** 
-  17:InterruptRoutines.c **** /* Custom ISR function to read LIS3DH data with I2C and send
-  18:InterruptRoutines.c ****  * it over UART communication with 64-bit messages. */
-  19:InterruptRoutines.c **** CY_ISR(ISR_ACC_CUSTOM)
-  20:InterruptRoutines.c **** {
-  28              		.loc 1 20 0
+   3:InterruptRoutines.c ****  * In this file a custom interrupt is defined.
+   4:InterruptRoutines.c ****  * The purpose of this ISR is to handle LIS3DH
+   5:InterruptRoutines.c ****  * data retrieval, processing and transmission.
+   6:InterruptRoutines.c ****  * The ISR is sincronized with the data rate
+   7:InterruptRoutines.c ****  * of the accelerometer and is triggered by a
+   8:InterruptRoutines.c ****  * timer every 10ms (100Hz).
+   9:InterruptRoutines.c ****  *
+  10:InterruptRoutines.c ****  * -> Data retrieval (I2C): 
+  11:InterruptRoutines.c ****  * Readings of inertial measurements is archived 
+  12:InterruptRoutines.c ****  * using I2C communication. First the status 
+  13:InterruptRoutines.c ****  * register is read to check for new available data,
+  14:InterruptRoutines.c ****  * then low and high registers of the axis are
+  15:InterruptRoutines.c ****  * retrieved and stored in a temporary uint8 buffer.
+  16:InterruptRoutines.c ****  *
+  17:InterruptRoutines.c ****  * -> Data processing:
+  18:InterruptRoutines.c ****  * Low and high registers are merged together, then right
+  19:InterruptRoutines.c ****  * adjusted and stored in a signed 16-bit integer variable.
+  20:InterruptRoutines.c ****  * Being the measurement a signed 10-bit value, it ranges
+  21:InterruptRoutines.c ****  * from -512 to 511, representing an FSR of +-2g units. 
+  22:InterruptRoutines.c ****  * The value is then converted to a new scale of +-2000mg 
+  23:InterruptRoutines.c ****  * without losing data precision.
+  24:InterruptRoutines.c ****  *
+  25:InterruptRoutines.c ****  * -> Data transmission (UART):
+  26:InterruptRoutines.c ****  * All 3 axes processed measurements are divided in chunks
+  27:InterruptRoutines.c ****  * of 8-bit data each and placed in a buffer as follows:
+  28:InterruptRoutines.c ****  * 
+  29:InterruptRoutines.c ****  * [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | Z_HIGH | TAIL ]
+  30:InterruptRoutines.c ****  *
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 2
+
+
+  31:InterruptRoutines.c ****  * for a total length of 64 bit to be send every 10ms, giving 
+  32:InterruptRoutines.c ****  * us a baudrate (or bitrate in this case) of 6400. To ensure 
+  33:InterruptRoutines.c ****  * a stable and reliable communication over UART, the data 
+  34:InterruptRoutines.c ****  * buffer is transmitted with a baudrate of 9600.
+  35:InterruptRoutines.c ****  *
+  36:InterruptRoutines.c ****  * ========================================
+  37:InterruptRoutines.c **** */
+  38:InterruptRoutines.c **** 
+  39:InterruptRoutines.c **** 
+  40:InterruptRoutines.c **** /* Include project dependencies. */
+  41:InterruptRoutines.c **** #include "InterruptRoutines.h"
+  42:InterruptRoutines.c **** 
+  43:InterruptRoutines.c **** 
+  44:InterruptRoutines.c **** /* Custom ISR function to read, process and transmit LIS3DH inertial measurements data. */
+  45:InterruptRoutines.c **** CY_ISR(ISR_ACC_CUSTOM)
+  46:InterruptRoutines.c **** {
+  28              		.loc 1 46 0
   29              		.cfi_startproc
   30              		@ args = 0, pretend = 0, frame = 0
   31              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -58,20 +87,17 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   35              		.cfi_offset 5, -12
   36              		.cfi_offset 6, -8
   37              		.cfi_offset 14, -4
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 2
-
-
   38 0002 82B0     		sub	sp, sp, #8
   39              		.cfi_def_cfa_offset 24
-  21:InterruptRoutines.c ****     /* Bring interrupt line low. */
-  22:InterruptRoutines.c ****     ISR_Timer_ReadStatusRegister();
-  40              		.loc 1 22 0
+  47:InterruptRoutines.c ****     /* Bring interrupt line low. */
+  48:InterruptRoutines.c ****     ISR_Timer_ReadStatusRegister();
+  40              		.loc 1 48 0
   41 0004 FFF7FEFF 		bl	ISR_Timer_ReadStatusRegister
   42              	.LVL0:
-  23:InterruptRoutines.c **** 
-  24:InterruptRoutines.c ****     /* Read accelerometer status register. */
-  25:InterruptRoutines.c ****     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS, LIS3DH_STATUS_REG, &statusReg);
-  43              		.loc 1 25 0
+  49:InterruptRoutines.c **** 
+  50:InterruptRoutines.c ****     /* Read accelerometer status register. */
+  51:InterruptRoutines.c ****     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS, LIS3DH_STATUS_REG, &statusReg);
+  43              		.loc 1 51 0
   44 0008 364A     		ldr	r2, .L4
   45 000a 2721     		movs	r1, #39
   46 000c 1820     		movs	r0, #24
@@ -79,25 +105,28 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   48              	.LVL1:
   49 0012 354B     		ldr	r3, .L4+4
   50 0014 1870     		strb	r0, [r3]
-  26:InterruptRoutines.c ****     if (error == ERROR) return; // If error occurs return from the function
-  51              		.loc 1 26 0
+  52:InterruptRoutines.c ****     if (error == ERROR) return; // If error occurs return from the function
+  51              		.loc 1 52 0
   52 0016 0128     		cmp	r0, #1
   53 0018 61D0     		beq	.L1
-  27:InterruptRoutines.c ****     
-  28:InterruptRoutines.c ****     /* If 3-axes accelerometer data is ready for reading. */
-  29:InterruptRoutines.c ****     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
-  54              		.loc 1 29 0
+  53:InterruptRoutines.c ****     
+  54:InterruptRoutines.c ****     /* If 3-axes accelerometer data is ready for reading. */
+  55:InterruptRoutines.c ****     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
+  54              		.loc 1 55 0
   55 001a 324B     		ldr	r3, .L4
   56 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
   57 001e 13F0080F 		tst	r3, #8
   58 0022 5CD0     		beq	.L1
   59              	.LBB2:
-  30:InterruptRoutines.c ****     {
-  31:InterruptRoutines.c ****         /* 
-  32:InterruptRoutines.c ****          * Read X axis values over I2C communication and process the data. 
-  33:InterruptRoutines.c ****          */ 
-  34:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuf
-  60              		.loc 1 34 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 3
+
+
+  56:InterruptRoutines.c ****     {
+  57:InterruptRoutines.c ****         /* 
+  58:InterruptRoutines.c ****          * Read X axis values over I2C communication and process the data. 
+  59:InterruptRoutines.c ****          */ 
+  60:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuf
+  60              		.loc 1 60 0
   61 0024 314B     		ldr	r3, .L4+8
   62 0026 0222     		movs	r2, #2
   63 0028 2821     		movs	r1, #40
@@ -106,23 +135,20 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   66              	.LVL2:
   67 0030 2D4B     		ldr	r3, .L4+4
   68 0032 1870     		strb	r0, [r3]
-  35:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
-  69              		.loc 1 35 0
+  61:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+  69              		.loc 1 61 0
   70 0034 0128     		cmp	r0, #1
   71 0036 52D0     		beq	.L1
-  36:InterruptRoutines.c ****         int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers
-  72              		.loc 1 36 0
+  62:InterruptRoutines.c ****         int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers
+  72              		.loc 1 62 0
   73 0038 2C4C     		ldr	r4, .L4+8
   74 003a 0622     		movs	r2, #6
   75 003c 0121     		movs	r1, #1
   76 003e 2046     		mov	r0, r4
   77 0040 FFF7FEFF 		bl	RightAdjustVal
   78              	.LVL3:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 3
-
-
-  37:InterruptRoutines.c ****         xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mG units
-  79              		.loc 1 37 0
+  63:InterruptRoutines.c ****         xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mg units
+  79              		.loc 1 63 0
   80 0044 4FF4FA63 		mov	r3, #2000
   81 0048 0093     		str	r3, [sp]
   82 004a A3F57A63 		sub	r3, r3, #4000
@@ -132,12 +158,12 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   86              	.LVL4:
   87 0058 0546     		mov	r5, r0
   88              	.LVL5:
-  38:InterruptRoutines.c ****         
-  39:InterruptRoutines.c ****         /* 
-  40:InterruptRoutines.c ****          * Read Y axis values over I2C communication and process the data. 
-  41:InterruptRoutines.c ****          */
-  42:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuf
-  89              		.loc 1 42 0
+  64:InterruptRoutines.c ****         
+  65:InterruptRoutines.c ****         /* 
+  66:InterruptRoutines.c ****          * Read Y axis values over I2C communication and process the data. 
+  67:InterruptRoutines.c ****          */
+  68:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuf
+  89              		.loc 1 68 0
   90 005a 2346     		mov	r3, r4
   91 005c 0222     		movs	r2, #2
   92 005e 2A21     		movs	r1, #42
@@ -146,19 +172,22 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
   95              	.LVL6:
   96 0066 204B     		ldr	r3, .L4+4
   97 0068 1870     		strb	r0, [r3]
-  43:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
-  98              		.loc 1 43 0
+  69:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+  98              		.loc 1 69 0
   99 006a 0128     		cmp	r0, #1
  100 006c 37D0     		beq	.L1
-  44:InterruptRoutines.c ****         int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
- 101              		.loc 1 44 0
+  70:InterruptRoutines.c ****         int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
+ 101              		.loc 1 70 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 4
+
+
  102 006e 0622     		movs	r2, #6
  103 0070 0121     		movs	r1, #1
  104 0072 2046     		mov	r0, r4
  105 0074 FFF7FEFF 		bl	RightAdjustVal
  106              	.LVL7:
-  45:InterruptRoutines.c ****         yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mG units
- 107              		.loc 1 45 0
+  71:InterruptRoutines.c ****         yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mg units
+ 107              		.loc 1 71 0
  108 0078 4FF4FA63 		mov	r3, #2000
  109 007c 0093     		str	r3, [sp]
  110 007e A3F57A63 		sub	r3, r3, #4000
@@ -168,36 +197,33 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  114              	.LVL8:
  115 008c 0646     		mov	r6, r0
  116              	.LVL9:
-  46:InterruptRoutines.c ****         
-  47:InterruptRoutines.c ****         /* 
-  48:InterruptRoutines.c ****          * Read Z axis values over I2C communication and process the data. 
-  49:InterruptRoutines.c ****          */
-  50:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuf
- 117              		.loc 1 50 0
+  72:InterruptRoutines.c ****         
+  73:InterruptRoutines.c ****         /* 
+  74:InterruptRoutines.c ****          * Read Z axis values over I2C communication and process the data. 
+  75:InterruptRoutines.c ****          */
+  76:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuf
+ 117              		.loc 1 76 0
  118 008e 2346     		mov	r3, r4
  119 0090 0222     		movs	r2, #2
  120 0092 2C21     		movs	r1, #44
  121 0094 1820     		movs	r0, #24
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 4
-
-
  122 0096 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
  123              	.LVL10:
  124 009a 134B     		ldr	r3, .L4+4
  125 009c 1870     		strb	r0, [r3]
-  51:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
- 126              		.loc 1 51 0
+  77:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+ 126              		.loc 1 77 0
  127 009e 0128     		cmp	r0, #1
  128 00a0 1DD0     		beq	.L1
-  52:InterruptRoutines.c ****         int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
- 129              		.loc 1 52 0
+  78:InterruptRoutines.c ****         int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
+ 129              		.loc 1 78 0
  130 00a2 0622     		movs	r2, #6
  131 00a4 0121     		movs	r1, #1
  132 00a6 2046     		mov	r0, r4
  133 00a8 FFF7FEFF 		bl	RightAdjustVal
  134              	.LVL11:
-  53:InterruptRoutines.c ****         zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mG units
- 135              		.loc 1 53 0
+  79:InterruptRoutines.c ****         zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mg units
+ 135              		.loc 1 79 0
  136 00ac 4FF4FA63 		mov	r3, #2000
  137 00b0 0093     		str	r3, [sp]
  138 00b2 A3F57A63 		sub	r3, r3, #4000
@@ -205,13 +231,16 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  140 00ba 0D49     		ldr	r1, .L4+12
  141 00bc FFF7FEFF 		bl	MinMaxScaler
  142              	.LVL12:
-  54:InterruptRoutines.c ****          
-  55:InterruptRoutines.c ****         /* 
-  56:InterruptRoutines.c ****          * Load and send 64-bit message containing all axes data over UART communication. 
-  57:InterruptRoutines.c ****          */
-  58:InterruptRoutines.c ****         LoadAxesData(dataBuffer, xAxis, yAxis, zAxis, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
- 143              		.loc 1 58 0
+  80:InterruptRoutines.c ****          
+  81:InterruptRoutines.c ****         /* 
+  82:InterruptRoutines.c ****          * Load and send 64-bit message containing all axes data over UART communication. 
+  83:InterruptRoutines.c ****          */
+  84:InterruptRoutines.c ****         LoadAxesData(dataBuffer, xAxis, yAxis, zAxis, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
+ 143              		.loc 1 84 0
  144 00c0 0C4C     		ldr	r4, .L4+16
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 5
+
+
  145 00c2 E023     		movs	r3, #224
  146 00c4 0193     		str	r3, [sp, #4]
  147 00c6 A023     		movs	r3, #160
@@ -223,24 +252,21 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  153              	.LVL13:
  154 00d2 FFF7FEFF 		bl	LoadAxesData
  155              	.LVL14:
-  59:InterruptRoutines.c ****         UART_Debug_PutArray(dataBuffer, 8);
- 156              		.loc 1 59 0
+  85:InterruptRoutines.c ****         UART_Debug_PutArray(dataBuffer, 8);
+ 156              		.loc 1 85 0
  157 00d6 0821     		movs	r1, #8
  158 00d8 2046     		mov	r0, r4
  159 00da FFF7FEFF 		bl	UART_Debug_PutArray
  160              	.LVL15:
  161              	.L1:
  162              	.LBE2:
-  60:InterruptRoutines.c ****     }
-  61:InterruptRoutines.c **** }
- 163              		.loc 1 61 0
+  86:InterruptRoutines.c ****     }
+  87:InterruptRoutines.c **** }
+ 163              		.loc 1 87 0
  164 00de 02B0     		add	sp, sp, #8
  165              		.cfi_def_cfa_offset 16
  166              		@ sp needed
  167 00e0 70BD     		pop	{r4, r5, r6, pc}
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 5
-
-
  168              	.L5:
  169 00e2 00BF     		.align	2
  170              	.L4:
@@ -272,6 +298,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  196              	.Ldebug_info0:
  197 0000 C4030000 		.4byte	0x3c4
  198 0004 0400     		.2byte	0x4
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 6
+
+
  199 0006 00000000 		.4byte	.Ldebug_abbrev0
  200 000a 04       		.byte	0x4
  201 000b 01       		.uleb128 0x1
@@ -298,9 +327,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  222 003e 03       		.uleb128 0x3
  223 003f 14000000 		.4byte	.LASF3
  224 0043 02       		.byte	0x2
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 6
-
-
  225 0044 29       		.byte	0x29
  226 0045 49000000 		.4byte	0x49
  227 0049 02       		.uleb128 0x2
@@ -332,6 +358,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  253 0078 08       		.byte	0x8
  254 0079 07       		.byte	0x7
  255 007a 35020000 		.4byte	.LASF10
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 7
+
+
  256 007e 04       		.uleb128 0x4
  257 007f 04       		.byte	0x4
  258 0080 05       		.byte	0x5
@@ -358,9 +387,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  279 00ad 05       		.uleb128 0x5
  280 00ae B2020000 		.4byte	.LASF15
  281 00b2 04       		.byte	0x4
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 7
-
-
  282 00b3 E401     		.2byte	0x1e4
  283 00b5 37000000 		.4byte	0x37
  284 00b9 02       		.uleb128 0x2
@@ -392,6 +418,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  310 00e8 07       		.uleb128 0x7
  311 00e9 B8020000 		.4byte	.LASF21
  312 00ed 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 8
+
+
  313 00ee 07       		.uleb128 0x7
  314 00ef C1020000 		.4byte	.LASF22
  315 00f3 01       		.byte	0x1
@@ -404,7 +433,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  322 0100 08       		.uleb128 0x8
  323 0101 E6010000 		.4byte	.LASF42
  324 0105 01       		.byte	0x1
- 325 0106 13       		.byte	0x13
+ 325 0106 2D       		.byte	0x2d
  326 0107 00000000 		.4byte	.LFB63
  327 010b F8000000 		.4byte	.LFE63-.LFB63
  328 010f 01       		.uleb128 0x1
@@ -417,22 +446,19 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  335 0122 0A       		.uleb128 0xa
  336 0123 81020000 		.4byte	.LASF24
  337 0127 01       		.byte	0x1
- 338 0128 24       		.byte	0x24
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 8
-
-
+ 338 0128 3E       		.byte	0x3e
  339 0129 97000000 		.4byte	0x97
  340 012d 00000000 		.4byte	.LLST0
  341 0131 0A       		.uleb128 0xa
  342 0132 EE020000 		.4byte	.LASF25
  343 0136 01       		.byte	0x1
- 344 0137 2C       		.byte	0x2c
+ 344 0137 46       		.byte	0x46
  345 0138 97000000 		.4byte	0x97
  346 013c 1E000000 		.4byte	.LLST1
  347 0140 0A       		.uleb128 0xa
  348 0141 F4000000 		.4byte	.LASF26
  349 0145 01       		.byte	0x1
- 350 0146 34       		.byte	0x34
+ 350 0146 4E       		.byte	0x4e
  351 0147 97000000 		.4byte	0x97
  352 014b 3C000000 		.4byte	.LLST2
  353 014f 0B       		.uleb128 0xb
@@ -452,6 +478,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  367 0166 28       		.byte	0x28
  368 0167 0C       		.uleb128 0xc
  369 0168 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 9
+
+
  370 0169 52       		.byte	0x52
  371 016a 01       		.uleb128 0x1
  372 016b 32       		.byte	0x32
@@ -478,9 +507,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  393 018c 01       		.uleb128 0x1
  394 018d 31       		.byte	0x31
  395 018e 0C       		.uleb128 0xc
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 9
-
-
  396 018f 01       		.uleb128 0x1
  397 0190 52       		.byte	0x52
  398 0191 01       		.uleb128 0x1
@@ -512,6 +538,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  424 01b7 02       		.uleb128 0x2
  425 01b8 7D       		.byte	0x7d
  426 01b9 00       		.sleb128 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 10
+
+
  427 01ba 03       		.uleb128 0x3
  428 01bb 0A       		.byte	0xa
  429 01bc D007     		.2byte	0x7d0
@@ -538,9 +567,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  450 01db 32       		.byte	0x32
  451 01dc 0C       		.uleb128 0xc
  452 01dd 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 10
-
-
  453 01de 53       		.byte	0x53
  454 01df 02       		.uleb128 0x2
  455 01e0 74       		.byte	0x74
@@ -572,6 +598,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  481 0206 90030000 		.4byte	0x390
  482 020a 2C020000 		.4byte	0x22c
  483 020e 0C       		.uleb128 0xc
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 11
+
+
  484 020f 01       		.uleb128 0x1
  485 0210 51       		.byte	0x51
  486 0211 03       		.uleb128 0x3
@@ -598,9 +627,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  507 0229 D007     		.2byte	0x7d0
  508 022b 00       		.byte	0
  509 022c 0B       		.uleb128 0xb
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 11
-
-
  510 022d 9A000000 		.4byte	.LVL10
  511 0231 7A030000 		.4byte	0x37a
  512 0235 50020000 		.4byte	0x250
@@ -632,6 +658,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  538 0255 85030000 		.4byte	0x385
  539 0259 6E020000 		.4byte	0x26e
  540 025d 0C       		.uleb128 0xc
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 12
+
+
  541 025e 01       		.uleb128 0x1
  542 025f 50       		.byte	0x50
  543 0260 02       		.uleb128 0x2
@@ -658,9 +687,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  564 027e 03       		.uleb128 0x3
  565 027f 0B       		.byte	0xb
  566 0280 00FE     		.2byte	0xfe00
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 12
-
-
  567 0282 0C       		.uleb128 0xc
  568 0283 01       		.uleb128 0x1
  569 0284 52       		.byte	0x52
@@ -692,6 +718,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  595 02aa 74       		.byte	0x74
  596 02ab 00       		.sleb128 0
  597 02ac 0C       		.uleb128 0xc
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 13
+
+
  598 02ad 01       		.uleb128 0x1
  599 02ae 51       		.byte	0x51
  600 02af 02       		.uleb128 0x2
@@ -718,9 +747,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  621 02c4 09       		.byte	0x9
  622 02c5 E0       		.byte	0xe0
  623 02c6 00       		.byte	0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 13
-
-
  624 02c7 0D       		.uleb128 0xd
  625 02c8 DE000000 		.4byte	.LVL15
  626 02cc A6030000 		.4byte	0x3a6
@@ -752,6 +778,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  652 02f5 01       		.uleb128 0x1
  653 02f6 51       		.byte	0x51
  654 02f7 02       		.uleb128 0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 14
+
+
  655 02f8 08       		.byte	0x8
  656 02f9 27       		.byte	0x27
  657 02fa 0C       		.uleb128 0xc
@@ -778,11 +807,8 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  678 0325 00       		.byte	0
  679 0326 13       		.uleb128 0x13
  680 0327 1D020000 		.4byte	.LASF28
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 14
-
-
  681 032b 07       		.byte	0x7
- 682 032c 1E       		.byte	0x1e
+ 682 032c 20       		.byte	0x20
  683 032d 16030000 		.4byte	0x316
  684 0331 05       		.uleb128 0x5
  685 0332 03       		.byte	0x3
@@ -797,7 +823,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  694 0347 13       		.uleb128 0x13
  695 0348 CE010000 		.4byte	.LASF29
  696 034c 07       		.byte	0x7
- 697 034d 21       		.byte	0x21
+ 697 034d 23       		.byte	0x23
  698 034e 37030000 		.4byte	0x337
  699 0352 05       		.uleb128 0x5
  700 0353 03       		.byte	0x3
@@ -805,15 +831,18 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  702 0358 13       		.uleb128 0x13
  703 0359 0A000000 		.4byte	.LASF30
  704 035d 07       		.byte	0x7
- 705 035e 24       		.byte	0x24
+ 705 035e 26       		.byte	0x26
  706 035f AD000000 		.4byte	0xad
  707 0363 05       		.uleb128 0x5
  708 0364 03       		.byte	0x3
  709 0365 00000000 		.4byte	statusReg
  710 0369 13       		.uleb128 0x13
  711 036a 6D020000 		.4byte	.LASF31
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 15
+
+
  712 036e 07       		.byte	0x7
- 713 036f 27       		.byte	0x27
+ 713 036f 29       		.byte	0x29
  714 0370 F5000000 		.4byte	0xf5
  715 0374 05       		.uleb128 0x5
  716 0375 03       		.byte	0x3
@@ -822,7 +851,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  719 037b FC010000 		.4byte	.LASF32
  720 037f FC010000 		.4byte	.LASF32
  721 0383 08       		.byte	0x8
- 722 0384 4D       		.byte	0x4d
+ 722 0384 49       		.byte	0x49
  723 0385 14       		.uleb128 0x14
  724 0386 C7020000 		.4byte	.LASF33
  725 038a C7020000 		.4byte	.LASF33
@@ -832,15 +861,12 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  729 0391 AE010000 		.4byte	.LASF34
  730 0395 AE010000 		.4byte	.LASF34
  731 0399 09       		.byte	0x9
- 732 039a 18       		.byte	0x18
+ 732 039a 16       		.byte	0x16
  733 039b 14       		.uleb128 0x14
  734 039c 31000000 		.4byte	.LASF35
  735 03a0 31000000 		.4byte	.LASF35
  736 03a4 09       		.byte	0x9
- 737 03a5 1A       		.byte	0x1a
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 15
-
-
+ 737 03a5 1D       		.byte	0x1d
  738 03a6 14       		.uleb128 0x14
  739 03a7 3E000000 		.4byte	.LASF36
  740 03ab 3E000000 		.4byte	.LASF36
@@ -855,7 +881,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  749 03bd 8C020000 		.4byte	.LASF38
  750 03c1 8C020000 		.4byte	.LASF38
  751 03c5 08       		.byte	0x8
- 752 03c6 43       		.byte	0x43
+ 752 03c6 3F       		.byte	0x3f
  753 03c7 00       		.byte	0
  754              		.section	.debug_abbrev,"",%progbits
  755              	.Ldebug_abbrev0:
@@ -872,6 +898,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  766 000a 0E       		.uleb128 0xe
  767 000b 55       		.uleb128 0x55
  768 000c 17       		.uleb128 0x17
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 16
+
+
  769 000d 11       		.uleb128 0x11
  770 000e 01       		.uleb128 0x1
  771 000f 10       		.uleb128 0x10
@@ -898,9 +927,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  792 0024 0B       		.uleb128 0xb
  793 0025 3B       		.uleb128 0x3b
  794 0026 0B       		.uleb128 0xb
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 16
-
-
  795 0027 49       		.uleb128 0x49
  796 0028 13       		.uleb128 0x13
  797 0029 00       		.byte	0
@@ -932,6 +958,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  823 0043 06       		.uleb128 0x6
  824 0044 04       		.uleb128 0x4
  825 0045 01       		.byte	0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 17
+
+
  826 0046 0B       		.uleb128 0xb
  827 0047 0B       		.uleb128 0xb
  828 0048 49       		.uleb128 0x49
@@ -958,9 +987,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  849 005d 01       		.byte	0x1
  850 005e 3F       		.uleb128 0x3f
  851 005f 19       		.uleb128 0x19
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 17
-
-
  852 0060 03       		.uleb128 0x3
  853 0061 0E       		.uleb128 0xe
  854 0062 3A       		.uleb128 0x3a
@@ -992,6 +1018,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  880 007d 13       		.uleb128 0x13
  881 007e 00       		.byte	0
  882 007f 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 18
+
+
  883 0080 0A       		.uleb128 0xa
  884 0081 34       		.uleb128 0x34
  885 0082 00       		.byte	0
@@ -1018,9 +1047,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  906 0099 13       		.uleb128 0x13
  907 009a 00       		.byte	0
  908 009b 00       		.byte	0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 18
-
-
  909 009c 0C       		.uleb128 0xc
  910 009d 8A8201   		.uleb128 0x410a
  911 00a0 00       		.byte	0
@@ -1052,6 +1078,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  937 00bf 34       		.uleb128 0x34
  938 00c0 00       		.byte	0
  939 00c1 03       		.uleb128 0x3
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 19
+
+
  940 00c2 0E       		.uleb128 0xe
  941 00c3 3A       		.uleb128 0x3a
  942 00c4 0B       		.uleb128 0xb
@@ -1078,9 +1107,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  963 00d9 49       		.uleb128 0x49
  964 00da 13       		.uleb128 0x13
  965 00db 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 19
-
-
  966 00dc 13       		.uleb128 0x13
  967 00dd 00       		.byte	0
  968 00de 00       		.byte	0
@@ -1112,6 +1138,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  994 00f8 00       		.byte	0
  995 00f9 14       		.uleb128 0x14
  996 00fa 2E       		.uleb128 0x2e
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 20
+
+
  997 00fb 00       		.byte	0
  998 00fc 3F       		.uleb128 0x3f
  999 00fd 19       		.uleb128 0x19
@@ -1138,9 +1167,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1020 000b 5A000000 		.4byte	.LVL5
  1021 000f DE000000 		.4byte	.LVL15
  1022 0013 0100     		.2byte	0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 20
-
-
  1023 0015 55       		.byte	0x55
  1024 0016 00000000 		.4byte	0
  1025 001a 00000000 		.4byte	0
@@ -1172,6 +1198,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1051 0006 00000000 		.4byte	.Ldebug_info0
  1052 000a 04       		.byte	0x4
  1053 000b 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 21
+
+
  1054 000c 0000     		.2byte	0
  1055 000e 0000     		.2byte	0
  1056 0010 00000000 		.4byte	.LFB63
@@ -1198,9 +1227,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1071              	.LASF30:
  1072 000a 73746174 		.ascii	"statusReg\000"
  1072      75735265 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 21
-
-
  1072      6700
  1073              	.LASF3:
  1074 0014 5F5F696E 		.ascii	"__int16_t\000"
@@ -1232,6 +1258,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1085              	.LASF37:
  1086 005c 4953525F 		.ascii	"ISR_Timer_ReadStatusRegister\000"
  1086      54696D65 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 22
+
+
  1086      725F5265 
  1086      61645374 
  1086      61747573 
@@ -1258,9 +1287,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1094 00fa 666C6F61 		.ascii	"float\000"
  1094      7400
  1095              	.LASF1:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 22
-
-
  1096 0100 756E7369 		.ascii	"unsigned char\000"
  1096      676E6564 
  1096      20636861 
@@ -1292,6 +1318,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1104      61785363 
  1104      616C6572 
  1104      00
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 23
+
+
  1105              	.LASF5:
  1106 01bb 73686F72 		.ascii	"short unsigned int\000"
  1106      7420756E 
@@ -1318,9 +1347,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1115              	.LASF32:
  1116 01fc 4932435F 		.ascii	"I2C_Peripheral_ReadRegisterMulti\000"
  1116      50657269 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 23
-
-
  1116      70686572 
  1116      616C5F52 
  1116      65616452 
@@ -1352,6 +1378,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1130 0264 73697A65 		.ascii	"sizetype\000"
  1130      74797065 
  1130      00
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 24
+
+
  1131              	.LASF31:
  1132 026d 6572726F 		.ascii	"error\000"
  1132      7200
@@ -1378,9 +1407,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1142      7400
  1143              	.LASF15:
  1144 02b2 75696E74 		.ascii	"uint8\000"
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 24
-
-
  1144      3800
  1145              	.LASF21:
  1146 02b8 4E4F5F45 		.ascii	"NO_ERROR\000"
@@ -1412,3 +1438,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
  1158      74696E65 
  1158      732E6300 
  1159              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cc1uAT3v.s 			page 25
+
+

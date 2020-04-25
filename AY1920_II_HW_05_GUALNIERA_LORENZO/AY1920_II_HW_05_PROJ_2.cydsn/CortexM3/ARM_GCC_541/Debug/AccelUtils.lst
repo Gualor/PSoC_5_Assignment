@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 1
 
 
    1              		.syntax unified
@@ -35,19 +35,44 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
   32              		.file 1 "AccelUtils.c"
    1:AccelUtils.c  **** /* ========================================
    2:AccelUtils.c  ****  *
-   3:AccelUtils.c  ****  * DESCRIZIONE DATA UTILS
-   4:AccelUtils.c  ****  *
-   5:AccelUtils.c  ****  * ========================================
-   6:AccelUtils.c  **** */
-   7:AccelUtils.c  **** 
-   8:AccelUtils.c  **** /* Include project dependecies. */
-   9:AccelUtils.c  **** #include "AccelUtils.h"
-  10:AccelUtils.c  **** 
-  11:AccelUtils.c  **** 
-  12:AccelUtils.c  **** /* Return a 16-bit integer converted into a new scale defined by a min and max values. */
-  13:AccelUtils.c  **** int16_t MinMaxScaler(int16_t num, int16_t oldMin, int16_t oldMax, int16_t newMin, int16_t newMax)
-  14:AccelUtils.c  **** {
-  33              		.loc 1 14 0
+   3:AccelUtils.c  ****  * This file contains utility functions to
+   4:AccelUtils.c  ****  * process and convert raw LIS3DH inertial
+   5:AccelUtils.c  ****  * measurements data.
+   6:AccelUtils.c  ****  *
+   7:AccelUtils.c  ****  * MinMaxScaler:
+   8:AccelUtils.c  ****  * Convert accelerometer axis value to a new scale.
+   9:AccelUtils.c  ****  * NB: The raw value is a signed 10-bit integer, which means it ranges
+  10:AccelUtils.c  ****  * from -512 to 511 (1024 values total, including zero) but in order to
+  11:AccelUtils.c  ****  * line up the zeros in the two scales a max values of 512 has been adopted.
+  12:AccelUtils.c  ****  * 
+  13:AccelUtils.c  ****  * RightAdjustVal:
+  14:AccelUtils.c  ****  * Merge 2-bit lower and 8-bit higher registers into a single signed
+  15:AccelUtils.c  ****  * 16-bit right adjusted integer.
+  16:AccelUtils.c  ****  * 
+  17:AccelUtils.c  ****  * LoadAxesData:
+  18:AccelUtils.c  ****  * Given 3-axes measurements data, header and tail,
+  19:AccelUtils.c  ****  * pack the data in a 64-bit data buffer divided
+  20:AccelUtils.c  ****  * in 8-bit chunks of data.
+  21:AccelUtils.c  ****  *
+  22:AccelUtils.c  ****  * UnpackAxisData:
+  23:AccelUtils.c  ****  * Given a 16-bit axis value, unpack the data into
+  24:AccelUtils.c  ****  * two 8-bit values and place them in two consecutive
+  25:AccelUtils.c  ****  * addresses pointed by dataPtr.
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 2
+
+
+  26:AccelUtils.c  ****  *
+  27:AccelUtils.c  ****  * ========================================
+  28:AccelUtils.c  **** */
+  29:AccelUtils.c  **** 
+  30:AccelUtils.c  **** /* Include project dependencies. */
+  31:AccelUtils.c  **** #include "AccelUtils.h"
+  32:AccelUtils.c  **** 
+  33:AccelUtils.c  **** 
+  34:AccelUtils.c  **** /* Return a 16-bit integer converted into a new scale defined by a min and max values. */
+  35:AccelUtils.c  **** int16_t MinMaxScaler(int16_t num, int16_t oldMin, int16_t oldMax, int16_t newMin, int16_t newMax)
+  36:AccelUtils.c  **** {
+  33              		.loc 1 36 0
   34              		.cfi_startproc
   35              		@ args = 4, pretend = 0, frame = 0
   36              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -58,46 +83,46 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
   41              		.cfi_offset 4, -20
   42              		.cfi_offset 5, -16
   43              		.cfi_offset 6, -12
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 2
-
-
   44              		.cfi_offset 7, -8
   45              		.cfi_offset 14, -4
   46 0002 0D46     		mov	r5, r1
   47 0004 1746     		mov	r7, r2
   48 0006 1C46     		mov	r4, r3
-  15:AccelUtils.c  ****     /* Offset num to be positive. */
-  16:AccelUtils.c  ****     float posNum = num - oldMin; 
-  49              		.loc 1 16 0
+  37:AccelUtils.c  ****     /* Offset num to be positive. */
+  38:AccelUtils.c  ****     float posNum = num - oldMin; 
+  49              		.loc 1 38 0
   50 0008 401A     		subs	r0, r0, r1
   51              	.LVL1:
   52 000a FFF7FEFF 		bl	__aeabi_i2f
   53              	.LVL2:
   54 000e 0646     		mov	r6, r0
   55              	.LVL3:
-  17:AccelUtils.c  ****     
-  18:AccelUtils.c  ****     /* Current full scale range. */
-  19:AccelUtils.c  ****     float oldScale = oldMax - oldMin;
-  56              		.loc 1 19 0
+  39:AccelUtils.c  ****     
+  40:AccelUtils.c  ****     /* Current full scale range. */
+  41:AccelUtils.c  ****     float oldScale = oldMax - oldMin;
+  56              		.loc 1 41 0
   57 0010 781B     		subs	r0, r7, r5
   58              	.LVL4:
   59 0012 FFF7FEFF 		bl	__aeabi_i2f
   60              	.LVL5:
   61 0016 0546     		mov	r5, r0
   62              	.LVL6:
-  20:AccelUtils.c  ****     
-  21:AccelUtils.c  ****     /* Target full scale range. */
-  22:AccelUtils.c  ****     float newScale = newMax - newMin;
-  63              		.loc 1 22 0
+  42:AccelUtils.c  ****     
+  43:AccelUtils.c  ****     /* Target full scale range. */
+  44:AccelUtils.c  ****     float newScale = newMax - newMin;
+  63              		.loc 1 44 0
   64 0018 BDF91800 		ldrsh	r0, [sp, #24]
   65              	.LVL7:
   66 001c 001B     		subs	r0, r0, r4
   67 001e FFF7FEFF 		bl	__aeabi_i2f
   68              	.LVL8:
-  23:AccelUtils.c  ****     
-  24:AccelUtils.c  ****     /* Return number converted into the new scale. */
-  25:AccelUtils.c  ****     return (int16_t)(posNum * (newScale/oldScale) + newMin);
-  69              		.loc 1 25 0
+  45:AccelUtils.c  ****     
+  46:AccelUtils.c  ****     /* Return number converted into the new scale. */
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 3
+
+
+  47:AccelUtils.c  ****     return (int16_t)(posNum * (newScale/oldScale) + newMin);
+  69              		.loc 1 47 0
   70 0022 2946     		mov	r1, r5
   71 0024 FFF7FEFF 		bl	__aeabi_fdiv
   72              	.LVL9:
@@ -115,12 +140,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
   84              	.LVL13:
   85 003e FFF7FEFF 		bl	__aeabi_f2iz
   86              	.LVL14:
-  26:AccelUtils.c  **** }
-  87              		.loc 1 26 0
+  48:AccelUtils.c  **** }
+  87              		.loc 1 48 0
   88 0042 00B2     		sxth	r0, r0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 3
-
-
   89 0044 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
   90              		.cfi_endproc
   91              	.LFE63:
@@ -133,39 +155,42 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
   98              		.type	RightAdjustVal, %function
   99              	RightAdjustVal:
  100              	.LFB64:
-  27:AccelUtils.c  **** 
-  28:AccelUtils.c  **** 
-  29:AccelUtils.c  **** /* Merge lower and higher registers into a 16-bit right adjusted integer. */
-  30:AccelUtils.c  **** int16_t RightAdjustVal(uint8_t *data, bool lowerFirst, uint8_t adjustShift)
-  31:AccelUtils.c  **** {
- 101              		.loc 1 31 0
+  49:AccelUtils.c  **** 
+  50:AccelUtils.c  **** 
+  51:AccelUtils.c  **** /* Merge lower and higher registers into a 16-bit right adjusted integer. */
+  52:AccelUtils.c  **** int16_t RightAdjustVal(uint8_t *data, bool lowerFirst, uint8_t adjustShift)
+  53:AccelUtils.c  **** {
+ 101              		.loc 1 53 0
  102              		.cfi_startproc
  103              		@ args = 0, pretend = 0, frame = 0
  104              		@ frame_needed = 0, uses_anonymous_args = 0
  105              		@ link register save eliminated.
  106              	.LVL15:
-  32:AccelUtils.c  ****     /* If data is ordered with lower address data first. */
-  33:AccelUtils.c  ****     if (lowerFirst == true)
- 107              		.loc 1 33 0
+  54:AccelUtils.c  ****     /* If data is ordered with lower address data first. */
+  55:AccelUtils.c  ****     if (lowerFirst == true)
+ 107              		.loc 1 55 0
  108 0000 31B1     		cbz	r1, .L4
-  34:AccelUtils.c  ****     {
-  35:AccelUtils.c  ****         return (int16_t)((data[0] | (data[1] << 8))) >> adjustShift;
- 109              		.loc 1 35 0
+  56:AccelUtils.c  ****     {
+  57:AccelUtils.c  ****         return (int16_t)((data[0] | (data[1] << 8))) >> adjustShift;
+ 109              		.loc 1 57 0
  110 0002 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
  111 0004 4078     		ldrb	r0, [r0, #1]	@ zero_extendqisi2
  112              	.LVL16:
  113 0006 43EA0020 		orr	r0, r3, r0, lsl #8
  114 000a 00B2     		sxth	r0, r0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 4
+
+
  115 000c 1041     		asrs	r0, r0, r2
  116 000e 7047     		bx	lr
  117              	.LVL17:
  118              	.L4:
-  36:AccelUtils.c  ****     }
-  37:AccelUtils.c  ****     /* If data is ordered with higher address data first. */
-  38:AccelUtils.c  ****     else
-  39:AccelUtils.c  ****     {
-  40:AccelUtils.c  ****         return (int16_t)(((data[0] << 8) | data[1])) >> adjustShift;
- 119              		.loc 1 40 0
+  58:AccelUtils.c  ****     }
+  59:AccelUtils.c  ****     /* If data is ordered with higher address data first. */
+  60:AccelUtils.c  ****     else
+  61:AccelUtils.c  ****     {
+  62:AccelUtils.c  ****         return (int16_t)(((data[0] << 8) | data[1])) >> adjustShift;
+ 119              		.loc 1 62 0
  120 0010 0178     		ldrb	r1, [r0]	@ zero_extendqisi2
  121              	.LVL18:
  122 0012 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
@@ -173,14 +198,11 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  124              	.LVL19:
  125 0018 00B2     		sxth	r0, r0
  126 001a 1041     		asrs	r0, r0, r2
-  41:AccelUtils.c  ****     }
-  42:AccelUtils.c  **** }
- 127              		.loc 1 42 0
+  63:AccelUtils.c  ****     }
+  64:AccelUtils.c  **** }
+ 127              		.loc 1 64 0
  128 001c 7047     		bx	lr
  129              		.cfi_endproc
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 4
-
-
  130              	.LFE64:
  131              		.size	RightAdjustVal, .-RightAdjustVal
  132 001e 00BF     		.section	.text.UnpackAxisData,"ax",%progbits
@@ -191,42 +213,45 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  137              		.type	UnpackAxisData, %function
  138              	UnpackAxisData:
  139              	.LFB66:
-  43:AccelUtils.c  **** 
-  44:AccelUtils.c  **** 
-  45:AccelUtils.c  **** /* Load axes data into a 64-bit data buffer organized as follows: 
-  46:AccelUtils.c  ****  * DATA = [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | L_HIGH | TAIL ]. */
-  47:AccelUtils.c  **** void LoadAxesData(uint8_t *data, int16_t x, int16_t y, int16_t z, uint8_t header, uint8_t tail)
-  48:AccelUtils.c  **** {
-  49:AccelUtils.c  ****     /* Define axis vector to loop over. */
-  50:AccelUtils.c  ****     int16_t axisVect[3] = {x, y, z};
-  51:AccelUtils.c  ****     
-  52:AccelUtils.c  ****     /* Load header and tail values into the buffer. */
-  53:AccelUtils.c  ****     data[0] = header;
-  54:AccelUtils.c  ****     data[7] = tail;
-  55:AccelUtils.c  ****     
-  56:AccelUtils.c  ****     /* Load axes values in the corresponding addresses in the buffer. */
-  57:AccelUtils.c  ****     for (uint8_t i=0; i<3; i++)
-  58:AccelUtils.c  ****     {
-  59:AccelUtils.c  ****         /* Unpack 16-bit data into 2 separate 8-bit unsigned variables. */
-  60:AccelUtils.c  ****         UnpackAxisData(axisVect[i], &data[1+i*2]);
-  61:AccelUtils.c  ****     }
-  62:AccelUtils.c  **** }
-  63:AccelUtils.c  **** 
-  64:AccelUtils.c  **** 
-  65:AccelUtils.c  **** /* Unpack 16-bit val into 2 successive 8-bit addresses pointed by dataPtr. */
-  66:AccelUtils.c  ****  void UnpackAxisData(int16_t val, uint8_t *dataPtr)
-  67:AccelUtils.c  **** {
- 140              		.loc 1 67 0
+  65:AccelUtils.c  **** 
+  66:AccelUtils.c  **** 
+  67:AccelUtils.c  **** /* Load axes data into a 64-bit data buffer organized as follows: 
+  68:AccelUtils.c  ****  * DATA = [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | L_HIGH | TAIL ]. */
+  69:AccelUtils.c  **** void LoadAxesData(uint8_t *data, int16_t x, int16_t y, int16_t z, uint8_t header, uint8_t tail)
+  70:AccelUtils.c  **** {
+  71:AccelUtils.c  ****     /* Define axis vector to loop over. */
+  72:AccelUtils.c  ****     int16_t axisVect[3] = {x, y, z};
+  73:AccelUtils.c  ****     
+  74:AccelUtils.c  ****     /* Load header and tail values into the buffer. */
+  75:AccelUtils.c  ****     data[0] = header;
+  76:AccelUtils.c  ****     data[7] = tail;
+  77:AccelUtils.c  ****     
+  78:AccelUtils.c  ****     /* Load axes values in the corresponding addresses in the buffer. */
+  79:AccelUtils.c  ****     for (uint8_t i=0; i<3; i++)
+  80:AccelUtils.c  ****     {
+  81:AccelUtils.c  ****         /* Unpack 16-bit data into 2 separate 8-bit unsigned variables. */
+  82:AccelUtils.c  ****         UnpackAxisData(axisVect[i], &data[1+i*2]);
+  83:AccelUtils.c  ****     }
+  84:AccelUtils.c  **** }
+  85:AccelUtils.c  **** 
+  86:AccelUtils.c  **** 
+  87:AccelUtils.c  **** /* Unpack 16-bit val into 2 successive 8-bit addresses pointed by dataPtr. */
+  88:AccelUtils.c  ****  void UnpackAxisData(int16_t val, uint8_t *dataPtr)
+  89:AccelUtils.c  **** {
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 5
+
+
+ 140              		.loc 1 89 0
  141              		.cfi_startproc
  142              		@ args = 0, pretend = 0, frame = 0
  143              		@ frame_needed = 0, uses_anonymous_args = 0
  144              		@ link register save eliminated.
  145              	.LVL20:
-  68:AccelUtils.c  ****     *dataPtr = (uint8_t)(val & 0xFF);
- 146              		.loc 1 68 0
+  90:AccelUtils.c  ****     *dataPtr = (uint8_t)(val & 0xFF);
+ 146              		.loc 1 90 0
  147 0000 0870     		strb	r0, [r1]
-  69:AccelUtils.c  ****     *(dataPtr+1) = (uint8_t)(val >> 8);
- 148              		.loc 1 69 0
+  91:AccelUtils.c  ****     *(dataPtr+1) = (uint8_t)(val >> 8);
+ 148              		.loc 1 91 0
  149 0002 C0F30720 		ubfx	r0, r0, #8, #8
  150              	.LVL21:
  151 0006 4870     		strb	r0, [r1, #1]
@@ -238,15 +263,12 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  157              		.align	2
  158              		.global	LoadAxesData
  159              		.thumb
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 5
-
-
  160              		.thumb_func
  161              		.type	LoadAxesData, %function
  162              	LoadAxesData:
  163              	.LFB65:
-  48:AccelUtils.c  ****     /* Define axis vector to loop over. */
- 164              		.loc 1 48 0
+  70:AccelUtils.c  ****     /* Define axis vector to loop over. */
+ 164              		.loc 1 70 0
  165              		.cfi_startproc
  166              		@ args = 8, pretend = 0, frame = 8
  167              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -259,30 +281,33 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  174 0002 83B0     		sub	sp, sp, #12
  175              		.cfi_def_cfa_offset 24
  176 0004 0546     		mov	r5, r0
-  50:AccelUtils.c  ****     
- 177              		.loc 1 50 0
+  72:AccelUtils.c  ****     
+ 177              		.loc 1 72 0
  178 0006 ADF80010 		strh	r1, [sp]	@ movhi
  179 000a ADF80220 		strh	r2, [sp, #2]	@ movhi
  180 000e ADF80430 		strh	r3, [sp, #4]	@ movhi
-  53:AccelUtils.c  ****     data[7] = tail;
- 181              		.loc 1 53 0
+  75:AccelUtils.c  ****     data[7] = tail;
+ 181              		.loc 1 75 0
  182 0012 9DF81830 		ldrb	r3, [sp, #24]	@ zero_extendqisi2
  183              	.LVL23:
  184 0016 0370     		strb	r3, [r0]
-  54:AccelUtils.c  ****     
- 185              		.loc 1 54 0
+  76:AccelUtils.c  ****     
+ 185              		.loc 1 76 0
  186 0018 9DF81C30 		ldrb	r3, [sp, #28]	@ zero_extendqisi2
  187 001c C371     		strb	r3, [r0, #7]
  188              	.LVL24:
  189              	.LBB2:
-  57:AccelUtils.c  ****     {
- 190              		.loc 1 57 0
+  79:AccelUtils.c  ****     {
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 6
+
+
+ 190              		.loc 1 79 0
  191 001e 0024     		movs	r4, #0
  192 0020 0AE0     		b	.L8
  193              	.LVL25:
  194              	.L9:
-  60:AccelUtils.c  ****     }
- 195              		.loc 1 60 0 discriminator 3
+  82:AccelUtils.c  ****     }
+ 195              		.loc 1 82 0 discriminator 3
  196 0022 6300     		lsls	r3, r4, #1
  197 0024 591C     		adds	r1, r3, #1
  198 0026 02AA     		add	r2, sp, #8
@@ -291,23 +316,20 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  201 002c 33F9080C 		ldrsh	r0, [r3, #-8]
  202 0030 FFF7FEFF 		bl	UnpackAxisData
  203              	.LVL26:
-  57:AccelUtils.c  ****     {
- 204              		.loc 1 57 0 discriminator 3
+  79:AccelUtils.c  ****     {
+ 204              		.loc 1 79 0 discriminator 3
  205 0034 0134     		adds	r4, r4, #1
  206              	.LVL27:
  207 0036 E4B2     		uxtb	r4, r4
  208              	.LVL28:
  209              	.L8:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 6
-
-
-  57:AccelUtils.c  ****     {
- 210              		.loc 1 57 0 is_stmt 0 discriminator 1
+  79:AccelUtils.c  ****     {
+ 210              		.loc 1 79 0 is_stmt 0 discriminator 1
  211 0038 022C     		cmp	r4, #2
  212 003a F2D9     		bls	.L9
  213              	.LBE2:
-  62:AccelUtils.c  **** 
- 214              		.loc 1 62 0 is_stmt 1
+  84:AccelUtils.c  **** 
+ 214              		.loc 1 84 0 is_stmt 1
  215 003c 03B0     		add	sp, sp, #12
  216              		.cfi_def_cfa_offset 12
  217              	.LVL29:
@@ -336,6 +358,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  240 001d 00000000 		.4byte	0
  241 0021 00000000 		.4byte	.Ldebug_line0
  242 0025 02       		.uleb128 0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 7
+
+
  243 0026 01       		.byte	0x1
  244 0027 06       		.byte	0x6
  245 0028 95020000 		.4byte	.LASF0
@@ -358,9 +383,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  262 004b 05       		.byte	0x5
  263 004c 71020000 		.4byte	.LASF4
  264 0050 02       		.uleb128 0x2
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 7
-
-
  265 0051 02       		.byte	0x2
  266 0052 07       		.byte	0x7
  267 0053 2A000000 		.4byte	.LASF5
@@ -396,6 +418,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  297 008c 03       		.uleb128 0x3
  298 008d 0E020000 		.4byte	.LASF12
  299 0091 03       		.byte	0x3
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 8
+
+
  300 0092 18       		.byte	0x18
  301 0093 2C000000 		.4byte	0x2c
  302 0097 03       		.uleb128 0x3
@@ -418,9 +443,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  319 00b7 CB010000 		.4byte	.LASF16
  320 00bb 02       		.uleb128 0x2
  321 00bc 01       		.byte	0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 8
-
-
  322 00bd 08       		.byte	0x8
  323 00be 5D020000 		.4byte	.LASF17
  324 00c2 02       		.uleb128 0x2
@@ -434,7 +456,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  332 00d0 05       		.uleb128 0x5
  333 00d1 A6010000 		.4byte	.LASF27
  334 00d5 01       		.byte	0x1
- 335 00d6 0D       		.byte	0xd
+ 335 00d6 23       		.byte	0x23
  336 00d7 97000000 		.4byte	0x97
  337 00db 00000000 		.4byte	.LFB63
  338 00df 46000000 		.4byte	.LFE63-.LFB63
@@ -444,31 +466,34 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  342 00e9 06       		.uleb128 0x6
  343 00ea 6E756D00 		.ascii	"num\000"
  344 00ee 01       		.byte	0x1
- 345 00ef 0D       		.byte	0xd
+ 345 00ef 23       		.byte	0x23
  346 00f0 97000000 		.4byte	0x97
  347 00f4 00000000 		.4byte	.LLST0
  348 00f8 07       		.uleb128 0x7
  349 00f9 4D020000 		.4byte	.LASF20
  350 00fd 01       		.byte	0x1
- 351 00fe 0D       		.byte	0xd
+ 351 00fe 23       		.byte	0x23
  352 00ff 97000000 		.4byte	0x97
  353 0103 21000000 		.4byte	.LLST1
  354 0107 07       		.uleb128 0x7
  355 0108 F0010000 		.4byte	.LASF21
  356 010c 01       		.byte	0x1
- 357 010d 0D       		.byte	0xd
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 9
+
+
+ 357 010d 23       		.byte	0x23
  358 010e 97000000 		.4byte	0x97
  359 0112 42000000 		.4byte	.LLST2
  360 0116 07       		.uleb128 0x7
  361 0117 39020000 		.4byte	.LASF22
  362 011b 01       		.byte	0x1
- 363 011c 0D       		.byte	0xd
+ 363 011c 23       		.byte	0x23
  364 011d 97000000 		.4byte	0x97
  365 0121 63000000 		.4byte	.LLST3
  366 0125 08       		.uleb128 0x8
  367 0126 DC010000 		.4byte	.LASF23
  368 012a 01       		.byte	0x1
- 369 012b 0D       		.byte	0xd
+ 369 012b 23       		.byte	0x23
  370 012c 97000000 		.4byte	0x97
  371 0130 02       		.uleb128 0x2
  372 0131 91       		.byte	0x91
@@ -476,29 +501,26 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  374 0133 09       		.uleb128 0x9
  375 0134 1E020000 		.4byte	.LASF24
  376 0138 01       		.byte	0x1
- 377 0139 10       		.byte	0x10
+ 377 0139 26       		.byte	0x26
  378 013a AD000000 		.4byte	0xad
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 9
-
-
  379 013e 84000000 		.4byte	.LLST4
  380 0142 09       		.uleb128 0x9
  381 0143 7A010000 		.4byte	.LASF25
  382 0147 01       		.byte	0x1
- 383 0148 13       		.byte	0x13
+ 383 0148 29       		.byte	0x29
  384 0149 AD000000 		.4byte	0xad
  385 014d A2000000 		.4byte	.LLST5
  386 0151 09       		.uleb128 0x9
  387 0152 A1020000 		.4byte	.LASF26
  388 0156 01       		.byte	0x1
- 389 0157 16       		.byte	0x16
+ 389 0157 2C       		.byte	0x2c
  390 0158 AD000000 		.4byte	0xad
  391 015c C0000000 		.4byte	.LLST6
  392 0160 00       		.byte	0
  393 0161 0A       		.uleb128 0xa
  394 0162 62020000 		.4byte	.LASF28
  395 0166 01       		.byte	0x1
- 396 0167 1E       		.byte	0x1e
+ 396 0167 34       		.byte	0x34
  397 0168 97000000 		.4byte	0x97
  398 016c 00000000 		.4byte	.LFB64
  399 0170 1E000000 		.4byte	.LFE64-.LFB64
@@ -508,19 +530,22 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  403 017a 07       		.uleb128 0x7
  404 017b CB000000 		.4byte	.LASF29
  405 017f 01       		.byte	0x1
- 406 0180 1E       		.byte	0x1e
+ 406 0180 34       		.byte	0x34
  407 0181 A6010000 		.4byte	0x1a6
  408 0185 D3000000 		.4byte	.LLST7
  409 0189 07       		.uleb128 0x7
  410 018a B3010000 		.4byte	.LASF30
  411 018e 01       		.byte	0x1
- 412 018f 1E       		.byte	0x1e
+ 412 018f 34       		.byte	0x34
  413 0190 AC010000 		.4byte	0x1ac
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 10
+
+
  414 0194 0D010000 		.4byte	.LLST8
  415 0198 08       		.uleb128 0x8
  416 0199 25020000 		.4byte	.LASF31
  417 019d 01       		.byte	0x1
- 418 019e 1E       		.byte	0x1e
+ 418 019e 34       		.byte	0x34
  419 019f 8C000000 		.4byte	0x8c
  420 01a3 01       		.uleb128 0x1
  421 01a4 52       		.byte	0x52
@@ -535,25 +560,22 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  430 01b3 0C       		.uleb128 0xc
  431 01b4 00000000 		.4byte	.LASF34
  432 01b8 01       		.byte	0x1
- 433 01b9 42       		.byte	0x42
+ 433 01b9 58       		.byte	0x58
  434 01ba 00000000 		.4byte	.LFB66
  435 01be 0A000000 		.4byte	.LFE66-.LFB66
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 10
-
-
  436 01c2 01       		.uleb128 0x1
  437 01c3 9C       		.byte	0x9c
  438 01c4 E5010000 		.4byte	0x1e5
  439 01c8 06       		.uleb128 0x6
  440 01c9 76616C00 		.ascii	"val\000"
  441 01cd 01       		.byte	0x1
- 442 01ce 42       		.byte	0x42
+ 442 01ce 58       		.byte	0x58
  443 01cf 97000000 		.4byte	0x97
  444 01d3 2E010000 		.4byte	.LLST9
  445 01d7 08       		.uleb128 0x8
  446 01d8 8C010000 		.4byte	.LASF33
  447 01dc 01       		.byte	0x1
- 448 01dd 42       		.byte	0x42
+ 448 01dd 58       		.byte	0x58
  449 01de A6010000 		.4byte	0x1a6
  450 01e2 01       		.uleb128 0x1
  451 01e3 51       		.byte	0x51
@@ -561,7 +583,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  453 01e5 0C       		.uleb128 0xc
  454 01e6 3D000000 		.4byte	.LASF35
  455 01ea 01       		.byte	0x1
- 456 01eb 2F       		.byte	0x2f
+ 456 01eb 45       		.byte	0x45
  457 01ec 00000000 		.4byte	.LFB65
  458 01f0 40000000 		.4byte	.LFE65-.LFB65
  459 01f4 01       		.uleb128 0x1
@@ -570,42 +592,42 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  462 01fa 07       		.uleb128 0x7
  463 01fb CB000000 		.4byte	.LASF29
  464 01ff 01       		.byte	0x1
- 465 0200 2F       		.byte	0x2f
+ 465 0200 45       		.byte	0x45
  466 0201 A6010000 		.4byte	0x1a6
  467 0205 4F010000 		.4byte	.LLST10
  468 0209 06       		.uleb128 0x6
  469 020a 7800     		.ascii	"x\000"
  470 020c 01       		.byte	0x1
- 471 020d 2F       		.byte	0x2f
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 11
+
+
+ 471 020d 45       		.byte	0x45
  472 020e 97000000 		.4byte	0x97
  473 0212 6D010000 		.4byte	.LLST11
  474 0216 06       		.uleb128 0x6
  475 0217 7900     		.ascii	"y\000"
  476 0219 01       		.byte	0x1
- 477 021a 2F       		.byte	0x2f
+ 477 021a 45       		.byte	0x45
  478 021b 97000000 		.4byte	0x97
  479 021f 98010000 		.4byte	.LLST12
  480 0223 06       		.uleb128 0x6
  481 0224 7A00     		.ascii	"z\000"
  482 0226 01       		.byte	0x1
- 483 0227 2F       		.byte	0x2f
+ 483 0227 45       		.byte	0x45
  484 0228 97000000 		.4byte	0x97
  485 022c B7010000 		.4byte	.LLST13
  486 0230 08       		.uleb128 0x8
  487 0231 0F000000 		.4byte	.LASF36
  488 0235 01       		.byte	0x1
- 489 0236 2F       		.byte	0x2f
+ 489 0236 45       		.byte	0x45
  490 0237 8C000000 		.4byte	0x8c
  491 023b 02       		.uleb128 0x2
  492 023c 91       		.byte	0x91
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 11
-
-
  493 023d 00       		.sleb128 0
  494 023e 08       		.uleb128 0x8
  495 023f 7B020000 		.4byte	.LASF37
  496 0243 01       		.byte	0x1
- 497 0244 2F       		.byte	0x2f
+ 497 0244 45       		.byte	0x45
  498 0245 8C000000 		.4byte	0x8c
  499 0249 02       		.uleb128 0x2
  500 024a 91       		.byte	0x91
@@ -613,7 +635,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  502 024c 0D       		.uleb128 0xd
  503 024d 83010000 		.4byte	.LASF38
  504 0251 01       		.byte	0x1
- 505 0252 32       		.byte	0x32
+ 505 0252 48       		.byte	0x48
  506 0253 98020000 		.4byte	0x298
  507 0257 02       		.uleb128 0x2
  508 0258 91       		.byte	0x91
@@ -624,7 +646,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  513 0263 0F       		.uleb128 0xf
  514 0264 6900     		.ascii	"i\000"
  515 0266 01       		.byte	0x1
- 516 0267 39       		.byte	0x39
+ 516 0267 4F       		.byte	0x4f
  517 0268 8C000000 		.4byte	0x8c
  518 026c D6010000 		.4byte	.LLST14
  519 0270 10       		.uleb128 0x10
@@ -636,6 +658,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  525 027c 0B       		.uleb128 0xb
  526 027d 74       		.byte	0x74
  527 027e 00       		.sleb128 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 12
+
+
  528 027f 31       		.byte	0x31
  529 0280 24       		.byte	0x24
  530 0281 91       		.byte	0x91
@@ -658,9 +683,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  547 0292 22       		.byte	0x22
  548 0293 23       		.byte	0x23
  549 0294 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 12
-
-
  550 0295 00       		.byte	0
  551 0296 00       		.byte	0
  552 0297 00       		.byte	0
@@ -696,6 +718,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  582 000c 17       		.uleb128 0x17
  583 000d 11       		.uleb128 0x11
  584 000e 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 13
+
+
  585 000f 10       		.uleb128 0x10
  586 0010 17       		.uleb128 0x17
  587 0011 00       		.byte	0
@@ -718,9 +743,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  604 0022 0E       		.uleb128 0xe
  605 0023 3A       		.uleb128 0x3a
  606 0024 0B       		.uleb128 0xb
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 13
-
-
  607 0025 3B       		.uleb128 0x3b
  608 0026 0B       		.uleb128 0xb
  609 0027 49       		.uleb128 0x49
@@ -756,6 +778,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  639 0045 11       		.uleb128 0x11
  640 0046 01       		.uleb128 0x1
  641 0047 12       		.uleb128 0x12
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 14
+
+
  642 0048 06       		.uleb128 0x6
  643 0049 40       		.uleb128 0x40
  644 004a 18       		.uleb128 0x18
@@ -778,9 +803,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  661 005c 13       		.uleb128 0x13
  662 005d 02       		.uleb128 0x2
  663 005e 17       		.uleb128 0x17
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 14
-
-
  664 005f 00       		.byte	0
  665 0060 00       		.byte	0
  666 0061 07       		.uleb128 0x7
@@ -816,6 +838,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  696 007f 09       		.uleb128 0x9
  697 0080 34       		.uleb128 0x34
  698 0081 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 15
+
+
  699 0082 03       		.uleb128 0x3
  700 0083 0E       		.uleb128 0xe
  701 0084 3A       		.uleb128 0x3a
@@ -838,9 +863,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  718 0095 3A       		.uleb128 0x3a
  719 0096 0B       		.uleb128 0xb
  720 0097 3B       		.uleb128 0x3b
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 15
-
-
  721 0098 0B       		.uleb128 0xb
  722 0099 27       		.uleb128 0x27
  723 009a 19       		.uleb128 0x19
@@ -876,6 +898,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  753 00b9 0E       		.uleb128 0xe
  754 00ba 3A       		.uleb128 0x3a
  755 00bb 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 16
+
+
  756 00bc 3B       		.uleb128 0x3b
  757 00bd 0B       		.uleb128 0xb
  758 00be 27       		.uleb128 0x27
@@ -898,9 +923,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  775 00d0 03       		.uleb128 0x3
  776 00d1 0E       		.uleb128 0xe
  777 00d2 3A       		.uleb128 0x3a
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 16
-
-
  778 00d3 0B       		.uleb128 0xb
  779 00d4 3B       		.uleb128 0x3b
  780 00d5 0B       		.uleb128 0xb
@@ -936,6 +958,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  810 00f3 00       		.byte	0
  811 00f4 10       		.uleb128 0x10
  812 00f5 898201   		.uleb128 0x4109
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 17
+
+
  813 00f8 01       		.byte	0x1
  814 00f9 11       		.uleb128 0x11
  815 00fa 01       		.uleb128 0x1
@@ -958,9 +983,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  832 010e 49       		.uleb128 0x49
  833 010f 13       		.uleb128 0x13
  834 0110 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 17
-
-
  835 0111 13       		.uleb128 0x13
  836 0112 00       		.byte	0
  837 0113 00       		.byte	0
@@ -996,6 +1018,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  867 0131 49       		.uleb128 0x49
  868 0132 13       		.uleb128 0x13
  869 0133 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 18
+
+
  870 0134 00       		.byte	0
  871 0135 00       		.byte	0
  872              		.section	.debug_loc,"",%progbits
@@ -1018,9 +1043,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  889 0021 00000000 		.4byte	.LVL0
  890 0025 0D000000 		.4byte	.LVL2-1
  891 0029 0100     		.2byte	0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 18
-
-
  892 002b 51       		.byte	0x51
  893 002c 0D000000 		.4byte	.LVL2-1
  894 0030 46000000 		.4byte	.LFE63
@@ -1056,6 +1078,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  924 0078 F3       		.byte	0xf3
  925 0079 01       		.uleb128 0x1
  926 007a 53       		.byte	0x53
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 19
+
+
  927 007b 9F       		.byte	0x9f
  928 007c 00000000 		.4byte	0
  929 0080 00000000 		.4byte	0
@@ -1078,9 +1103,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  946 00ad 1C000000 		.4byte	.LVL7
  947 00b1 32000000 		.4byte	.LVL11
  948 00b5 0100     		.2byte	0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 19
-
-
  949 00b7 55       		.byte	0x55
  950 00b8 00000000 		.4byte	0
  951 00bc 00000000 		.4byte	0
@@ -1116,6 +1138,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  981 0104 9F       		.byte	0x9f
  982 0105 00000000 		.4byte	0
  983 0109 00000000 		.4byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 20
+
+
  984              	.LLST8:
  985 010d 00000000 		.4byte	.LVL15
  986 0111 12000000 		.4byte	.LVL18
@@ -1138,9 +1163,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1003 0139 06000000 		.4byte	.LVL21
  1004 013d 0A000000 		.4byte	.LFE66
  1005 0141 0400     		.2byte	0x4
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 20
-
-
  1006 0143 F3       		.byte	0xf3
  1007 0144 01       		.uleb128 0x1
  1008 0145 50       		.byte	0x50
@@ -1176,6 +1198,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1038 0190 00000000 		.4byte	0
  1039 0194 00000000 		.4byte	0
  1040              	.LLST12:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 21
+
+
  1041 0198 00000000 		.4byte	.LVL22
  1042 019c 22000000 		.4byte	.LVL25
  1043 01a0 0100     		.2byte	0x1
@@ -1198,9 +1223,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1060 01cc 91       		.byte	0x91
  1061 01cd 6C       		.sleb128 -20
  1062 01ce 00000000 		.4byte	0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 21
-
-
  1063 01d2 00000000 		.4byte	0
  1064              	.LLST14:
  1065 01d6 1E000000 		.4byte	.LVL24
@@ -1236,6 +1258,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1095 002c 40000000 		.4byte	.LFE65-.LFB65
  1096 0030 00000000 		.4byte	0
  1097 0034 00000000 		.4byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 22
+
+
  1098              		.section	.debug_ranges,"",%progbits
  1099              	.Ldebug_ranges0:
  1100 0000 00000000 		.4byte	.LFB63
@@ -1250,7 +1275,7 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1109 0024 00000000 		.4byte	0
  1110              		.section	.debug_line,"",%progbits
  1111              	.Ldebug_line0:
- 1112 0000 A9010000 		.section	.debug_str,"MS",%progbits,1
+ 1112 0000 AA010000 		.section	.debug_str,"MS",%progbits,1
  1112      02004501 
  1112      00000201 
  1112      FB0E0D00 
@@ -1258,9 +1283,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1113              	.LASF34:
  1114 0000 556E7061 		.ascii	"UnpackAxisData\000"
  1114      636B4178 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 22
-
-
  1114      69734461 
  1114      746100
  1115              	.LASF36:
@@ -1296,6 +1318,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1127      6E6D656E 
  1127      745C4159 
  1127      31393230 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 23
+
+
  1128 00a9 59313932 		.ascii	"Y1920_II_HW_05_PROJ_2.cydsn\000"
  1128      305F4949 
  1128      5F48575F 
@@ -1318,9 +1343,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1136      20636861 
  1136      7200
  1137              	.LASF39:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 23
-
-
  1138 00ec 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
  1138      43313120 
  1138      352E342E 
@@ -1356,6 +1378,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1149              	.LASF27:
  1150 01a6 4D696E4D 		.ascii	"MinMaxScaler\000"
  1150      61785363 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 24
+
+
  1150      616C6572 
  1150      00
  1151              	.LASF30:
@@ -1378,9 +1403,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1160 01dc 6E65774D 		.ascii	"newMax\000"
  1160      617800
  1161              	.LASF11:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 24
-
-
  1162 01e3 756E7369 		.ascii	"unsigned int\000"
  1162      676E6564 
  1162      20696E74 
@@ -1416,6 +1438,9 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1179              	.LASF40:
  1180 0240 41636365 		.ascii	"AccelUtils.c\000"
  1180      6C557469 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\cczmf3QI.s 			page 25
+
+
  1180      6C732E63 
  1180      00
  1181              	.LASF20:
@@ -1438,9 +1463,6 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 1
  1190      7420696E 
  1190      7400
  1191              	.LASF37:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccSGVViK.s 			page 25
-
-
  1192 027b 7461696C 		.ascii	"tail\000"
  1192      00
  1193              	.LASF7:

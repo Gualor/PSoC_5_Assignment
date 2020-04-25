@@ -1,13 +1,10 @@
-/** 
- * \file I2C_Interface.h
- * \brief Hardware specific I2C interface.
+/* ========================================
  *
- * This is an interface to the I2C peripheral. If you need to port 
- * this C-code to another platform, you could simply replace this
- * interface and still use the code.
+ * This header file defines an I2C interface.
+ * The purpose of this file is to define
+ * useful addresses and function prototypes
+ * for interfacing with LIS3DH.
  *
- * \author Davide Marzorati
- * \date September 12, 2019
 */
 
 #ifndef I2C_INTERFACE_H
@@ -22,36 +19,35 @@
     /* 7-bit I2C address of the slave device. */
     #define LIS3DH_DEVICE_ADDRESS 0x18
 
-    /* Address of the WHO AM I register. */
+    /* Address of the WHO_AM_I register. */
     #define LIS3DH_WHO_AM_I_REG_ADDR 0x0F
 
-    /* Address of the Status register. */
+    /* Address of the STATUS_REG register. */
     #define LIS3DH_STATUS_REG 0x27
 
-    /* Address of the Control register 1. */
+    /* Address of the CTRL_REG1 register. */
     #define LIS3DH_CTRL_REG1 0x20
     
-    /* Address of the Control register 4. */
+    /* Address of the CTRL_REG4 register. */
     #define LIS3DH_CTRL_REG4 0x23
-   
-    /////////////////todo
-    #define LIS3DH_CTRL_REG4_BDU_ACTIVE 0x80
-
-    /////////////////todo
-    #define LIS3DH_NORMAL_MODE_CTRL_REG1 0x57
-
-    /////////////////todo
+    
+    /* X-axis lower data register address. */
     #define LIS3DH_OUT_X_L 0x28
     
-    /////////////////todo
+    /* Y-axis lower data register address. */
     #define LIS3DH_OUT_Y_L 0x2A
     
-    /////////////////todo
+    /* Z-axis lower data register address. */
     #define LIS3DH_OUT_Z_L 0x2C
     
-    /////////////////todo
-    #define LIS3DH_DATA_READY_MASK 0x08 //TODO: 00001000
-    
+    /* CTRL_REG1 register setup mask. */ 
+    #define LIS3DH_NORMAL_MODE_CTRL_REG1 0x57
+   
+    /* CTRL_REG4 register setup mask. */ 
+    #define LIS3DH_CTRL_REG4_BDU_ACTIVE 0x80
+
+    /* STATUS_REG register available data mask. */
+    #define LIS3DH_DATA_READY_MASK 0x08
     
     /* This function starts the I2C peripheral so that it is ready to work. */
     ErrorCode I2C_Peripheral_Start(void);

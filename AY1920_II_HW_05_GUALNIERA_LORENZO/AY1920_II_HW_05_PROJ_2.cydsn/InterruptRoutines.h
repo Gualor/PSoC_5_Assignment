@@ -1,12 +1,14 @@
 /* ========================================
  *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
- *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
+ * This header file has the purpose of setting
+ * up the environment for the accelerometer
+ * interrupt service routine:
+ * 
+ * -> ISR project dependencies;
+ * -> ISR useful constants;
+ * -> ISR global variables;
+ * -> ISR function prototype;
+ * 
  * ========================================
 */
 

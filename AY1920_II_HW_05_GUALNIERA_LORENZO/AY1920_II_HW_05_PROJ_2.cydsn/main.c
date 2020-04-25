@@ -1,12 +1,25 @@
 /*
+ * In this file the main function is defined.
+ * The purpose of the main is to setup peripherals
+ * to ensure the correct functioning of the accelerometer
+ * and properly retrieve/send inertial measurements data.
  *
- * TODOOOOOOOOOO
+ * PSoC setup:
+ * -> Enable global interrupts;
+ * -> Start I2C module;
+ * -> Start UART module;
+ * -> Start ISR timer;
+ * -> Start accelerometer ISR;
  *
+ * LIS3DH setup:
+ * -> Scan devices connected to I2C bus;
+ * -> Read status register;
+ * -> Setup control register 1;
+ * -> Setup control register 4;
  */
 
 /* Include project dependencies. */
 #include "stdio.h"
-#include "project.h"
 #include "I2C_Interface.h"
 #include "InterruptRoutines.h"
 
@@ -26,10 +39,8 @@ int main(void)
     /* The boot procedure takes 5ms after power-up. */
     CyDelay(5); 
     
-    /* String to print out messages on the UART. */
-    char message[50];
-
     /* Check which devices are present on the I2C bus. */
+    char message[50];
     for (int i = 0 ; i < 128; i++)
     {
         if (I2C_Peripheral_IsDeviceConnected(i))
@@ -40,14 +51,14 @@ int main(void)
         }  
     }
 
-    /* Read WHO AM I REGISTER register. */
+    /* Read WHO_AM_I register. */
     uint8_t who_am_i_reg;
     ErrorCode error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
                                                   LIS3DH_WHO_AM_I_REG_ADDR, 
                                                   &who_am_i_reg);
     if (error == NO_ERROR)
     {
-        sprintf(message, "WHO AM I REG: 0x%02X [Expected: 0x33]\r\n", who_am_i_reg);
+        sprintf(message, "WHO_AM_I: 0x%02X [Expected: 0x33]\r\n", who_am_i_reg);
         UART_Debug_PutString(message); 
     }
     else
@@ -55,112 +66,110 @@ int main(void)
         UART_Debug_PutString("Error occurred during I2C comm\r\n");   
     }
     
-    /* I2C Reading Status Register. */
+    /* Read STATUS_REG register. */
     uint8_t status_register; 
     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
                                         LIS3DH_STATUS_REG,
                                         &status_register);
     if (error == NO_ERROR)
     {
-        sprintf(message, "STATUS REGISTER: 0x%02X\r\n", status_register);
+        sprintf(message, "STATUS_REG: 0x%02X\r\n", status_register);
         UART_Debug_PutString(message); 
     }
     else
     {
-        UART_Debug_PutString("Error occurred during I2C comm to read status register\r\n");   
+        UART_Debug_PutString("Error occurred during I2C comm to read STATUS_REG\r\n");   
     }
     
-    /* Read control register 1. */
+    /* Read CTRL_REG1 register. */
     uint8_t ctrl_reg1; 
     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
                                         LIS3DH_CTRL_REG1,
                                         &ctrl_reg1);
     if (error == NO_ERROR)
     {
-        sprintf(message, "CONTROL REGISTER 1: 0x%02X\r\n", ctrl_reg1);
+        sprintf(message, "CTRL_REG1 1: 0x%02X\r\n", ctrl_reg1);
         UART_Debug_PutString(message); 
     }
     else
     {
-        UART_Debug_PutString("Error occurred during I2C comm to read control register 1\r\n");   
+        UART_Debug_PutString("Error occurred during I2C comm to read CTRL_REG1\r\n");   
     }
     
-    /* I2C Writing. */   
+    /* 
+     * Setup CTRL_REG1 register:
+     * ODR[3:0] = 0101 -> Data rate 100Hz,
+     * LPen     = 0    -> Normal mode,
+     * Zen      = 1    -> Z-axis enable,
+     * Yen      = 1    -> Y-axis enable,
+     * Xen      = 1    -> X-axis enable. 
+     */ 
     UART_Debug_PutString("\r\nWriting new values..\r\n");
     if (ctrl_reg1 != LIS3DH_NORMAL_MODE_CTRL_REG1)
     {
         ctrl_reg1 = LIS3DH_NORMAL_MODE_CTRL_REG1;
-    
         error = I2C_Peripheral_WriteRegister(LIS3DH_DEVICE_ADDRESS,
                                              LIS3DH_CTRL_REG1,
                                              ctrl_reg1);   
         if (error == NO_ERROR)
         {
-            sprintf(message, "CONTROL REGISTER 1 successfully written as: 0x%02X\r\n", ctrl_reg1);
+            sprintf(message, "CTRL_REG1 successfully written as: 0x%02X\r\n", ctrl_reg1);
             UART_Debug_PutString(message); 
         }
         else
         {
-            UART_Debug_PutString("Error occurred during I2C comm to set control register 1\r\n");   
+            UART_Debug_PutString("Error occurred during I2C comm to set CTRL_REG1\r\n");   
         }
     }
     
-    /* Read Control Register 1 again. */
-    error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
-                                        LIS3DH_CTRL_REG1,
-                                        &ctrl_reg1);
-    if (error == NO_ERROR)
-    {
-        sprintf(message, "CONTROL REGISTER 1 after overwrite operation: 0x%02X\r\n", ctrl_reg1);
-        UART_Debug_PutString(message); 
-    }
-    else
-    {
-        UART_Debug_PutString("Error occurred during I2C comm to read control register 1\r\n");   
-    }
-    
-    /* Read Control Register 4 again. */
+    /* Read CTRL_REG4 register. */
     uint8_t ctrl_reg4;
     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
                                         LIS3DH_CTRL_REG4,
                                         &ctrl_reg4);
     if (error == NO_ERROR)
     {
-        sprintf(message, "CONTROL REGISTER 4: 0x%02X\r\n", ctrl_reg4);
+        sprintf(message, "CTRL_REG4: 0x%02X\r\n", ctrl_reg4);
         UART_Debug_PutString(message); 
     }
     else
     {
-        UART_Debug_PutString("Error occurred during I2C comm to read control register4\r\n");   
+        UART_Debug_PutString("Error occurred during I2C comm to read CTRL_REG4 4\r\n");   
     }
     
-    /* Write control register 4. */
-    ctrl_reg4 = LIS3DH_CTRL_REG4_BDU_ACTIVE;
-    
-    error = I2C_Peripheral_WriteRegister(LIS3DH_DEVICE_ADDRESS,
-                                         LIS3DH_CTRL_REG4,
-                                         ctrl_reg4);
-    
-    error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
-                                        LIS3DH_CTRL_REG4,
-                                        &ctrl_reg4);
-    if (error == NO_ERROR)
+    /* 
+     * Setup CTRL_REG4 register:
+     * BDU     = 1  -> Block data update until MSB and LSB reading,
+     * BLE     = 0  -> Data LSB at lower address,
+     * FS[1:0] = 00 -> Full scale +-2g, 
+     * HR      = 0  -> high-resolution disabled,
+     * ST[1:0] = 00 -> Self-test disabled,
+     * SIM     = 0  -> SPI 4-wire interface.
+     */ 
+    UART_Debug_PutString("\r\nWriting new values..\r\n");
+    if (ctrl_reg4 != LIS3DH_CTRL_REG4_BDU_ACTIVE)
     {
-        sprintf(message, "CONTROL REGISTER 4 after being updated: 0x%02X\r\n", ctrl_reg4);
-        UART_Debug_PutString(message); 
-    }
-    else
-    {
-        UART_Debug_PutString("Error occurred during I2C comm to read control register4\r\n");   
+        error = I2C_Peripheral_WriteRegister(LIS3DH_DEVICE_ADDRESS,
+                                             LIS3DH_CTRL_REG4,
+                                             ctrl_reg4);
+        if (error == NO_ERROR)
+        {
+            sprintf(message, "CTRL_REG4 successfully written as: 0x%02X\r\n", ctrl_reg4);
+            UART_Debug_PutString(message); 
+        }
+        else
+        {
+            UART_Debug_PutString("Error occurred during I2C comm to read CTRL_REG4 4\r\n");   
+        }
     }
     
     /* Wait 5ms after setup completion. */
     CyDelay(5);
     
-    /* Start ISR timer. */ 
+    /* Start ISR timer, trigger interrupt every 10ms. */ 
     ISR_Timer_Start();
     
-    /* Start accelerometer ISR. */
+    /* Enable accelerometer custom interrupt. */
     ISR_Acc_StartEx(ISR_ACC_CUSTOM);
     
     /* Setup complete, do nothing. */
@@ -168,6 +177,8 @@ int main(void)
     {
         
     }
+    
+    return 0;
 }
 
 
