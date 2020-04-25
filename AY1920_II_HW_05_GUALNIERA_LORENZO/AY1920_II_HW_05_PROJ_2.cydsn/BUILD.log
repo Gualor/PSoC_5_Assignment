@@ -1,5 +1,7 @@
---------------- Build Started: 04/25/2020 18:46:09 Project: AY1920_II_HW_05_PROJ_2, Configuration: ARM GCC 5.4-2016-q2-update Debug ---------------
+--------------- Build Started: 04/25/2020 18:54:11 Project: AY1920_II_HW_05_PROJ_2, Configuration: ARM GCC 5.4-2016-q2-update Debug ---------------
 The code generation step is up to date.
+arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -Wa,-alh=.\CortexM3\ARM_GCC_541\Debug/main.lst -g -D DEBUG -D CY_CORE_ID=0 -Wall -ffunction-sections -ffat-lto-objects -Og -c main.c -o .\CortexM3\ARM_GCC_541\Debug\main.o
+arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -Wa,-alh=.\CortexM3\ARM_GCC_541\Debug/I2C_Interface.lst -g -D DEBUG -D CY_CORE_ID=0 -Wall -ffunction-sections -ffat-lto-objects -Og -c I2C_Interface.c -o .\CortexM3\ARM_GCC_541\Debug\I2C_Interface.o
 arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -Wa,-alh=.\CortexM3\ARM_GCC_541\Debug/InterruptRoutines.lst -g -D DEBUG -D CY_CORE_ID=0 -Wall -ffunction-sections -ffat-lto-objects -Og -c InterruptRoutines.c -o .\CortexM3\ARM_GCC_541\Debug\InterruptRoutines.o
 arm-none-eabi-gcc.exe -mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -Wa,-alh=.\CortexM3\ARM_GCC_541\Debug/AccelUtils.lst -g -D DEBUG -D CY_CORE_ID=0 -Wall -ffunction-sections -ffat-lto-objects -Og -c AccelUtils.c -o .\CortexM3\ARM_GCC_541\Debug\AccelUtils.o
 arm-none-eabi-ar.exe -rs .\CortexM3\ARM_GCC_541\Debug\AY1920_II_HW_05_PROJ_2.a .\CortexM3\ARM_GCC_541\Debug\UART_Debug.o .\CortexM3\ARM_GCC_541\Debug\UART_Debug_PM.o .\CortexM3\ARM_GCC_541\Debug\UART_Debug_INT.o .\CortexM3\ARM_GCC_541\Debug\UART_Debug_BOOT.o .\CortexM3\ARM_GCC_541\Debug\SDA_1.o .\CortexM3\ARM_GCC_541\Debug\SCL_1.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master_BOOT.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master_INT.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master_PM.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master_SLAVE.o .\CortexM3\ARM_GCC_541\Debug\I2C_Master_MASTER.o .\CortexM3\ARM_GCC_541\Debug\UART_Debug_IntClock.o .\CortexM3\ARM_GCC_541\Debug\cy_em_eeprom.o .\CortexM3\ARM_GCC_541\Debug\CyDmac.o .\CortexM3\ARM_GCC_541\Debug\CyFlash.o .\CortexM3\ARM_GCC_541\Debug\CyLib.o .\CortexM3\ARM_GCC_541\Debug\cyPm.o .\CortexM3\ARM_GCC_541\Debug\CySpc.o .\CortexM3\ARM_GCC_541\Debug\cyutils.o .\CortexM3\ARM_GCC_541\Debug\CLOCK_TIMER.o .\CortexM3\ARM_GCC_541\Debug\ISR_Timer.o .\CortexM3\ARM_GCC_541\Debug\ISR_Timer_PM.o .\CortexM3\ARM_GCC_541\Debug\ISR_Acc.o .\CortexM3\ARM_GCC_541\Debug\CyBootAsmGnu.o
@@ -10,6 +12,6 @@ No ELF section .cychecksum found, creating one
 Application checksum calculated and stored in ELF section .cychecksum
 Checksum calculated and stored in ELF section .cymeta
 cyelftool.exe -S C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\CortexM3\ARM_GCC_541\Debug\AY1920_II_HW_05_PROJ_2.elf
-Flash used: 8440 of 262144 bytes (3,2%).
+Flash used: 8592 of 262144 bytes (3,3%).
 SRAM used: 2577 of 65536 bytes (3,9%). Stack: 2048 bytes. Heap: 128 bytes.
---------------- Build Succeeded: 04/25/2020 18:46:10 ---------------
+--------------- Build Succeeded: 04/25/2020 18:54:13 ---------------

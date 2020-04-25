@@ -10,10 +10,13 @@
  * \date September 12, 2019
 */
 
-#ifndef I2C_Interface_H
-    #define I2C_Interface_H
+#ifndef I2C_INTERFACE_H
     
-    #include "cytypes.h"
+    /* Header guard. */
+    #define I2C_INTERFACE_H
+    
+    /* Include project dependencies. */
+    #include "project.h"
     #include "ErrorCodes.h"
     
     /* 7-bit I2C address of the slave device. */
@@ -49,81 +52,60 @@
     /////////////////todo
     #define LIS3DH_DATA_READY_MASK 0x08 //TODO: 00001000
     
-    /** \brief Start the I2C peripheral.
-    *   
-    *   This function starts the I2C peripheral so that it is ready to work.
-    */
+    
+    /* This function starts the I2C peripheral so that it is ready to work. */
     ErrorCode I2C_Peripheral_Start(void);
     
-    /** \brief Stop the I2C peripheral.
-    *   
-    *   This function stops the I2C peripheral from working.
-    */
+    /*This function stops the I2C peripheral from working. */
     ErrorCode I2C_Peripheral_Stop(void);
     
-    /**
-    *   \brief Read one byte over I2C.
-    *   
-    *   This function performs a complete reading operation over I2C from a single
-    *   register.
-    *   \param device_address I2C address of the device to talk to.
-    *   \param register_address Address of the register to be read.
-    *   \param data Pointer to a variable where the byte will be saved.
-    */
+    /* This function performs a complete reading operation over I2C from a single register.
+     * Parameters:
+     * -> device_address: I2C address of the device to talk to.
+     * -> register_address: Address of the register to be read.
+     * -> data: Pointer to a variable where the byte will be saved. */
     ErrorCode I2C_Peripheral_ReadRegister(uint8_t device_address, 
-                                            uint8_t register_address,
-                                            uint8_t* data);
+                                          uint8_t register_address, 
+                                          uint8_t* data);
     
-    /** 
-    *   \brief Read multiple bytes over I2C.
-    *   
-    *   This function performs a complete reading operation over I2C from multiple
-    *   registers.
-    *   \param device_address I2C address of the device to talk to.
-    *   \param register_address Address of the first register to be read.
-    *   \param register_count Number of registers we want to read.
-    *   \param data Pointer to an array where data will be saved.
-    */
+    /* This function performs a complete reading operation over I2C from multiple registers.
+     * Parameters:
+     * -> device_address: I2C address of the device to talk to.
+     * -> register_address: Address of the first register to be read.
+     * -> register_count: Number of registers we want to read.
+     * -> data: Pointer to an array where data will be saved. */
     ErrorCode I2C_Peripheral_ReadRegisterMulti(uint8_t device_address,
+                                               uint8_t register_address,
+                                               uint8_t register_count,
+                                               uint8_t* data);
+    
+    /* This function performs a complete writing operation over I2C to a single register.
+     * Parameters: 
+     * -> device_address: I2C address of the device to talk to.
+     * -> register_address: Address of the register to be written.
+     * -> data: Data to be written. */
+    ErrorCode I2C_Peripheral_WriteRegister(uint8_t device_address,
+                                           uint8_t register_address,
+                                           uint8_t data);
+    
+    /* This function performs a complete writing operation over I2C to multiple registers
+     * Parameters:
+     * -> device_address: I2C address of the device to talk to.
+     * -> register_address: Address of the first register to be written.
+     * -> register_count: Number of registers that need to be written.
+     * -> data: Array of data to be written. */
+    ErrorCode I2C_Peripheral_WriteRegisterMulti(uint8_t device_address,
                                                 uint8_t register_address,
                                                 uint8_t register_count,
                                                 uint8_t* data);
-    /** 
-    *   \brief Write a byte over I2C.
-    *   
-    *   This function performs a complete writing operation over I2C to a single 
-    *   register.
-    *   \param device_address I2C address of the device to talk to.
-    *   \param register_address Address of the register to be written.
-    *   \param data Data to be written
-    */
-    ErrorCode I2C_Peripheral_WriteRegister(uint8_t device_address,
-                                            uint8_t register_address,
-                                            uint8_t data);
     
-    /** 
-    *   \brief Write multiple bytes over I2C.
-    *   
-    *   This function performs a complete writing operation over I2C to multiple
-    *   registers
-    *   \param device_address I2C address of the device to talk to.
-    *   \param register_address Address of the first register to be written.
-    *   \param register_count Number of registers that need to be written.
-    *   \param data Array of data to be written
-    */
-    ErrorCode I2C_Peripheral_WriteRegisterMulti(uint8_t device_address,
-                                            uint8_t register_address,
-                                            uint8_t register_count,
-                                            uint8_t* data);
-    
-    /**
-    *   \brief Check if device is connected over I2C.
-    *
-    *   This function checks if a device is connected over the I2C lines.
-    *   \param device_address I2C address of the device to be checked.
-    *   \retval Returns true (>0) if device is connected.
-    */
+    /* This function checks if a device is connected over the I2C lines.
+     * Parameters:
+     * -> device_address I2C address of the device to be checked.
+     * -> Returns true (>0) if device is connected. */
     uint8_t I2C_Peripheral_IsDeviceConnected(uint8_t device_address);
     
-#endif // I2C_Interface_H
+#endif
+
+
 /* [] END OF FILE */

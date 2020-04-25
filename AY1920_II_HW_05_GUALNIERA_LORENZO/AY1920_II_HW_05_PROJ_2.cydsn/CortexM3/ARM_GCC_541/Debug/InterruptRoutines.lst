@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 1
 
 
    1              		.syntax unified
@@ -30,1274 +30,1385 @@ ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 1
   27              		.file 1 "InterruptRoutines.c"
    1:InterruptRoutines.c **** /* ========================================
    2:InterruptRoutines.c ****  *
-   3:InterruptRoutines.c ****  * Copyright YOUR COMPANY, THE YEAR
-   4:InterruptRoutines.c ****  * All Rights Reserved
-   5:InterruptRoutines.c ****  * UNPUBLISHED, LICENSED SOFTWARE.
-   6:InterruptRoutines.c ****  *
-   7:InterruptRoutines.c ****  * CONFIDENTIAL AND PROPRIETARY INFORMATION
-   8:InterruptRoutines.c ****  * WHICH IS THE PROPERTY OF your company.
-   9:InterruptRoutines.c ****  *
-  10:InterruptRoutines.c ****  * ========================================
-  11:InterruptRoutines.c **** */
+   3:InterruptRoutines.c ****  * MINMAXSCALER:
+   4:InterruptRoutines.c ****  * Convert read accelerometer axis value into +- 2000mG scale.
+   5:InterruptRoutines.c ****  * NB: The variable is a signed 10-bit integer, which means it ranges
+   6:InterruptRoutines.c ****  * from -512 to 511 (1024 values total, including zero) but in order to
+   7:InterruptRoutines.c ****  * line up the zeros in the two scales a max values of 512 has been adopted.
+   8:InterruptRoutines.c ****  *
+   9:InterruptRoutines.c ****  * ========================================
+  10:InterruptRoutines.c **** */
+  11:InterruptRoutines.c **** 
   12:InterruptRoutines.c **** 
   13:InterruptRoutines.c **** /* Include project dependencies. */
   14:InterruptRoutines.c **** #include "InterruptRoutines.h"
-  15:InterruptRoutines.c **** #include "AccelUtils.h"
+  15:InterruptRoutines.c **** 
   16:InterruptRoutines.c **** 
-  17:InterruptRoutines.c **** 
-  18:InterruptRoutines.c **** /* Store status register reading. */
-  19:InterruptRoutines.c **** uint8 statusReg;
-  20:InterruptRoutines.c **** 
-  21:InterruptRoutines.c **** /* Store I2C communication error. */
-  22:InterruptRoutines.c **** ErrorCode error;
-  23:InterruptRoutines.c **** 
-  24:InterruptRoutines.c **** /* Data buffer to store message to be sent over UART. */
-  25:InterruptRoutines.c **** uint8_t dataBuffer[8];
-  26:InterruptRoutines.c **** 
-  27:InterruptRoutines.c **** /* Temporary data buffer to store low and high data registers. */
-  28:InterruptRoutines.c **** uint8_t tempBuffer[2];
-  29:InterruptRoutines.c **** 
-  30:InterruptRoutines.c **** 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 2
-
-
-  31:InterruptRoutines.c **** /* Custom ISR function to read LIS3DH data with I2C and send
-  32:InterruptRoutines.c ****  * it over UART communication with 64-bit messages. */
-  33:InterruptRoutines.c **** CY_ISR(ISR_ACC_CUSTOM)
-  34:InterruptRoutines.c **** {
-  28              		.loc 1 34 0
+  17:InterruptRoutines.c **** /* Custom ISR function to read LIS3DH data with I2C and send
+  18:InterruptRoutines.c ****  * it over UART communication with 64-bit messages. */
+  19:InterruptRoutines.c **** CY_ISR(ISR_ACC_CUSTOM)
+  20:InterruptRoutines.c **** {
+  28              		.loc 1 20 0
   29              		.cfi_startproc
   30              		@ args = 0, pretend = 0, frame = 0
   31              		@ frame_needed = 0, uses_anonymous_args = 0
-  32 0000 10B5     		push	{r4, lr}
-  33              		.cfi_def_cfa_offset 8
-  34              		.cfi_offset 4, -8
-  35              		.cfi_offset 14, -4
-  36 0002 82B0     		sub	sp, sp, #8
-  37              		.cfi_def_cfa_offset 16
-  35:InterruptRoutines.c ****     /* Bring interrupt line low. */
-  36:InterruptRoutines.c ****     ISR_Timer_ReadStatusRegister();
-  38              		.loc 1 36 0
-  39 0004 FFF7FEFF 		bl	ISR_Timer_ReadStatusRegister
-  40              	.LVL0:
-  37:InterruptRoutines.c **** 
-  38:InterruptRoutines.c ****     /* Read accelerometer status register. */
-  39:InterruptRoutines.c ****     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS, LIS3DH_STATUS_REG, &statusReg);
-  41              		.loc 1 39 0
-  42 0008 2D4A     		ldr	r2, .L4
-  43 000a 2721     		movs	r1, #39
-  44 000c 1820     		movs	r0, #24
-  45 000e FFF7FEFF 		bl	I2C_Peripheral_ReadRegister
-  46              	.LVL1:
-  47 0012 2C4B     		ldr	r3, .L4+4
-  48 0014 1870     		strb	r0, [r3]
-  40:InterruptRoutines.c ****     if (error == ERROR) return; // If error occurs return from the function
-  49              		.loc 1 40 0
-  50 0016 0128     		cmp	r0, #1
-  51 0018 50D0     		beq	.L1
-  41:InterruptRoutines.c ****     
-  42:InterruptRoutines.c ****     /* If 3-axes accelerometer data is ready for reading. */
-  43:InterruptRoutines.c ****     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
-  52              		.loc 1 43 0
-  53 001a 294B     		ldr	r3, .L4
-  54 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
-  55 001e 13F0080F 		tst	r3, #8
-  56 0022 4BD0     		beq	.L1
-  57              	.LBB2:
-  44:InterruptRoutines.c ****     {
-  45:InterruptRoutines.c ****         /* 
-  46:InterruptRoutines.c ****          * TODO: Read X axis values over I2C communication and process the data. 
-  47:InterruptRoutines.c ****          */ 
-  48:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuf
-  58              		.loc 1 48 0
-  59 0024 284B     		ldr	r3, .L4+8
-  60 0026 0222     		movs	r2, #2
-  61 0028 2821     		movs	r1, #40
-  62 002a 1820     		movs	r0, #24
-  63 002c FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
-  64              	.LVL2:
-  65 0030 244B     		ldr	r3, .L4+4
-  66 0032 1870     		strb	r0, [r3]
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 3
+  32 0000 70B5     		push	{r4, r5, r6, lr}
+  33              		.cfi_def_cfa_offset 16
+  34              		.cfi_offset 4, -16
+  35              		.cfi_offset 5, -12
+  36              		.cfi_offset 6, -8
+  37              		.cfi_offset 14, -4
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 2
 
 
-  49:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
-  67              		.loc 1 49 0
-  68 0034 0128     		cmp	r0, #1
-  69 0036 41D0     		beq	.L1
-  50:InterruptRoutines.c ****         int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers
-  70              		.loc 1 50 0
-  71 0038 234C     		ldr	r4, .L4+8
-  72 003a 0622     		movs	r2, #6
-  73 003c 0121     		movs	r1, #1
-  74 003e 2046     		mov	r0, r4
-  75 0040 FFF7FEFF 		bl	RightAdjustVal
-  76              	.LVL3:
-  51:InterruptRoutines.c ****         xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mG units
-  77              		.loc 1 51 0
-  78 0044 4FF4FA63 		mov	r3, #2000
-  79 0048 0093     		str	r3, [sp]
-  80 004a A3F57A63 		sub	r3, r3, #4000
-  81 004e 4FF40072 		mov	r2, #512
-  82 0052 1E49     		ldr	r1, .L4+12
-  83 0054 FFF7FEFF 		bl	MinMaxScaler
-  84              	.LVL4:
-  52:InterruptRoutines.c ****         
-  53:InterruptRoutines.c ****         /* 
-  54:InterruptRoutines.c ****          * TODO: Read Y axis values over I2C communication and process the data. 
-  55:InterruptRoutines.c ****          */
-  56:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuf
-  85              		.loc 1 56 0
-  86 0058 2346     		mov	r3, r4
-  87 005a 0222     		movs	r2, #2
-  88 005c 2A21     		movs	r1, #42
-  89 005e 1820     		movs	r0, #24
-  90 0060 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
-  91              	.LVL5:
-  92 0064 174B     		ldr	r3, .L4+4
-  93 0066 1870     		strb	r0, [r3]
-  57:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
-  94              		.loc 1 57 0
-  95 0068 0128     		cmp	r0, #1
-  96 006a 27D0     		beq	.L1
-  58:InterruptRoutines.c ****         int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
-  97              		.loc 1 58 0
-  98 006c 0622     		movs	r2, #6
-  99 006e 0121     		movs	r1, #1
- 100 0070 2046     		mov	r0, r4
- 101 0072 FFF7FEFF 		bl	RightAdjustVal
- 102              	.LVL6:
-  59:InterruptRoutines.c ****         yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mG units
- 103              		.loc 1 59 0
- 104 0076 4FF4FA63 		mov	r3, #2000
- 105 007a 0093     		str	r3, [sp]
- 106 007c A3F57A63 		sub	r3, r3, #4000
- 107 0080 4FF40072 		mov	r2, #512
- 108 0084 1149     		ldr	r1, .L4+12
- 109 0086 FFF7FEFF 		bl	MinMaxScaler
- 110              	.LVL7:
-  60:InterruptRoutines.c ****         
-  61:InterruptRoutines.c ****         /* 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 4
+  38 0002 82B0     		sub	sp, sp, #8
+  39              		.cfi_def_cfa_offset 24
+  21:InterruptRoutines.c ****     /* Bring interrupt line low. */
+  22:InterruptRoutines.c ****     ISR_Timer_ReadStatusRegister();
+  40              		.loc 1 22 0
+  41 0004 FFF7FEFF 		bl	ISR_Timer_ReadStatusRegister
+  42              	.LVL0:
+  23:InterruptRoutines.c **** 
+  24:InterruptRoutines.c ****     /* Read accelerometer status register. */
+  25:InterruptRoutines.c ****     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS, LIS3DH_STATUS_REG, &statusReg);
+  43              		.loc 1 25 0
+  44 0008 364A     		ldr	r2, .L4
+  45 000a 2721     		movs	r1, #39
+  46 000c 1820     		movs	r0, #24
+  47 000e FFF7FEFF 		bl	I2C_Peripheral_ReadRegister
+  48              	.LVL1:
+  49 0012 354B     		ldr	r3, .L4+4
+  50 0014 1870     		strb	r0, [r3]
+  26:InterruptRoutines.c ****     if (error == ERROR) return; // If error occurs return from the function
+  51              		.loc 1 26 0
+  52 0016 0128     		cmp	r0, #1
+  53 0018 61D0     		beq	.L1
+  27:InterruptRoutines.c ****     
+  28:InterruptRoutines.c ****     /* If 3-axes accelerometer data is ready for reading. */
+  29:InterruptRoutines.c ****     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
+  54              		.loc 1 29 0
+  55 001a 324B     		ldr	r3, .L4
+  56 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  57 001e 13F0080F 		tst	r3, #8
+  58 0022 5CD0     		beq	.L1
+  59              	.LBB2:
+  30:InterruptRoutines.c ****     {
+  31:InterruptRoutines.c ****         /* 
+  32:InterruptRoutines.c ****          * Read X axis values over I2C communication and process the data. 
+  33:InterruptRoutines.c ****          */ 
+  34:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuf
+  60              		.loc 1 34 0
+  61 0024 314B     		ldr	r3, .L4+8
+  62 0026 0222     		movs	r2, #2
+  63 0028 2821     		movs	r1, #40
+  64 002a 1820     		movs	r0, #24
+  65 002c FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+  66              	.LVL2:
+  67 0030 2D4B     		ldr	r3, .L4+4
+  68 0032 1870     		strb	r0, [r3]
+  35:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+  69              		.loc 1 35 0
+  70 0034 0128     		cmp	r0, #1
+  71 0036 52D0     		beq	.L1
+  36:InterruptRoutines.c ****         int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers
+  72              		.loc 1 36 0
+  73 0038 2C4C     		ldr	r4, .L4+8
+  74 003a 0622     		movs	r2, #6
+  75 003c 0121     		movs	r1, #1
+  76 003e 2046     		mov	r0, r4
+  77 0040 FFF7FEFF 		bl	RightAdjustVal
+  78              	.LVL3:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 3
 
 
-  62:InterruptRoutines.c ****          * TODO: Read Z axis values over I2C communication and process the data. 
-  63:InterruptRoutines.c ****          */
-  64:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuf
- 111              		.loc 1 64 0
- 112 008a 2346     		mov	r3, r4
- 113 008c 0222     		movs	r2, #2
- 114 008e 2C21     		movs	r1, #44
- 115 0090 1820     		movs	r0, #24
- 116 0092 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
- 117              	.LVL8:
- 118 0096 0B4B     		ldr	r3, .L4+4
- 119 0098 1870     		strb	r0, [r3]
-  65:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
- 120              		.loc 1 65 0
- 121 009a 0128     		cmp	r0, #1
- 122 009c 0ED0     		beq	.L1
-  66:InterruptRoutines.c ****         int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
- 123              		.loc 1 66 0
- 124 009e 0622     		movs	r2, #6
- 125 00a0 0121     		movs	r1, #1
- 126 00a2 2046     		mov	r0, r4
- 127 00a4 FFF7FEFF 		bl	RightAdjustVal
- 128              	.LVL9:
-  67:InterruptRoutines.c ****         zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mG units
- 129              		.loc 1 67 0
- 130 00a8 4FF4FA63 		mov	r3, #2000
- 131 00ac 0093     		str	r3, [sp]
- 132 00ae A3F57A63 		sub	r3, r3, #4000
- 133 00b2 4FF40072 		mov	r2, #512
- 134 00b6 0549     		ldr	r1, .L4+12
- 135 00b8 FFF7FEFF 		bl	MinMaxScaler
- 136              	.LVL10:
- 137              	.L1:
- 138              	.LBE2:
-  68:InterruptRoutines.c ****     }
-  69:InterruptRoutines.c **** }
- 139              		.loc 1 69 0
- 140 00bc 02B0     		add	sp, sp, #8
- 141              		.cfi_def_cfa_offset 8
- 142              		@ sp needed
- 143 00be 10BD     		pop	{r4, pc}
- 144              	.L5:
- 145              		.align	2
- 146              	.L4:
- 147 00c0 00000000 		.word	statusReg
- 148 00c4 00000000 		.word	error
- 149 00c8 00000000 		.word	tempBuffer
- 150 00cc 00FEFFFF 		.word	-512
- 151              		.cfi_endproc
- 152              	.LFE63:
- 153              		.size	ISR_ACC_CUSTOM, .-ISR_ACC_CUSTOM
- 154              		.comm	tempBuffer,2,4
- 155              		.comm	dataBuffer,8,4
- 156              		.comm	error,1,1
- 157              		.comm	statusReg,1,1
- 158              		.text
- 159              	.Letext0:
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 5
+  37:InterruptRoutines.c ****         xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mG units
+  79              		.loc 1 37 0
+  80 0044 4FF4FA63 		mov	r3, #2000
+  81 0048 0093     		str	r3, [sp]
+  82 004a A3F57A63 		sub	r3, r3, #4000
+  83 004e 4FF40072 		mov	r2, #512
+  84 0052 2749     		ldr	r1, .L4+12
+  85 0054 FFF7FEFF 		bl	MinMaxScaler
+  86              	.LVL4:
+  87 0058 0546     		mov	r5, r0
+  88              	.LVL5:
+  38:InterruptRoutines.c ****         
+  39:InterruptRoutines.c ****         /* 
+  40:InterruptRoutines.c ****          * Read Y axis values over I2C communication and process the data. 
+  41:InterruptRoutines.c ****          */
+  42:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuf
+  89              		.loc 1 42 0
+  90 005a 2346     		mov	r3, r4
+  91 005c 0222     		movs	r2, #2
+  92 005e 2A21     		movs	r1, #42
+  93 0060 1820     		movs	r0, #24
+  94 0062 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+  95              	.LVL6:
+  96 0066 204B     		ldr	r3, .L4+4
+  97 0068 1870     		strb	r0, [r3]
+  43:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+  98              		.loc 1 43 0
+  99 006a 0128     		cmp	r0, #1
+ 100 006c 37D0     		beq	.L1
+  44:InterruptRoutines.c ****         int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
+ 101              		.loc 1 44 0
+ 102 006e 0622     		movs	r2, #6
+ 103 0070 0121     		movs	r1, #1
+ 104 0072 2046     		mov	r0, r4
+ 105 0074 FFF7FEFF 		bl	RightAdjustVal
+ 106              	.LVL7:
+  45:InterruptRoutines.c ****         yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mG units
+ 107              		.loc 1 45 0
+ 108 0078 4FF4FA63 		mov	r3, #2000
+ 109 007c 0093     		str	r3, [sp]
+ 110 007e A3F57A63 		sub	r3, r3, #4000
+ 111 0082 4FF40072 		mov	r2, #512
+ 112 0086 1A49     		ldr	r1, .L4+12
+ 113 0088 FFF7FEFF 		bl	MinMaxScaler
+ 114              	.LVL8:
+ 115 008c 0646     		mov	r6, r0
+ 116              	.LVL9:
+  46:InterruptRoutines.c ****         
+  47:InterruptRoutines.c ****         /* 
+  48:InterruptRoutines.c ****          * Read Z axis values over I2C communication and process the data. 
+  49:InterruptRoutines.c ****          */
+  50:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuf
+ 117              		.loc 1 50 0
+ 118 008e 2346     		mov	r3, r4
+ 119 0090 0222     		movs	r2, #2
+ 120 0092 2C21     		movs	r1, #44
+ 121 0094 1820     		movs	r0, #24
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 4
 
 
- 160              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
- 161              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
- 162              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
- 163              		.file 5 "ErrorCodes.h"
- 164              		.file 6 "Generated_Source\\PSoC5/core_cm3.h"
- 165              		.file 7 "I2C_Interface.h"
- 166              		.file 8 "AccelUtils.h"
- 167              		.file 9 "Generated_Source\\PSoC5/ISR_Timer.h"
- 168              		.section	.debug_info,"",%progbits
- 169              	.Ldebug_info0:
- 170 0000 67030000 		.4byte	0x367
- 171 0004 0400     		.2byte	0x4
- 172 0006 00000000 		.4byte	.Ldebug_abbrev0
- 173 000a 04       		.byte	0x4
- 174 000b 01       		.uleb128 0x1
- 175 000c ED000000 		.4byte	.LASF37
- 176 0010 0C       		.byte	0xc
- 177 0011 D3020000 		.4byte	.LASF38
- 178 0015 58000000 		.4byte	.LASF39
- 179 0019 00000000 		.4byte	.Ldebug_ranges0+0
- 180 001d 00000000 		.4byte	0
- 181 0021 00000000 		.4byte	.Ldebug_line0
- 182 0025 02       		.uleb128 0x2
- 183 0026 01       		.byte	0x1
- 184 0027 06       		.byte	0x6
- 185 0028 C1020000 		.4byte	.LASF0
- 186 002c 03       		.uleb128 0x3
- 187 002d 00000000 		.4byte	.LASF2
- 188 0031 02       		.byte	0x2
- 189 0032 1D       		.byte	0x1d
- 190 0033 37000000 		.4byte	0x37
- 191 0037 02       		.uleb128 0x2
- 192 0038 01       		.byte	0x1
- 193 0039 08       		.byte	0x8
- 194 003a DF000000 		.4byte	.LASF1
- 195 003e 03       		.uleb128 0x3
- 196 003f 14000000 		.4byte	.LASF3
- 197 0043 02       		.byte	0x2
- 198 0044 29       		.byte	0x29
- 199 0045 49000000 		.4byte	0x49
- 200 0049 02       		.uleb128 0x2
- 201 004a 02       		.byte	0x2
- 202 004b 05       		.byte	0x5
- 203 004c 87020000 		.4byte	.LASF4
- 204 0050 02       		.uleb128 0x2
- 205 0051 02       		.byte	0x2
- 206 0052 07       		.byte	0x7
- 207 0053 9A010000 		.4byte	.LASF5
- 208 0057 03       		.uleb128 0x3
- 209 0058 1E000000 		.4byte	.LASF6
- 210 005c 02       		.byte	0x2
- 211 005d 3F       		.byte	0x3f
- 212 005e 62000000 		.4byte	0x62
- 213 0062 02       		.uleb128 0x2
- 214 0063 04       		.byte	0x4
- 215 0064 05       		.byte	0x5
- 216 0065 28000000 		.4byte	.LASF7
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 6
+ 122 0096 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+ 123              	.LVL10:
+ 124 009a 134B     		ldr	r3, .L4+4
+ 125 009c 1870     		strb	r0, [r3]
+  51:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+ 126              		.loc 1 51 0
+ 127 009e 0128     		cmp	r0, #1
+ 128 00a0 1DD0     		beq	.L1
+  52:InterruptRoutines.c ****         int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers
+ 129              		.loc 1 52 0
+ 130 00a2 0622     		movs	r2, #6
+ 131 00a4 0121     		movs	r1, #1
+ 132 00a6 2046     		mov	r0, r4
+ 133 00a8 FFF7FEFF 		bl	RightAdjustVal
+ 134              	.LVL11:
+  53:InterruptRoutines.c ****         zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mG units
+ 135              		.loc 1 53 0
+ 136 00ac 4FF4FA63 		mov	r3, #2000
+ 137 00b0 0093     		str	r3, [sp]
+ 138 00b2 A3F57A63 		sub	r3, r3, #4000
+ 139 00b6 4FF40072 		mov	r2, #512
+ 140 00ba 0D49     		ldr	r1, .L4+12
+ 141 00bc FFF7FEFF 		bl	MinMaxScaler
+ 142              	.LVL12:
+  54:InterruptRoutines.c ****          
+  55:InterruptRoutines.c ****         /* 
+  56:InterruptRoutines.c ****          * Load and send 64-bit message containing all axes data over UART communication. 
+  57:InterruptRoutines.c ****          */
+  58:InterruptRoutines.c ****         LoadAxesData(dataBuffer, xAxis, yAxis, zAxis, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
+ 143              		.loc 1 58 0
+ 144 00c0 0C4C     		ldr	r4, .L4+16
+ 145 00c2 E023     		movs	r3, #224
+ 146 00c4 0193     		str	r3, [sp, #4]
+ 147 00c6 A023     		movs	r3, #160
+ 148 00c8 0093     		str	r3, [sp]
+ 149 00ca 0346     		mov	r3, r0
+ 150 00cc 3246     		mov	r2, r6
+ 151 00ce 2946     		mov	r1, r5
+ 152 00d0 2046     		mov	r0, r4
+ 153              	.LVL13:
+ 154 00d2 FFF7FEFF 		bl	LoadAxesData
+ 155              	.LVL14:
+  59:InterruptRoutines.c ****         UART_Debug_PutArray(dataBuffer, 8);
+ 156              		.loc 1 59 0
+ 157 00d6 0821     		movs	r1, #8
+ 158 00d8 2046     		mov	r0, r4
+ 159 00da FFF7FEFF 		bl	UART_Debug_PutArray
+ 160              	.LVL15:
+ 161              	.L1:
+ 162              	.LBE2:
+  60:InterruptRoutines.c ****     }
+  61:InterruptRoutines.c **** }
+ 163              		.loc 1 61 0
+ 164 00de 02B0     		add	sp, sp, #8
+ 165              		.cfi_def_cfa_offset 16
+ 166              		@ sp needed
+ 167 00e0 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 5
 
 
- 217 0069 02       		.uleb128 0x2
- 218 006a 04       		.byte	0x4
- 219 006b 07       		.byte	0x7
- 220 006c 7B010000 		.4byte	.LASF8
- 221 0070 02       		.uleb128 0x2
- 222 0071 08       		.byte	0x8
- 223 0072 05       		.byte	0x5
- 224 0073 52020000 		.4byte	.LASF9
- 225 0077 02       		.uleb128 0x2
- 226 0078 08       		.byte	0x8
- 227 0079 07       		.byte	0x7
- 228 007a 14020000 		.4byte	.LASF10
- 229 007e 04       		.uleb128 0x4
- 230 007f 04       		.byte	0x4
- 231 0080 05       		.byte	0x5
- 232 0081 696E7400 		.ascii	"int\000"
- 233 0085 02       		.uleb128 0x2
- 234 0086 04       		.byte	0x4
- 235 0087 07       		.byte	0x7
- 236 0088 07020000 		.4byte	.LASF11
- 237 008c 03       		.uleb128 0x3
- 238 008d 2B020000 		.4byte	.LASF12
- 239 0091 03       		.byte	0x3
- 240 0092 18       		.byte	0x18
- 241 0093 2C000000 		.4byte	0x2c
- 242 0097 03       		.uleb128 0x3
- 243 0098 33020000 		.4byte	.LASF13
- 244 009c 03       		.byte	0x3
- 245 009d 20       		.byte	0x20
- 246 009e 3E000000 		.4byte	0x3e
- 247 00a2 03       		.uleb128 0x3
- 248 00a3 3B020000 		.4byte	.LASF14
- 249 00a7 03       		.byte	0x3
- 250 00a8 2C       		.byte	0x2c
- 251 00a9 57000000 		.4byte	0x57
- 252 00ad 05       		.uleb128 0x5
- 253 00ae 91020000 		.4byte	.LASF15
- 254 00b2 04       		.byte	0x4
- 255 00b3 E401     		.2byte	0x1e4
- 256 00b5 37000000 		.4byte	0x37
- 257 00b9 02       		.uleb128 0x2
- 258 00ba 04       		.byte	0x4
- 259 00bb 04       		.byte	0x4
- 260 00bc D9000000 		.4byte	.LASF16
- 261 00c0 02       		.uleb128 0x2
- 262 00c1 08       		.byte	0x8
- 263 00c2 04       		.byte	0x4
- 264 00c3 D4010000 		.4byte	.LASF17
- 265 00c7 02       		.uleb128 0x2
- 266 00c8 01       		.byte	0x1
- 267 00c9 08       		.byte	0x8
- 268 00ca 66020000 		.4byte	.LASF18
- 269 00ce 02       		.uleb128 0x2
- 270 00cf 08       		.byte	0x8
- 271 00d0 04       		.byte	0x4
- 272 00d1 B5020000 		.4byte	.LASF19
- 273 00d5 02       		.uleb128 0x2
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 7
+ 168              	.L5:
+ 169 00e2 00BF     		.align	2
+ 170              	.L4:
+ 171 00e4 00000000 		.word	statusReg
+ 172 00e8 00000000 		.word	error
+ 173 00ec 00000000 		.word	tempBuffer
+ 174 00f0 00FEFFFF 		.word	-512
+ 175 00f4 00000000 		.word	dataBuffer
+ 176              		.cfi_endproc
+ 177              	.LFE63:
+ 178              		.size	ISR_ACC_CUSTOM, .-ISR_ACC_CUSTOM
+ 179              		.comm	error,1,1
+ 180              		.comm	statusReg,1,1
+ 181              		.comm	tempBuffer,2,4
+ 182              		.comm	dataBuffer,8,4
+ 183              		.text
+ 184              	.Letext0:
+ 185              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 186              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 187              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 188              		.file 5 "ErrorCodes.h"
+ 189              		.file 6 "Generated_Source\\PSoC5/core_cm3.h"
+ 190              		.file 7 "InterruptRoutines.h"
+ 191              		.file 8 "I2C_Interface.h"
+ 192              		.file 9 "AccelUtils.h"
+ 193              		.file 10 "Generated_Source\\PSoC5/UART_Debug.h"
+ 194              		.file 11 "Generated_Source\\PSoC5/ISR_Timer.h"
+ 195              		.section	.debug_info,"",%progbits
+ 196              	.Ldebug_info0:
+ 197 0000 C4030000 		.4byte	0x3c4
+ 198 0004 0400     		.2byte	0x4
+ 199 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 200 000a 04       		.byte	0x4
+ 201 000b 01       		.uleb128 0x1
+ 202 000c 0E010000 		.4byte	.LASF39
+ 203 0010 0C       		.byte	0xc
+ 204 0011 F4020000 		.4byte	.LASF40
+ 205 0015 79000000 		.4byte	.LASF41
+ 206 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 207 001d 00000000 		.4byte	0
+ 208 0021 00000000 		.4byte	.Ldebug_line0
+ 209 0025 02       		.uleb128 0x2
+ 210 0026 01       		.byte	0x1
+ 211 0027 06       		.byte	0x6
+ 212 0028 E2020000 		.4byte	.LASF0
+ 213 002c 03       		.uleb128 0x3
+ 214 002d 00000000 		.4byte	.LASF2
+ 215 0031 02       		.byte	0x2
+ 216 0032 1D       		.byte	0x1d
+ 217 0033 37000000 		.4byte	0x37
+ 218 0037 02       		.uleb128 0x2
+ 219 0038 01       		.byte	0x1
+ 220 0039 08       		.byte	0x8
+ 221 003a 00010000 		.4byte	.LASF1
+ 222 003e 03       		.uleb128 0x3
+ 223 003f 14000000 		.4byte	.LASF3
+ 224 0043 02       		.byte	0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 6
 
 
- 274 00d6 04       		.byte	0x4
- 275 00d7 07       		.byte	0x7
- 276 00d8 43020000 		.4byte	.LASF20
- 277 00dc 06       		.uleb128 0x6
- 278 00dd 01       		.byte	0x1
- 279 00de 37000000 		.4byte	0x37
- 280 00e2 05       		.byte	0x5
- 281 00e3 15       		.byte	0x15
- 282 00e4 F5000000 		.4byte	0xf5
- 283 00e8 07       		.uleb128 0x7
- 284 00e9 97020000 		.4byte	.LASF21
- 285 00ed 00       		.byte	0
- 286 00ee 07       		.uleb128 0x7
- 287 00ef A0020000 		.4byte	.LASF22
- 288 00f3 01       		.byte	0x1
- 289 00f4 00       		.byte	0
- 290 00f5 03       		.uleb128 0x3
- 291 00f6 31000000 		.4byte	.LASF23
- 292 00fa 05       		.byte	0x5
- 293 00fb 18       		.byte	0x18
- 294 00fc DC000000 		.4byte	0xdc
- 295 0100 08       		.uleb128 0x8
- 296 0101 C5010000 		.4byte	.LASF40
- 297 0105 01       		.byte	0x1
- 298 0106 21       		.byte	0x21
- 299 0107 00000000 		.4byte	.LFB63
- 300 010b D0000000 		.4byte	.LFE63-.LFB63
- 301 010f 01       		.uleb128 0x1
- 302 0110 9C       		.byte	0x9c
- 303 0111 BE020000 		.4byte	0x2be
- 304 0115 09       		.uleb128 0x9
- 305 0116 24000000 		.4byte	.LBB2
- 306 011a 98000000 		.4byte	.LBE2-.LBB2
- 307 011e 96020000 		.4byte	0x296
- 308 0122 0A       		.uleb128 0xa
- 309 0123 60020000 		.4byte	.LASF24
- 310 0127 01       		.byte	0x1
- 311 0128 32       		.byte	0x32
- 312 0129 97000000 		.4byte	0x97
- 313 012d 00000000 		.4byte	.LLST0
- 314 0131 0A       		.uleb128 0xa
- 315 0132 CD020000 		.4byte	.LASF25
- 316 0136 01       		.byte	0x1
- 317 0137 3A       		.byte	0x3a
- 318 0138 97000000 		.4byte	0x97
- 319 013c 13000000 		.4byte	.LLST1
- 320 0140 0A       		.uleb128 0xa
- 321 0141 D3000000 		.4byte	.LASF26
- 322 0145 01       		.byte	0x1
- 323 0146 42       		.byte	0x42
- 324 0147 97000000 		.4byte	0x97
- 325 014b 26000000 		.4byte	.LLST2
- 326 014f 0B       		.uleb128 0xb
- 327 0150 30000000 		.4byte	.LVL2
- 328 0154 33030000 		.4byte	0x333
- 329 0158 76010000 		.4byte	0x176
- 330 015c 0C       		.uleb128 0xc
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 8
+ 225 0044 29       		.byte	0x29
+ 226 0045 49000000 		.4byte	0x49
+ 227 0049 02       		.uleb128 0x2
+ 228 004a 02       		.byte	0x2
+ 229 004b 05       		.byte	0x5
+ 230 004c A8020000 		.4byte	.LASF4
+ 231 0050 02       		.uleb128 0x2
+ 232 0051 02       		.byte	0x2
+ 233 0052 07       		.byte	0x7
+ 234 0053 BB010000 		.4byte	.LASF5
+ 235 0057 03       		.uleb128 0x3
+ 236 0058 1E000000 		.4byte	.LASF6
+ 237 005c 02       		.byte	0x2
+ 238 005d 3F       		.byte	0x3f
+ 239 005e 62000000 		.4byte	0x62
+ 240 0062 02       		.uleb128 0x2
+ 241 0063 04       		.byte	0x4
+ 242 0064 05       		.byte	0x5
+ 243 0065 28000000 		.4byte	.LASF7
+ 244 0069 02       		.uleb128 0x2
+ 245 006a 04       		.byte	0x4
+ 246 006b 07       		.byte	0x7
+ 247 006c 9C010000 		.4byte	.LASF8
+ 248 0070 02       		.uleb128 0x2
+ 249 0071 08       		.byte	0x8
+ 250 0072 05       		.byte	0x5
+ 251 0073 73020000 		.4byte	.LASF9
+ 252 0077 02       		.uleb128 0x2
+ 253 0078 08       		.byte	0x8
+ 254 0079 07       		.byte	0x7
+ 255 007a 35020000 		.4byte	.LASF10
+ 256 007e 04       		.uleb128 0x4
+ 257 007f 04       		.byte	0x4
+ 258 0080 05       		.byte	0x5
+ 259 0081 696E7400 		.ascii	"int\000"
+ 260 0085 02       		.uleb128 0x2
+ 261 0086 04       		.byte	0x4
+ 262 0087 07       		.byte	0x7
+ 263 0088 28020000 		.4byte	.LASF11
+ 264 008c 03       		.uleb128 0x3
+ 265 008d 4C020000 		.4byte	.LASF12
+ 266 0091 03       		.byte	0x3
+ 267 0092 18       		.byte	0x18
+ 268 0093 2C000000 		.4byte	0x2c
+ 269 0097 03       		.uleb128 0x3
+ 270 0098 54020000 		.4byte	.LASF13
+ 271 009c 03       		.byte	0x3
+ 272 009d 20       		.byte	0x20
+ 273 009e 3E000000 		.4byte	0x3e
+ 274 00a2 03       		.uleb128 0x3
+ 275 00a3 5C020000 		.4byte	.LASF14
+ 276 00a7 03       		.byte	0x3
+ 277 00a8 2C       		.byte	0x2c
+ 278 00a9 57000000 		.4byte	0x57
+ 279 00ad 05       		.uleb128 0x5
+ 280 00ae B2020000 		.4byte	.LASF15
+ 281 00b2 04       		.byte	0x4
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 7
 
 
- 331 015d 01       		.uleb128 0x1
- 332 015e 50       		.byte	0x50
- 333 015f 01       		.uleb128 0x1
- 334 0160 48       		.byte	0x48
- 335 0161 0C       		.uleb128 0xc
- 336 0162 01       		.uleb128 0x1
- 337 0163 51       		.byte	0x51
- 338 0164 02       		.uleb128 0x2
- 339 0165 08       		.byte	0x8
- 340 0166 28       		.byte	0x28
- 341 0167 0C       		.uleb128 0xc
- 342 0168 01       		.uleb128 0x1
- 343 0169 52       		.byte	0x52
- 344 016a 01       		.uleb128 0x1
- 345 016b 32       		.byte	0x32
- 346 016c 0C       		.uleb128 0xc
- 347 016d 01       		.uleb128 0x1
- 348 016e 53       		.byte	0x53
- 349 016f 05       		.uleb128 0x5
- 350 0170 03       		.byte	0x3
- 351 0171 00000000 		.4byte	tempBuffer
- 352 0175 00       		.byte	0
- 353 0176 0B       		.uleb128 0xb
- 354 0177 44000000 		.4byte	.LVL3
- 355 017b 3E030000 		.4byte	0x33e
- 356 017f 94010000 		.4byte	0x194
- 357 0183 0C       		.uleb128 0xc
- 358 0184 01       		.uleb128 0x1
- 359 0185 50       		.byte	0x50
- 360 0186 02       		.uleb128 0x2
- 361 0187 74       		.byte	0x74
- 362 0188 00       		.sleb128 0
- 363 0189 0C       		.uleb128 0xc
- 364 018a 01       		.uleb128 0x1
- 365 018b 51       		.byte	0x51
- 366 018c 01       		.uleb128 0x1
- 367 018d 31       		.byte	0x31
- 368 018e 0C       		.uleb128 0xc
- 369 018f 01       		.uleb128 0x1
- 370 0190 52       		.byte	0x52
- 371 0191 01       		.uleb128 0x1
- 372 0192 36       		.byte	0x36
- 373 0193 00       		.byte	0
- 374 0194 0B       		.uleb128 0xb
- 375 0195 58000000 		.4byte	.LVL4
- 376 0199 49030000 		.4byte	0x349
- 377 019d BF010000 		.4byte	0x1bf
- 378 01a1 0C       		.uleb128 0xc
- 379 01a2 01       		.uleb128 0x1
- 380 01a3 51       		.byte	0x51
- 381 01a4 03       		.uleb128 0x3
- 382 01a5 0B       		.byte	0xb
- 383 01a6 00FE     		.2byte	0xfe00
- 384 01a8 0C       		.uleb128 0xc
- 385 01a9 01       		.uleb128 0x1
- 386 01aa 52       		.byte	0x52
- 387 01ab 03       		.uleb128 0x3
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 9
+ 282 00b3 E401     		.2byte	0x1e4
+ 283 00b5 37000000 		.4byte	0x37
+ 284 00b9 02       		.uleb128 0x2
+ 285 00ba 04       		.byte	0x4
+ 286 00bb 04       		.byte	0x4
+ 287 00bc FA000000 		.4byte	.LASF16
+ 288 00c0 02       		.uleb128 0x2
+ 289 00c1 08       		.byte	0x8
+ 290 00c2 04       		.byte	0x4
+ 291 00c3 F5010000 		.4byte	.LASF17
+ 292 00c7 02       		.uleb128 0x2
+ 293 00c8 01       		.byte	0x1
+ 294 00c9 08       		.byte	0x8
+ 295 00ca 87020000 		.4byte	.LASF18
+ 296 00ce 02       		.uleb128 0x2
+ 297 00cf 08       		.byte	0x8
+ 298 00d0 04       		.byte	0x4
+ 299 00d1 D6020000 		.4byte	.LASF19
+ 300 00d5 02       		.uleb128 0x2
+ 301 00d6 04       		.byte	0x4
+ 302 00d7 07       		.byte	0x7
+ 303 00d8 64020000 		.4byte	.LASF20
+ 304 00dc 06       		.uleb128 0x6
+ 305 00dd 01       		.byte	0x1
+ 306 00de 37000000 		.4byte	0x37
+ 307 00e2 05       		.byte	0x5
+ 308 00e3 15       		.byte	0x15
+ 309 00e4 F5000000 		.4byte	0xf5
+ 310 00e8 07       		.uleb128 0x7
+ 311 00e9 B8020000 		.4byte	.LASF21
+ 312 00ed 00       		.byte	0
+ 313 00ee 07       		.uleb128 0x7
+ 314 00ef C1020000 		.4byte	.LASF22
+ 315 00f3 01       		.byte	0x1
+ 316 00f4 00       		.byte	0
+ 317 00f5 03       		.uleb128 0x3
+ 318 00f6 52000000 		.4byte	.LASF23
+ 319 00fa 05       		.byte	0x5
+ 320 00fb 18       		.byte	0x18
+ 321 00fc DC000000 		.4byte	0xdc
+ 322 0100 08       		.uleb128 0x8
+ 323 0101 E6010000 		.4byte	.LASF42
+ 324 0105 01       		.byte	0x1
+ 325 0106 13       		.byte	0x13
+ 326 0107 00000000 		.4byte	.LFB63
+ 327 010b F8000000 		.4byte	.LFE63-.LFB63
+ 328 010f 01       		.uleb128 0x1
+ 329 0110 9C       		.byte	0x9c
+ 330 0111 05030000 		.4byte	0x305
+ 331 0115 09       		.uleb128 0x9
+ 332 0116 24000000 		.4byte	.LBB2
+ 333 011a BA000000 		.4byte	.LBE2-.LBB2
+ 334 011e DD020000 		.4byte	0x2dd
+ 335 0122 0A       		.uleb128 0xa
+ 336 0123 81020000 		.4byte	.LASF24
+ 337 0127 01       		.byte	0x1
+ 338 0128 24       		.byte	0x24
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 8
 
 
- 388 01ac 0A       		.byte	0xa
- 389 01ad 0002     		.2byte	0x200
- 390 01af 0C       		.uleb128 0xc
- 391 01b0 01       		.uleb128 0x1
- 392 01b1 53       		.byte	0x53
- 393 01b2 03       		.uleb128 0x3
- 394 01b3 0B       		.byte	0xb
- 395 01b4 30F8     		.2byte	0xf830
- 396 01b6 0C       		.uleb128 0xc
- 397 01b7 02       		.uleb128 0x2
- 398 01b8 7D       		.byte	0x7d
- 399 01b9 00       		.sleb128 0
- 400 01ba 03       		.uleb128 0x3
- 401 01bb 0A       		.byte	0xa
- 402 01bc D007     		.2byte	0x7d0
- 403 01be 00       		.byte	0
- 404 01bf 0B       		.uleb128 0xb
- 405 01c0 64000000 		.4byte	.LVL5
- 406 01c4 33030000 		.4byte	0x333
- 407 01c8 E3010000 		.4byte	0x1e3
- 408 01cc 0C       		.uleb128 0xc
- 409 01cd 01       		.uleb128 0x1
- 410 01ce 50       		.byte	0x50
- 411 01cf 01       		.uleb128 0x1
- 412 01d0 48       		.byte	0x48
- 413 01d1 0C       		.uleb128 0xc
- 414 01d2 01       		.uleb128 0x1
- 415 01d3 51       		.byte	0x51
- 416 01d4 02       		.uleb128 0x2
- 417 01d5 08       		.byte	0x8
- 418 01d6 2A       		.byte	0x2a
- 419 01d7 0C       		.uleb128 0xc
- 420 01d8 01       		.uleb128 0x1
- 421 01d9 52       		.byte	0x52
- 422 01da 01       		.uleb128 0x1
- 423 01db 32       		.byte	0x32
- 424 01dc 0C       		.uleb128 0xc
- 425 01dd 01       		.uleb128 0x1
- 426 01de 53       		.byte	0x53
- 427 01df 02       		.uleb128 0x2
- 428 01e0 74       		.byte	0x74
- 429 01e1 00       		.sleb128 0
- 430 01e2 00       		.byte	0
- 431 01e3 0B       		.uleb128 0xb
- 432 01e4 76000000 		.4byte	.LVL6
- 433 01e8 3E030000 		.4byte	0x33e
- 434 01ec 01020000 		.4byte	0x201
- 435 01f0 0C       		.uleb128 0xc
- 436 01f1 01       		.uleb128 0x1
- 437 01f2 50       		.byte	0x50
- 438 01f3 02       		.uleb128 0x2
- 439 01f4 74       		.byte	0x74
- 440 01f5 00       		.sleb128 0
- 441 01f6 0C       		.uleb128 0xc
- 442 01f7 01       		.uleb128 0x1
- 443 01f8 51       		.byte	0x51
- 444 01f9 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 10
+ 339 0129 97000000 		.4byte	0x97
+ 340 012d 00000000 		.4byte	.LLST0
+ 341 0131 0A       		.uleb128 0xa
+ 342 0132 EE020000 		.4byte	.LASF25
+ 343 0136 01       		.byte	0x1
+ 344 0137 2C       		.byte	0x2c
+ 345 0138 97000000 		.4byte	0x97
+ 346 013c 1E000000 		.4byte	.LLST1
+ 347 0140 0A       		.uleb128 0xa
+ 348 0141 F4000000 		.4byte	.LASF26
+ 349 0145 01       		.byte	0x1
+ 350 0146 34       		.byte	0x34
+ 351 0147 97000000 		.4byte	0x97
+ 352 014b 3C000000 		.4byte	.LLST2
+ 353 014f 0B       		.uleb128 0xb
+ 354 0150 30000000 		.4byte	.LVL2
+ 355 0154 7A030000 		.4byte	0x37a
+ 356 0158 76010000 		.4byte	0x176
+ 357 015c 0C       		.uleb128 0xc
+ 358 015d 01       		.uleb128 0x1
+ 359 015e 50       		.byte	0x50
+ 360 015f 01       		.uleb128 0x1
+ 361 0160 48       		.byte	0x48
+ 362 0161 0C       		.uleb128 0xc
+ 363 0162 01       		.uleb128 0x1
+ 364 0163 51       		.byte	0x51
+ 365 0164 02       		.uleb128 0x2
+ 366 0165 08       		.byte	0x8
+ 367 0166 28       		.byte	0x28
+ 368 0167 0C       		.uleb128 0xc
+ 369 0168 01       		.uleb128 0x1
+ 370 0169 52       		.byte	0x52
+ 371 016a 01       		.uleb128 0x1
+ 372 016b 32       		.byte	0x32
+ 373 016c 0C       		.uleb128 0xc
+ 374 016d 01       		.uleb128 0x1
+ 375 016e 53       		.byte	0x53
+ 376 016f 05       		.uleb128 0x5
+ 377 0170 03       		.byte	0x3
+ 378 0171 00000000 		.4byte	tempBuffer
+ 379 0175 00       		.byte	0
+ 380 0176 0B       		.uleb128 0xb
+ 381 0177 44000000 		.4byte	.LVL3
+ 382 017b 85030000 		.4byte	0x385
+ 383 017f 94010000 		.4byte	0x194
+ 384 0183 0C       		.uleb128 0xc
+ 385 0184 01       		.uleb128 0x1
+ 386 0185 50       		.byte	0x50
+ 387 0186 02       		.uleb128 0x2
+ 388 0187 74       		.byte	0x74
+ 389 0188 00       		.sleb128 0
+ 390 0189 0C       		.uleb128 0xc
+ 391 018a 01       		.uleb128 0x1
+ 392 018b 51       		.byte	0x51
+ 393 018c 01       		.uleb128 0x1
+ 394 018d 31       		.byte	0x31
+ 395 018e 0C       		.uleb128 0xc
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 9
 
 
- 445 01fa 31       		.byte	0x31
- 446 01fb 0C       		.uleb128 0xc
- 447 01fc 01       		.uleb128 0x1
- 448 01fd 52       		.byte	0x52
- 449 01fe 01       		.uleb128 0x1
- 450 01ff 36       		.byte	0x36
- 451 0200 00       		.byte	0
- 452 0201 0B       		.uleb128 0xb
- 453 0202 8A000000 		.4byte	.LVL7
- 454 0206 49030000 		.4byte	0x349
- 455 020a 2C020000 		.4byte	0x22c
- 456 020e 0C       		.uleb128 0xc
- 457 020f 01       		.uleb128 0x1
- 458 0210 51       		.byte	0x51
- 459 0211 03       		.uleb128 0x3
- 460 0212 0B       		.byte	0xb
- 461 0213 00FE     		.2byte	0xfe00
- 462 0215 0C       		.uleb128 0xc
- 463 0216 01       		.uleb128 0x1
- 464 0217 52       		.byte	0x52
- 465 0218 03       		.uleb128 0x3
- 466 0219 0A       		.byte	0xa
- 467 021a 0002     		.2byte	0x200
- 468 021c 0C       		.uleb128 0xc
- 469 021d 01       		.uleb128 0x1
- 470 021e 53       		.byte	0x53
- 471 021f 03       		.uleb128 0x3
- 472 0220 0B       		.byte	0xb
- 473 0221 30F8     		.2byte	0xf830
- 474 0223 0C       		.uleb128 0xc
- 475 0224 02       		.uleb128 0x2
- 476 0225 7D       		.byte	0x7d
- 477 0226 00       		.sleb128 0
- 478 0227 03       		.uleb128 0x3
- 479 0228 0A       		.byte	0xa
- 480 0229 D007     		.2byte	0x7d0
- 481 022b 00       		.byte	0
- 482 022c 0B       		.uleb128 0xb
- 483 022d 96000000 		.4byte	.LVL8
- 484 0231 33030000 		.4byte	0x333
- 485 0235 50020000 		.4byte	0x250
- 486 0239 0C       		.uleb128 0xc
- 487 023a 01       		.uleb128 0x1
- 488 023b 50       		.byte	0x50
- 489 023c 01       		.uleb128 0x1
- 490 023d 48       		.byte	0x48
- 491 023e 0C       		.uleb128 0xc
- 492 023f 01       		.uleb128 0x1
- 493 0240 51       		.byte	0x51
- 494 0241 02       		.uleb128 0x2
- 495 0242 08       		.byte	0x8
- 496 0243 2C       		.byte	0x2c
- 497 0244 0C       		.uleb128 0xc
- 498 0245 01       		.uleb128 0x1
- 499 0246 52       		.byte	0x52
- 500 0247 01       		.uleb128 0x1
- 501 0248 32       		.byte	0x32
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 11
+ 396 018f 01       		.uleb128 0x1
+ 397 0190 52       		.byte	0x52
+ 398 0191 01       		.uleb128 0x1
+ 399 0192 36       		.byte	0x36
+ 400 0193 00       		.byte	0
+ 401 0194 0B       		.uleb128 0xb
+ 402 0195 58000000 		.4byte	.LVL4
+ 403 0199 90030000 		.4byte	0x390
+ 404 019d BF010000 		.4byte	0x1bf
+ 405 01a1 0C       		.uleb128 0xc
+ 406 01a2 01       		.uleb128 0x1
+ 407 01a3 51       		.byte	0x51
+ 408 01a4 03       		.uleb128 0x3
+ 409 01a5 0B       		.byte	0xb
+ 410 01a6 00FE     		.2byte	0xfe00
+ 411 01a8 0C       		.uleb128 0xc
+ 412 01a9 01       		.uleb128 0x1
+ 413 01aa 52       		.byte	0x52
+ 414 01ab 03       		.uleb128 0x3
+ 415 01ac 0A       		.byte	0xa
+ 416 01ad 0002     		.2byte	0x200
+ 417 01af 0C       		.uleb128 0xc
+ 418 01b0 01       		.uleb128 0x1
+ 419 01b1 53       		.byte	0x53
+ 420 01b2 03       		.uleb128 0x3
+ 421 01b3 0B       		.byte	0xb
+ 422 01b4 30F8     		.2byte	0xf830
+ 423 01b6 0C       		.uleb128 0xc
+ 424 01b7 02       		.uleb128 0x2
+ 425 01b8 7D       		.byte	0x7d
+ 426 01b9 00       		.sleb128 0
+ 427 01ba 03       		.uleb128 0x3
+ 428 01bb 0A       		.byte	0xa
+ 429 01bc D007     		.2byte	0x7d0
+ 430 01be 00       		.byte	0
+ 431 01bf 0B       		.uleb128 0xb
+ 432 01c0 66000000 		.4byte	.LVL6
+ 433 01c4 7A030000 		.4byte	0x37a
+ 434 01c8 E3010000 		.4byte	0x1e3
+ 435 01cc 0C       		.uleb128 0xc
+ 436 01cd 01       		.uleb128 0x1
+ 437 01ce 50       		.byte	0x50
+ 438 01cf 01       		.uleb128 0x1
+ 439 01d0 48       		.byte	0x48
+ 440 01d1 0C       		.uleb128 0xc
+ 441 01d2 01       		.uleb128 0x1
+ 442 01d3 51       		.byte	0x51
+ 443 01d4 02       		.uleb128 0x2
+ 444 01d5 08       		.byte	0x8
+ 445 01d6 2A       		.byte	0x2a
+ 446 01d7 0C       		.uleb128 0xc
+ 447 01d8 01       		.uleb128 0x1
+ 448 01d9 52       		.byte	0x52
+ 449 01da 01       		.uleb128 0x1
+ 450 01db 32       		.byte	0x32
+ 451 01dc 0C       		.uleb128 0xc
+ 452 01dd 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 10
 
 
- 502 0249 0C       		.uleb128 0xc
- 503 024a 01       		.uleb128 0x1
- 504 024b 53       		.byte	0x53
- 505 024c 02       		.uleb128 0x2
- 506 024d 74       		.byte	0x74
- 507 024e 00       		.sleb128 0
- 508 024f 00       		.byte	0
- 509 0250 0B       		.uleb128 0xb
- 510 0251 A8000000 		.4byte	.LVL9
- 511 0255 3E030000 		.4byte	0x33e
- 512 0259 6E020000 		.4byte	0x26e
- 513 025d 0C       		.uleb128 0xc
- 514 025e 01       		.uleb128 0x1
- 515 025f 50       		.byte	0x50
- 516 0260 02       		.uleb128 0x2
- 517 0261 74       		.byte	0x74
- 518 0262 00       		.sleb128 0
- 519 0263 0C       		.uleb128 0xc
- 520 0264 01       		.uleb128 0x1
- 521 0265 51       		.byte	0x51
- 522 0266 01       		.uleb128 0x1
- 523 0267 31       		.byte	0x31
- 524 0268 0C       		.uleb128 0xc
- 525 0269 01       		.uleb128 0x1
- 526 026a 52       		.byte	0x52
- 527 026b 01       		.uleb128 0x1
- 528 026c 36       		.byte	0x36
- 529 026d 00       		.byte	0
- 530 026e 0D       		.uleb128 0xd
- 531 026f BC000000 		.4byte	.LVL10
- 532 0273 49030000 		.4byte	0x349
- 533 0277 0C       		.uleb128 0xc
- 534 0278 01       		.uleb128 0x1
- 535 0279 51       		.byte	0x51
- 536 027a 03       		.uleb128 0x3
- 537 027b 0B       		.byte	0xb
- 538 027c 00FE     		.2byte	0xfe00
- 539 027e 0C       		.uleb128 0xc
- 540 027f 01       		.uleb128 0x1
- 541 0280 52       		.byte	0x52
- 542 0281 03       		.uleb128 0x3
- 543 0282 0A       		.byte	0xa
- 544 0283 0002     		.2byte	0x200
- 545 0285 0C       		.uleb128 0xc
- 546 0286 01       		.uleb128 0x1
- 547 0287 53       		.byte	0x53
- 548 0288 03       		.uleb128 0x3
- 549 0289 0B       		.byte	0xb
- 550 028a 30F8     		.2byte	0xf830
- 551 028c 0C       		.uleb128 0xc
- 552 028d 02       		.uleb128 0x2
- 553 028e 7D       		.byte	0x7d
- 554 028f 00       		.sleb128 0
- 555 0290 03       		.uleb128 0x3
- 556 0291 0A       		.byte	0xa
- 557 0292 D007     		.2byte	0x7d0
- 558 0294 00       		.byte	0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 12
+ 453 01de 53       		.byte	0x53
+ 454 01df 02       		.uleb128 0x2
+ 455 01e0 74       		.byte	0x74
+ 456 01e1 00       		.sleb128 0
+ 457 01e2 00       		.byte	0
+ 458 01e3 0B       		.uleb128 0xb
+ 459 01e4 78000000 		.4byte	.LVL7
+ 460 01e8 85030000 		.4byte	0x385
+ 461 01ec 01020000 		.4byte	0x201
+ 462 01f0 0C       		.uleb128 0xc
+ 463 01f1 01       		.uleb128 0x1
+ 464 01f2 50       		.byte	0x50
+ 465 01f3 02       		.uleb128 0x2
+ 466 01f4 74       		.byte	0x74
+ 467 01f5 00       		.sleb128 0
+ 468 01f6 0C       		.uleb128 0xc
+ 469 01f7 01       		.uleb128 0x1
+ 470 01f8 51       		.byte	0x51
+ 471 01f9 01       		.uleb128 0x1
+ 472 01fa 31       		.byte	0x31
+ 473 01fb 0C       		.uleb128 0xc
+ 474 01fc 01       		.uleb128 0x1
+ 475 01fd 52       		.byte	0x52
+ 476 01fe 01       		.uleb128 0x1
+ 477 01ff 36       		.byte	0x36
+ 478 0200 00       		.byte	0
+ 479 0201 0B       		.uleb128 0xb
+ 480 0202 8C000000 		.4byte	.LVL8
+ 481 0206 90030000 		.4byte	0x390
+ 482 020a 2C020000 		.4byte	0x22c
+ 483 020e 0C       		.uleb128 0xc
+ 484 020f 01       		.uleb128 0x1
+ 485 0210 51       		.byte	0x51
+ 486 0211 03       		.uleb128 0x3
+ 487 0212 0B       		.byte	0xb
+ 488 0213 00FE     		.2byte	0xfe00
+ 489 0215 0C       		.uleb128 0xc
+ 490 0216 01       		.uleb128 0x1
+ 491 0217 52       		.byte	0x52
+ 492 0218 03       		.uleb128 0x3
+ 493 0219 0A       		.byte	0xa
+ 494 021a 0002     		.2byte	0x200
+ 495 021c 0C       		.uleb128 0xc
+ 496 021d 01       		.uleb128 0x1
+ 497 021e 53       		.byte	0x53
+ 498 021f 03       		.uleb128 0x3
+ 499 0220 0B       		.byte	0xb
+ 500 0221 30F8     		.2byte	0xf830
+ 501 0223 0C       		.uleb128 0xc
+ 502 0224 02       		.uleb128 0x2
+ 503 0225 7D       		.byte	0x7d
+ 504 0226 00       		.sleb128 0
+ 505 0227 03       		.uleb128 0x3
+ 506 0228 0A       		.byte	0xa
+ 507 0229 D007     		.2byte	0x7d0
+ 508 022b 00       		.byte	0
+ 509 022c 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 11
 
 
- 559 0295 00       		.byte	0
- 560 0296 0E       		.uleb128 0xe
- 561 0297 08000000 		.4byte	.LVL0
- 562 029b 54030000 		.4byte	0x354
- 563 029f 0D       		.uleb128 0xd
- 564 02a0 12000000 		.4byte	.LVL1
- 565 02a4 5F030000 		.4byte	0x35f
- 566 02a8 0C       		.uleb128 0xc
- 567 02a9 01       		.uleb128 0x1
- 568 02aa 50       		.byte	0x50
- 569 02ab 01       		.uleb128 0x1
- 570 02ac 48       		.byte	0x48
- 571 02ad 0C       		.uleb128 0xc
- 572 02ae 01       		.uleb128 0x1
- 573 02af 51       		.byte	0x51
- 574 02b0 02       		.uleb128 0x2
- 575 02b1 08       		.byte	0x8
- 576 02b2 27       		.byte	0x27
- 577 02b3 0C       		.uleb128 0xc
- 578 02b4 01       		.uleb128 0x1
- 579 02b5 52       		.byte	0x52
- 580 02b6 05       		.uleb128 0x5
- 581 02b7 03       		.byte	0x3
- 582 02b8 00000000 		.4byte	statusReg
- 583 02bc 00       		.byte	0
- 584 02bd 00       		.byte	0
- 585 02be 0F       		.uleb128 0xf
- 586 02bf B8010000 		.4byte	.LASF27
- 587 02c3 06       		.byte	0x6
- 588 02c4 1207     		.2byte	0x712
- 589 02c6 CA020000 		.4byte	0x2ca
- 590 02ca 10       		.uleb128 0x10
- 591 02cb A2000000 		.4byte	0xa2
- 592 02cf 11       		.uleb128 0x11
- 593 02d0 0A000000 		.4byte	.LASF28
- 594 02d4 01       		.byte	0x1
- 595 02d5 13       		.byte	0x13
- 596 02d6 AD000000 		.4byte	0xad
- 597 02da 05       		.uleb128 0x5
- 598 02db 03       		.byte	0x3
- 599 02dc 00000000 		.4byte	statusReg
- 600 02e0 11       		.uleb128 0x11
- 601 02e1 4C020000 		.4byte	.LASF29
- 602 02e5 01       		.byte	0x1
- 603 02e6 16       		.byte	0x16
- 604 02e7 F5000000 		.4byte	0xf5
- 605 02eb 05       		.uleb128 0x5
- 606 02ec 03       		.byte	0x3
- 607 02ed 00000000 		.4byte	error
- 608 02f1 12       		.uleb128 0x12
- 609 02f2 8C000000 		.4byte	0x8c
- 610 02f6 01030000 		.4byte	0x301
- 611 02fa 13       		.uleb128 0x13
- 612 02fb D5000000 		.4byte	0xd5
- 613 02ff 07       		.byte	0x7
- 614 0300 00       		.byte	0
- 615 0301 11       		.uleb128 0x11
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 13
+ 510 022d 9A000000 		.4byte	.LVL10
+ 511 0231 7A030000 		.4byte	0x37a
+ 512 0235 50020000 		.4byte	0x250
+ 513 0239 0C       		.uleb128 0xc
+ 514 023a 01       		.uleb128 0x1
+ 515 023b 50       		.byte	0x50
+ 516 023c 01       		.uleb128 0x1
+ 517 023d 48       		.byte	0x48
+ 518 023e 0C       		.uleb128 0xc
+ 519 023f 01       		.uleb128 0x1
+ 520 0240 51       		.byte	0x51
+ 521 0241 02       		.uleb128 0x2
+ 522 0242 08       		.byte	0x8
+ 523 0243 2C       		.byte	0x2c
+ 524 0244 0C       		.uleb128 0xc
+ 525 0245 01       		.uleb128 0x1
+ 526 0246 52       		.byte	0x52
+ 527 0247 01       		.uleb128 0x1
+ 528 0248 32       		.byte	0x32
+ 529 0249 0C       		.uleb128 0xc
+ 530 024a 01       		.uleb128 0x1
+ 531 024b 53       		.byte	0x53
+ 532 024c 02       		.uleb128 0x2
+ 533 024d 74       		.byte	0x74
+ 534 024e 00       		.sleb128 0
+ 535 024f 00       		.byte	0
+ 536 0250 0B       		.uleb128 0xb
+ 537 0251 AC000000 		.4byte	.LVL11
+ 538 0255 85030000 		.4byte	0x385
+ 539 0259 6E020000 		.4byte	0x26e
+ 540 025d 0C       		.uleb128 0xc
+ 541 025e 01       		.uleb128 0x1
+ 542 025f 50       		.byte	0x50
+ 543 0260 02       		.uleb128 0x2
+ 544 0261 74       		.byte	0x74
+ 545 0262 00       		.sleb128 0
+ 546 0263 0C       		.uleb128 0xc
+ 547 0264 01       		.uleb128 0x1
+ 548 0265 51       		.byte	0x51
+ 549 0266 01       		.uleb128 0x1
+ 550 0267 31       		.byte	0x31
+ 551 0268 0C       		.uleb128 0xc
+ 552 0269 01       		.uleb128 0x1
+ 553 026a 52       		.byte	0x52
+ 554 026b 01       		.uleb128 0x1
+ 555 026c 36       		.byte	0x36
+ 556 026d 00       		.byte	0
+ 557 026e 0B       		.uleb128 0xb
+ 558 026f C0000000 		.4byte	.LVL12
+ 559 0273 90030000 		.4byte	0x390
+ 560 0277 99020000 		.4byte	0x299
+ 561 027b 0C       		.uleb128 0xc
+ 562 027c 01       		.uleb128 0x1
+ 563 027d 51       		.byte	0x51
+ 564 027e 03       		.uleb128 0x3
+ 565 027f 0B       		.byte	0xb
+ 566 0280 00FE     		.2byte	0xfe00
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 12
 
 
- 616 0302 FC010000 		.4byte	.LASF30
- 617 0306 01       		.byte	0x1
- 618 0307 19       		.byte	0x19
- 619 0308 F1020000 		.4byte	0x2f1
- 620 030c 05       		.uleb128 0x5
- 621 030d 03       		.byte	0x3
- 622 030e 00000000 		.4byte	dataBuffer
- 623 0312 12       		.uleb128 0x12
- 624 0313 8C000000 		.4byte	0x8c
- 625 0317 22030000 		.4byte	0x322
- 626 031b 13       		.uleb128 0x13
- 627 031c D5000000 		.4byte	0xd5
- 628 0320 01       		.byte	0x1
- 629 0321 00       		.byte	0
- 630 0322 11       		.uleb128 0x11
- 631 0323 AD010000 		.4byte	.LASF31
- 632 0327 01       		.byte	0x1
- 633 0328 1C       		.byte	0x1c
- 634 0329 12030000 		.4byte	0x312
- 635 032d 05       		.uleb128 0x5
- 636 032e 03       		.byte	0x3
- 637 032f 00000000 		.4byte	tempBuffer
- 638 0333 14       		.uleb128 0x14
- 639 0334 DB010000 		.4byte	.LASF32
- 640 0338 DB010000 		.4byte	.LASF32
- 641 033c 07       		.byte	0x7
- 642 033d 57       		.byte	0x57
- 643 033e 14       		.uleb128 0x14
- 644 033f A6020000 		.4byte	.LASF33
- 645 0343 A6020000 		.4byte	.LASF33
- 646 0347 08       		.byte	0x8
- 647 0348 18       		.byte	0x18
- 648 0349 14       		.uleb128 0x14
- 649 034a 8D010000 		.4byte	.LASF34
- 650 034e 8D010000 		.4byte	.LASF34
- 651 0352 08       		.byte	0x8
- 652 0353 17       		.byte	0x17
- 653 0354 14       		.uleb128 0x14
- 654 0355 3B000000 		.4byte	.LASF35
- 655 0359 3B000000 		.4byte	.LASF35
- 656 035d 09       		.byte	0x9
- 657 035e 5E       		.byte	0x5e
- 658 035f 14       		.uleb128 0x14
- 659 0360 6B020000 		.4byte	.LASF36
- 660 0364 6B020000 		.4byte	.LASF36
- 661 0368 07       		.byte	0x7
- 662 0369 49       		.byte	0x49
- 663 036a 00       		.byte	0
- 664              		.section	.debug_abbrev,"",%progbits
- 665              	.Ldebug_abbrev0:
- 666 0000 01       		.uleb128 0x1
- 667 0001 11       		.uleb128 0x11
- 668 0002 01       		.byte	0x1
- 669 0003 25       		.uleb128 0x25
- 670 0004 0E       		.uleb128 0xe
- 671 0005 13       		.uleb128 0x13
- 672 0006 0B       		.uleb128 0xb
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 14
+ 567 0282 0C       		.uleb128 0xc
+ 568 0283 01       		.uleb128 0x1
+ 569 0284 52       		.byte	0x52
+ 570 0285 03       		.uleb128 0x3
+ 571 0286 0A       		.byte	0xa
+ 572 0287 0002     		.2byte	0x200
+ 573 0289 0C       		.uleb128 0xc
+ 574 028a 01       		.uleb128 0x1
+ 575 028b 53       		.byte	0x53
+ 576 028c 03       		.uleb128 0x3
+ 577 028d 0B       		.byte	0xb
+ 578 028e 30F8     		.2byte	0xf830
+ 579 0290 0C       		.uleb128 0xc
+ 580 0291 02       		.uleb128 0x2
+ 581 0292 7D       		.byte	0x7d
+ 582 0293 00       		.sleb128 0
+ 583 0294 03       		.uleb128 0x3
+ 584 0295 0A       		.byte	0xa
+ 585 0296 D007     		.2byte	0x7d0
+ 586 0298 00       		.byte	0
+ 587 0299 0B       		.uleb128 0xb
+ 588 029a D6000000 		.4byte	.LVL14
+ 589 029e 9B030000 		.4byte	0x39b
+ 590 02a2 C7020000 		.4byte	0x2c7
+ 591 02a6 0C       		.uleb128 0xc
+ 592 02a7 01       		.uleb128 0x1
+ 593 02a8 50       		.byte	0x50
+ 594 02a9 02       		.uleb128 0x2
+ 595 02aa 74       		.byte	0x74
+ 596 02ab 00       		.sleb128 0
+ 597 02ac 0C       		.uleb128 0xc
+ 598 02ad 01       		.uleb128 0x1
+ 599 02ae 51       		.byte	0x51
+ 600 02af 02       		.uleb128 0x2
+ 601 02b0 75       		.byte	0x75
+ 602 02b1 00       		.sleb128 0
+ 603 02b2 0C       		.uleb128 0xc
+ 604 02b3 01       		.uleb128 0x1
+ 605 02b4 52       		.byte	0x52
+ 606 02b5 02       		.uleb128 0x2
+ 607 02b6 76       		.byte	0x76
+ 608 02b7 00       		.sleb128 0
+ 609 02b8 0C       		.uleb128 0xc
+ 610 02b9 02       		.uleb128 0x2
+ 611 02ba 7D       		.byte	0x7d
+ 612 02bb 00       		.sleb128 0
+ 613 02bc 02       		.uleb128 0x2
+ 614 02bd 09       		.byte	0x9
+ 615 02be A0       		.byte	0xa0
+ 616 02bf 0C       		.uleb128 0xc
+ 617 02c0 02       		.uleb128 0x2
+ 618 02c1 7D       		.byte	0x7d
+ 619 02c2 04       		.sleb128 4
+ 620 02c3 02       		.uleb128 0x2
+ 621 02c4 09       		.byte	0x9
+ 622 02c5 E0       		.byte	0xe0
+ 623 02c6 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 13
 
 
- 673 0007 03       		.uleb128 0x3
- 674 0008 0E       		.uleb128 0xe
- 675 0009 1B       		.uleb128 0x1b
- 676 000a 0E       		.uleb128 0xe
- 677 000b 55       		.uleb128 0x55
- 678 000c 17       		.uleb128 0x17
- 679 000d 11       		.uleb128 0x11
- 680 000e 01       		.uleb128 0x1
- 681 000f 10       		.uleb128 0x10
- 682 0010 17       		.uleb128 0x17
- 683 0011 00       		.byte	0
- 684 0012 00       		.byte	0
- 685 0013 02       		.uleb128 0x2
- 686 0014 24       		.uleb128 0x24
- 687 0015 00       		.byte	0
- 688 0016 0B       		.uleb128 0xb
- 689 0017 0B       		.uleb128 0xb
- 690 0018 3E       		.uleb128 0x3e
- 691 0019 0B       		.uleb128 0xb
- 692 001a 03       		.uleb128 0x3
- 693 001b 0E       		.uleb128 0xe
- 694 001c 00       		.byte	0
- 695 001d 00       		.byte	0
- 696 001e 03       		.uleb128 0x3
- 697 001f 16       		.uleb128 0x16
- 698 0020 00       		.byte	0
- 699 0021 03       		.uleb128 0x3
- 700 0022 0E       		.uleb128 0xe
- 701 0023 3A       		.uleb128 0x3a
- 702 0024 0B       		.uleb128 0xb
- 703 0025 3B       		.uleb128 0x3b
- 704 0026 0B       		.uleb128 0xb
- 705 0027 49       		.uleb128 0x49
- 706 0028 13       		.uleb128 0x13
- 707 0029 00       		.byte	0
- 708 002a 00       		.byte	0
- 709 002b 04       		.uleb128 0x4
- 710 002c 24       		.uleb128 0x24
- 711 002d 00       		.byte	0
- 712 002e 0B       		.uleb128 0xb
- 713 002f 0B       		.uleb128 0xb
- 714 0030 3E       		.uleb128 0x3e
- 715 0031 0B       		.uleb128 0xb
- 716 0032 03       		.uleb128 0x3
- 717 0033 08       		.uleb128 0x8
- 718 0034 00       		.byte	0
- 719 0035 00       		.byte	0
- 720 0036 05       		.uleb128 0x5
- 721 0037 16       		.uleb128 0x16
- 722 0038 00       		.byte	0
- 723 0039 03       		.uleb128 0x3
- 724 003a 0E       		.uleb128 0xe
- 725 003b 3A       		.uleb128 0x3a
- 726 003c 0B       		.uleb128 0xb
- 727 003d 3B       		.uleb128 0x3b
- 728 003e 05       		.uleb128 0x5
- 729 003f 49       		.uleb128 0x49
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 15
+ 624 02c7 0D       		.uleb128 0xd
+ 625 02c8 DE000000 		.4byte	.LVL15
+ 626 02cc A6030000 		.4byte	0x3a6
+ 627 02d0 0C       		.uleb128 0xc
+ 628 02d1 01       		.uleb128 0x1
+ 629 02d2 50       		.byte	0x50
+ 630 02d3 02       		.uleb128 0x2
+ 631 02d4 74       		.byte	0x74
+ 632 02d5 00       		.sleb128 0
+ 633 02d6 0C       		.uleb128 0xc
+ 634 02d7 01       		.uleb128 0x1
+ 635 02d8 51       		.byte	0x51
+ 636 02d9 01       		.uleb128 0x1
+ 637 02da 38       		.byte	0x38
+ 638 02db 00       		.byte	0
+ 639 02dc 00       		.byte	0
+ 640 02dd 0E       		.uleb128 0xe
+ 641 02de 08000000 		.4byte	.LVL0
+ 642 02e2 B1030000 		.4byte	0x3b1
+ 643 02e6 0D       		.uleb128 0xd
+ 644 02e7 12000000 		.4byte	.LVL1
+ 645 02eb BC030000 		.4byte	0x3bc
+ 646 02ef 0C       		.uleb128 0xc
+ 647 02f0 01       		.uleb128 0x1
+ 648 02f1 50       		.byte	0x50
+ 649 02f2 01       		.uleb128 0x1
+ 650 02f3 48       		.byte	0x48
+ 651 02f4 0C       		.uleb128 0xc
+ 652 02f5 01       		.uleb128 0x1
+ 653 02f6 51       		.byte	0x51
+ 654 02f7 02       		.uleb128 0x2
+ 655 02f8 08       		.byte	0x8
+ 656 02f9 27       		.byte	0x27
+ 657 02fa 0C       		.uleb128 0xc
+ 658 02fb 01       		.uleb128 0x1
+ 659 02fc 52       		.byte	0x52
+ 660 02fd 05       		.uleb128 0x5
+ 661 02fe 03       		.byte	0x3
+ 662 02ff 00000000 		.4byte	statusReg
+ 663 0303 00       		.byte	0
+ 664 0304 00       		.byte	0
+ 665 0305 0F       		.uleb128 0xf
+ 666 0306 D9010000 		.4byte	.LASF27
+ 667 030a 06       		.byte	0x6
+ 668 030b 1207     		.2byte	0x712
+ 669 030d 11030000 		.4byte	0x311
+ 670 0311 10       		.uleb128 0x10
+ 671 0312 A2000000 		.4byte	0xa2
+ 672 0316 11       		.uleb128 0x11
+ 673 0317 8C000000 		.4byte	0x8c
+ 674 031b 26030000 		.4byte	0x326
+ 675 031f 12       		.uleb128 0x12
+ 676 0320 D5000000 		.4byte	0xd5
+ 677 0324 07       		.byte	0x7
+ 678 0325 00       		.byte	0
+ 679 0326 13       		.uleb128 0x13
+ 680 0327 1D020000 		.4byte	.LASF28
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 14
 
 
- 730 0040 13       		.uleb128 0x13
- 731 0041 00       		.byte	0
- 732 0042 00       		.byte	0
- 733 0043 06       		.uleb128 0x6
- 734 0044 04       		.uleb128 0x4
- 735 0045 01       		.byte	0x1
- 736 0046 0B       		.uleb128 0xb
- 737 0047 0B       		.uleb128 0xb
- 738 0048 49       		.uleb128 0x49
- 739 0049 13       		.uleb128 0x13
- 740 004a 3A       		.uleb128 0x3a
- 741 004b 0B       		.uleb128 0xb
- 742 004c 3B       		.uleb128 0x3b
- 743 004d 0B       		.uleb128 0xb
- 744 004e 01       		.uleb128 0x1
- 745 004f 13       		.uleb128 0x13
- 746 0050 00       		.byte	0
- 747 0051 00       		.byte	0
- 748 0052 07       		.uleb128 0x7
- 749 0053 28       		.uleb128 0x28
- 750 0054 00       		.byte	0
- 751 0055 03       		.uleb128 0x3
- 752 0056 0E       		.uleb128 0xe
- 753 0057 1C       		.uleb128 0x1c
- 754 0058 0B       		.uleb128 0xb
- 755 0059 00       		.byte	0
- 756 005a 00       		.byte	0
- 757 005b 08       		.uleb128 0x8
- 758 005c 2E       		.uleb128 0x2e
- 759 005d 01       		.byte	0x1
- 760 005e 3F       		.uleb128 0x3f
- 761 005f 19       		.uleb128 0x19
- 762 0060 03       		.uleb128 0x3
- 763 0061 0E       		.uleb128 0xe
- 764 0062 3A       		.uleb128 0x3a
- 765 0063 0B       		.uleb128 0xb
- 766 0064 3B       		.uleb128 0x3b
- 767 0065 0B       		.uleb128 0xb
- 768 0066 27       		.uleb128 0x27
- 769 0067 19       		.uleb128 0x19
- 770 0068 11       		.uleb128 0x11
- 771 0069 01       		.uleb128 0x1
- 772 006a 12       		.uleb128 0x12
- 773 006b 06       		.uleb128 0x6
- 774 006c 40       		.uleb128 0x40
- 775 006d 18       		.uleb128 0x18
- 776 006e 9742     		.uleb128 0x2117
- 777 0070 19       		.uleb128 0x19
- 778 0071 01       		.uleb128 0x1
- 779 0072 13       		.uleb128 0x13
- 780 0073 00       		.byte	0
- 781 0074 00       		.byte	0
- 782 0075 09       		.uleb128 0x9
- 783 0076 0B       		.uleb128 0xb
- 784 0077 01       		.byte	0x1
- 785 0078 11       		.uleb128 0x11
- 786 0079 01       		.uleb128 0x1
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 16
+ 681 032b 07       		.byte	0x7
+ 682 032c 1E       		.byte	0x1e
+ 683 032d 16030000 		.4byte	0x316
+ 684 0331 05       		.uleb128 0x5
+ 685 0332 03       		.byte	0x3
+ 686 0333 00000000 		.4byte	dataBuffer
+ 687 0337 11       		.uleb128 0x11
+ 688 0338 8C000000 		.4byte	0x8c
+ 689 033c 47030000 		.4byte	0x347
+ 690 0340 12       		.uleb128 0x12
+ 691 0341 D5000000 		.4byte	0xd5
+ 692 0345 01       		.byte	0x1
+ 693 0346 00       		.byte	0
+ 694 0347 13       		.uleb128 0x13
+ 695 0348 CE010000 		.4byte	.LASF29
+ 696 034c 07       		.byte	0x7
+ 697 034d 21       		.byte	0x21
+ 698 034e 37030000 		.4byte	0x337
+ 699 0352 05       		.uleb128 0x5
+ 700 0353 03       		.byte	0x3
+ 701 0354 00000000 		.4byte	tempBuffer
+ 702 0358 13       		.uleb128 0x13
+ 703 0359 0A000000 		.4byte	.LASF30
+ 704 035d 07       		.byte	0x7
+ 705 035e 24       		.byte	0x24
+ 706 035f AD000000 		.4byte	0xad
+ 707 0363 05       		.uleb128 0x5
+ 708 0364 03       		.byte	0x3
+ 709 0365 00000000 		.4byte	statusReg
+ 710 0369 13       		.uleb128 0x13
+ 711 036a 6D020000 		.4byte	.LASF31
+ 712 036e 07       		.byte	0x7
+ 713 036f 27       		.byte	0x27
+ 714 0370 F5000000 		.4byte	0xf5
+ 715 0374 05       		.uleb128 0x5
+ 716 0375 03       		.byte	0x3
+ 717 0376 00000000 		.4byte	error
+ 718 037a 14       		.uleb128 0x14
+ 719 037b FC010000 		.4byte	.LASF32
+ 720 037f FC010000 		.4byte	.LASF32
+ 721 0383 08       		.byte	0x8
+ 722 0384 4D       		.byte	0x4d
+ 723 0385 14       		.uleb128 0x14
+ 724 0386 C7020000 		.4byte	.LASF33
+ 725 038a C7020000 		.4byte	.LASF33
+ 726 038e 09       		.byte	0x9
+ 727 038f 19       		.byte	0x19
+ 728 0390 14       		.uleb128 0x14
+ 729 0391 AE010000 		.4byte	.LASF34
+ 730 0395 AE010000 		.4byte	.LASF34
+ 731 0399 09       		.byte	0x9
+ 732 039a 18       		.byte	0x18
+ 733 039b 14       		.uleb128 0x14
+ 734 039c 31000000 		.4byte	.LASF35
+ 735 03a0 31000000 		.4byte	.LASF35
+ 736 03a4 09       		.byte	0x9
+ 737 03a5 1A       		.byte	0x1a
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 15
 
 
- 787 007a 12       		.uleb128 0x12
- 788 007b 06       		.uleb128 0x6
- 789 007c 01       		.uleb128 0x1
- 790 007d 13       		.uleb128 0x13
- 791 007e 00       		.byte	0
- 792 007f 00       		.byte	0
- 793 0080 0A       		.uleb128 0xa
- 794 0081 34       		.uleb128 0x34
- 795 0082 00       		.byte	0
- 796 0083 03       		.uleb128 0x3
- 797 0084 0E       		.uleb128 0xe
- 798 0085 3A       		.uleb128 0x3a
- 799 0086 0B       		.uleb128 0xb
- 800 0087 3B       		.uleb128 0x3b
- 801 0088 0B       		.uleb128 0xb
- 802 0089 49       		.uleb128 0x49
- 803 008a 13       		.uleb128 0x13
- 804 008b 02       		.uleb128 0x2
- 805 008c 17       		.uleb128 0x17
- 806 008d 00       		.byte	0
- 807 008e 00       		.byte	0
- 808 008f 0B       		.uleb128 0xb
- 809 0090 898201   		.uleb128 0x4109
- 810 0093 01       		.byte	0x1
- 811 0094 11       		.uleb128 0x11
- 812 0095 01       		.uleb128 0x1
- 813 0096 31       		.uleb128 0x31
- 814 0097 13       		.uleb128 0x13
- 815 0098 01       		.uleb128 0x1
- 816 0099 13       		.uleb128 0x13
- 817 009a 00       		.byte	0
- 818 009b 00       		.byte	0
- 819 009c 0C       		.uleb128 0xc
- 820 009d 8A8201   		.uleb128 0x410a
- 821 00a0 00       		.byte	0
- 822 00a1 02       		.uleb128 0x2
- 823 00a2 18       		.uleb128 0x18
- 824 00a3 9142     		.uleb128 0x2111
- 825 00a5 18       		.uleb128 0x18
- 826 00a6 00       		.byte	0
- 827 00a7 00       		.byte	0
- 828 00a8 0D       		.uleb128 0xd
- 829 00a9 898201   		.uleb128 0x4109
- 830 00ac 01       		.byte	0x1
- 831 00ad 11       		.uleb128 0x11
- 832 00ae 01       		.uleb128 0x1
- 833 00af 31       		.uleb128 0x31
- 834 00b0 13       		.uleb128 0x13
- 835 00b1 00       		.byte	0
- 836 00b2 00       		.byte	0
- 837 00b3 0E       		.uleb128 0xe
- 838 00b4 898201   		.uleb128 0x4109
- 839 00b7 00       		.byte	0
- 840 00b8 11       		.uleb128 0x11
- 841 00b9 01       		.uleb128 0x1
- 842 00ba 31       		.uleb128 0x31
- 843 00bb 13       		.uleb128 0x13
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 17
+ 738 03a6 14       		.uleb128 0x14
+ 739 03a7 3E000000 		.4byte	.LASF36
+ 740 03ab 3E000000 		.4byte	.LASF36
+ 741 03af 0A       		.byte	0xa
+ 742 03b0 8C       		.byte	0x8c
+ 743 03b1 14       		.uleb128 0x14
+ 744 03b2 5C000000 		.4byte	.LASF37
+ 745 03b6 5C000000 		.4byte	.LASF37
+ 746 03ba 0B       		.byte	0xb
+ 747 03bb 5E       		.byte	0x5e
+ 748 03bc 14       		.uleb128 0x14
+ 749 03bd 8C020000 		.4byte	.LASF38
+ 750 03c1 8C020000 		.4byte	.LASF38
+ 751 03c5 08       		.byte	0x8
+ 752 03c6 43       		.byte	0x43
+ 753 03c7 00       		.byte	0
+ 754              		.section	.debug_abbrev,"",%progbits
+ 755              	.Ldebug_abbrev0:
+ 756 0000 01       		.uleb128 0x1
+ 757 0001 11       		.uleb128 0x11
+ 758 0002 01       		.byte	0x1
+ 759 0003 25       		.uleb128 0x25
+ 760 0004 0E       		.uleb128 0xe
+ 761 0005 13       		.uleb128 0x13
+ 762 0006 0B       		.uleb128 0xb
+ 763 0007 03       		.uleb128 0x3
+ 764 0008 0E       		.uleb128 0xe
+ 765 0009 1B       		.uleb128 0x1b
+ 766 000a 0E       		.uleb128 0xe
+ 767 000b 55       		.uleb128 0x55
+ 768 000c 17       		.uleb128 0x17
+ 769 000d 11       		.uleb128 0x11
+ 770 000e 01       		.uleb128 0x1
+ 771 000f 10       		.uleb128 0x10
+ 772 0010 17       		.uleb128 0x17
+ 773 0011 00       		.byte	0
+ 774 0012 00       		.byte	0
+ 775 0013 02       		.uleb128 0x2
+ 776 0014 24       		.uleb128 0x24
+ 777 0015 00       		.byte	0
+ 778 0016 0B       		.uleb128 0xb
+ 779 0017 0B       		.uleb128 0xb
+ 780 0018 3E       		.uleb128 0x3e
+ 781 0019 0B       		.uleb128 0xb
+ 782 001a 03       		.uleb128 0x3
+ 783 001b 0E       		.uleb128 0xe
+ 784 001c 00       		.byte	0
+ 785 001d 00       		.byte	0
+ 786 001e 03       		.uleb128 0x3
+ 787 001f 16       		.uleb128 0x16
+ 788 0020 00       		.byte	0
+ 789 0021 03       		.uleb128 0x3
+ 790 0022 0E       		.uleb128 0xe
+ 791 0023 3A       		.uleb128 0x3a
+ 792 0024 0B       		.uleb128 0xb
+ 793 0025 3B       		.uleb128 0x3b
+ 794 0026 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 16
 
 
- 844 00bc 00       		.byte	0
- 845 00bd 00       		.byte	0
- 846 00be 0F       		.uleb128 0xf
- 847 00bf 34       		.uleb128 0x34
- 848 00c0 00       		.byte	0
- 849 00c1 03       		.uleb128 0x3
- 850 00c2 0E       		.uleb128 0xe
- 851 00c3 3A       		.uleb128 0x3a
- 852 00c4 0B       		.uleb128 0xb
- 853 00c5 3B       		.uleb128 0x3b
- 854 00c6 05       		.uleb128 0x5
- 855 00c7 49       		.uleb128 0x49
- 856 00c8 13       		.uleb128 0x13
- 857 00c9 3F       		.uleb128 0x3f
- 858 00ca 19       		.uleb128 0x19
- 859 00cb 3C       		.uleb128 0x3c
- 860 00cc 19       		.uleb128 0x19
- 861 00cd 00       		.byte	0
- 862 00ce 00       		.byte	0
- 863 00cf 10       		.uleb128 0x10
- 864 00d0 35       		.uleb128 0x35
- 865 00d1 00       		.byte	0
- 866 00d2 49       		.uleb128 0x49
- 867 00d3 13       		.uleb128 0x13
- 868 00d4 00       		.byte	0
- 869 00d5 00       		.byte	0
- 870 00d6 11       		.uleb128 0x11
- 871 00d7 34       		.uleb128 0x34
- 872 00d8 00       		.byte	0
- 873 00d9 03       		.uleb128 0x3
- 874 00da 0E       		.uleb128 0xe
- 875 00db 3A       		.uleb128 0x3a
- 876 00dc 0B       		.uleb128 0xb
- 877 00dd 3B       		.uleb128 0x3b
- 878 00de 0B       		.uleb128 0xb
- 879 00df 49       		.uleb128 0x49
- 880 00e0 13       		.uleb128 0x13
- 881 00e1 3F       		.uleb128 0x3f
- 882 00e2 19       		.uleb128 0x19
- 883 00e3 02       		.uleb128 0x2
- 884 00e4 18       		.uleb128 0x18
- 885 00e5 00       		.byte	0
- 886 00e6 00       		.byte	0
- 887 00e7 12       		.uleb128 0x12
- 888 00e8 01       		.uleb128 0x1
- 889 00e9 01       		.byte	0x1
- 890 00ea 49       		.uleb128 0x49
- 891 00eb 13       		.uleb128 0x13
- 892 00ec 01       		.uleb128 0x1
- 893 00ed 13       		.uleb128 0x13
- 894 00ee 00       		.byte	0
- 895 00ef 00       		.byte	0
- 896 00f0 13       		.uleb128 0x13
- 897 00f1 21       		.uleb128 0x21
- 898 00f2 00       		.byte	0
- 899 00f3 49       		.uleb128 0x49
- 900 00f4 13       		.uleb128 0x13
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 18
+ 795 0027 49       		.uleb128 0x49
+ 796 0028 13       		.uleb128 0x13
+ 797 0029 00       		.byte	0
+ 798 002a 00       		.byte	0
+ 799 002b 04       		.uleb128 0x4
+ 800 002c 24       		.uleb128 0x24
+ 801 002d 00       		.byte	0
+ 802 002e 0B       		.uleb128 0xb
+ 803 002f 0B       		.uleb128 0xb
+ 804 0030 3E       		.uleb128 0x3e
+ 805 0031 0B       		.uleb128 0xb
+ 806 0032 03       		.uleb128 0x3
+ 807 0033 08       		.uleb128 0x8
+ 808 0034 00       		.byte	0
+ 809 0035 00       		.byte	0
+ 810 0036 05       		.uleb128 0x5
+ 811 0037 16       		.uleb128 0x16
+ 812 0038 00       		.byte	0
+ 813 0039 03       		.uleb128 0x3
+ 814 003a 0E       		.uleb128 0xe
+ 815 003b 3A       		.uleb128 0x3a
+ 816 003c 0B       		.uleb128 0xb
+ 817 003d 3B       		.uleb128 0x3b
+ 818 003e 05       		.uleb128 0x5
+ 819 003f 49       		.uleb128 0x49
+ 820 0040 13       		.uleb128 0x13
+ 821 0041 00       		.byte	0
+ 822 0042 00       		.byte	0
+ 823 0043 06       		.uleb128 0x6
+ 824 0044 04       		.uleb128 0x4
+ 825 0045 01       		.byte	0x1
+ 826 0046 0B       		.uleb128 0xb
+ 827 0047 0B       		.uleb128 0xb
+ 828 0048 49       		.uleb128 0x49
+ 829 0049 13       		.uleb128 0x13
+ 830 004a 3A       		.uleb128 0x3a
+ 831 004b 0B       		.uleb128 0xb
+ 832 004c 3B       		.uleb128 0x3b
+ 833 004d 0B       		.uleb128 0xb
+ 834 004e 01       		.uleb128 0x1
+ 835 004f 13       		.uleb128 0x13
+ 836 0050 00       		.byte	0
+ 837 0051 00       		.byte	0
+ 838 0052 07       		.uleb128 0x7
+ 839 0053 28       		.uleb128 0x28
+ 840 0054 00       		.byte	0
+ 841 0055 03       		.uleb128 0x3
+ 842 0056 0E       		.uleb128 0xe
+ 843 0057 1C       		.uleb128 0x1c
+ 844 0058 0B       		.uleb128 0xb
+ 845 0059 00       		.byte	0
+ 846 005a 00       		.byte	0
+ 847 005b 08       		.uleb128 0x8
+ 848 005c 2E       		.uleb128 0x2e
+ 849 005d 01       		.byte	0x1
+ 850 005e 3F       		.uleb128 0x3f
+ 851 005f 19       		.uleb128 0x19
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 17
 
 
- 901 00f5 2F       		.uleb128 0x2f
- 902 00f6 0B       		.uleb128 0xb
- 903 00f7 00       		.byte	0
- 904 00f8 00       		.byte	0
- 905 00f9 14       		.uleb128 0x14
- 906 00fa 2E       		.uleb128 0x2e
- 907 00fb 00       		.byte	0
- 908 00fc 3F       		.uleb128 0x3f
- 909 00fd 19       		.uleb128 0x19
- 910 00fe 3C       		.uleb128 0x3c
- 911 00ff 19       		.uleb128 0x19
- 912 0100 6E       		.uleb128 0x6e
- 913 0101 0E       		.uleb128 0xe
- 914 0102 03       		.uleb128 0x3
- 915 0103 0E       		.uleb128 0xe
- 916 0104 3A       		.uleb128 0x3a
- 917 0105 0B       		.uleb128 0xb
- 918 0106 3B       		.uleb128 0x3b
- 919 0107 0B       		.uleb128 0xb
- 920 0108 00       		.byte	0
- 921 0109 00       		.byte	0
- 922 010a 00       		.byte	0
- 923              		.section	.debug_loc,"",%progbits
- 924              	.Ldebug_loc0:
- 925              	.LLST0:
- 926 0000 44000000 		.4byte	.LVL3
- 927 0004 57000000 		.4byte	.LVL4-1
- 928 0008 0100     		.2byte	0x1
- 929 000a 50       		.byte	0x50
- 930 000b 00000000 		.4byte	0
- 931 000f 00000000 		.4byte	0
- 932              	.LLST1:
- 933 0013 76000000 		.4byte	.LVL6
- 934 0017 89000000 		.4byte	.LVL7-1
- 935 001b 0100     		.2byte	0x1
- 936 001d 50       		.byte	0x50
- 937 001e 00000000 		.4byte	0
- 938 0022 00000000 		.4byte	0
- 939              	.LLST2:
- 940 0026 A8000000 		.4byte	.LVL9
- 941 002a BB000000 		.4byte	.LVL10-1
- 942 002e 0100     		.2byte	0x1
- 943 0030 50       		.byte	0x50
- 944 0031 00000000 		.4byte	0
- 945 0035 00000000 		.4byte	0
- 946              		.section	.debug_aranges,"",%progbits
- 947 0000 1C000000 		.4byte	0x1c
- 948 0004 0200     		.2byte	0x2
- 949 0006 00000000 		.4byte	.Ldebug_info0
- 950 000a 04       		.byte	0x4
- 951 000b 00       		.byte	0
- 952 000c 0000     		.2byte	0
- 953 000e 0000     		.2byte	0
- 954 0010 00000000 		.4byte	.LFB63
- 955 0014 D0000000 		.4byte	.LFE63-.LFB63
- 956 0018 00000000 		.4byte	0
- 957 001c 00000000 		.4byte	0
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 19
+ 852 0060 03       		.uleb128 0x3
+ 853 0061 0E       		.uleb128 0xe
+ 854 0062 3A       		.uleb128 0x3a
+ 855 0063 0B       		.uleb128 0xb
+ 856 0064 3B       		.uleb128 0x3b
+ 857 0065 0B       		.uleb128 0xb
+ 858 0066 27       		.uleb128 0x27
+ 859 0067 19       		.uleb128 0x19
+ 860 0068 11       		.uleb128 0x11
+ 861 0069 01       		.uleb128 0x1
+ 862 006a 12       		.uleb128 0x12
+ 863 006b 06       		.uleb128 0x6
+ 864 006c 40       		.uleb128 0x40
+ 865 006d 18       		.uleb128 0x18
+ 866 006e 9742     		.uleb128 0x2117
+ 867 0070 19       		.uleb128 0x19
+ 868 0071 01       		.uleb128 0x1
+ 869 0072 13       		.uleb128 0x13
+ 870 0073 00       		.byte	0
+ 871 0074 00       		.byte	0
+ 872 0075 09       		.uleb128 0x9
+ 873 0076 0B       		.uleb128 0xb
+ 874 0077 01       		.byte	0x1
+ 875 0078 11       		.uleb128 0x11
+ 876 0079 01       		.uleb128 0x1
+ 877 007a 12       		.uleb128 0x12
+ 878 007b 06       		.uleb128 0x6
+ 879 007c 01       		.uleb128 0x1
+ 880 007d 13       		.uleb128 0x13
+ 881 007e 00       		.byte	0
+ 882 007f 00       		.byte	0
+ 883 0080 0A       		.uleb128 0xa
+ 884 0081 34       		.uleb128 0x34
+ 885 0082 00       		.byte	0
+ 886 0083 03       		.uleb128 0x3
+ 887 0084 0E       		.uleb128 0xe
+ 888 0085 3A       		.uleb128 0x3a
+ 889 0086 0B       		.uleb128 0xb
+ 890 0087 3B       		.uleb128 0x3b
+ 891 0088 0B       		.uleb128 0xb
+ 892 0089 49       		.uleb128 0x49
+ 893 008a 13       		.uleb128 0x13
+ 894 008b 02       		.uleb128 0x2
+ 895 008c 17       		.uleb128 0x17
+ 896 008d 00       		.byte	0
+ 897 008e 00       		.byte	0
+ 898 008f 0B       		.uleb128 0xb
+ 899 0090 898201   		.uleb128 0x4109
+ 900 0093 01       		.byte	0x1
+ 901 0094 11       		.uleb128 0x11
+ 902 0095 01       		.uleb128 0x1
+ 903 0096 31       		.uleb128 0x31
+ 904 0097 13       		.uleb128 0x13
+ 905 0098 01       		.uleb128 0x1
+ 906 0099 13       		.uleb128 0x13
+ 907 009a 00       		.byte	0
+ 908 009b 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 18
 
 
- 958              		.section	.debug_ranges,"",%progbits
- 959              	.Ldebug_ranges0:
- 960 0000 00000000 		.4byte	.LFB63
- 961 0004 D0000000 		.4byte	.LFE63
- 962 0008 00000000 		.4byte	0
- 963 000c 00000000 		.4byte	0
- 964              		.section	.debug_line,"",%progbits
- 965              	.Ldebug_line0:
- 966 0000 C1010000 		.section	.debug_str,"MS",%progbits,1
- 966      02009B01 
- 966      00000201 
- 966      FB0E0D00 
- 966      01010101 
- 967              	.LASF2:
- 968 0000 5F5F7569 		.ascii	"__uint8_t\000"
- 968      6E74385F 
- 968      7400
- 969              	.LASF28:
- 970 000a 73746174 		.ascii	"statusReg\000"
- 970      75735265 
- 970      6700
- 971              	.LASF3:
- 972 0014 5F5F696E 		.ascii	"__int16_t\000"
- 972      7431365F 
- 972      7400
- 973              	.LASF6:
- 974 001e 5F5F696E 		.ascii	"__int32_t\000"
- 974      7433325F 
- 974      7400
- 975              	.LASF7:
- 976 0028 6C6F6E67 		.ascii	"long int\000"
- 976      20696E74 
- 976      00
- 977              	.LASF23:
- 978 0031 4572726F 		.ascii	"ErrorCode\000"
- 978      72436F64 
- 978      6500
- 979              	.LASF35:
- 980 003b 4953525F 		.ascii	"ISR_Timer_ReadStatusRegister\000"
- 980      54696D65 
- 980      725F5265 
- 980      61645374 
- 980      61747573 
- 981              	.LASF39:
- 982 0058 433A5C55 		.ascii	"C:\\Users\\Lory\\Desktop\\psoc_assignment_git\\PSoC"
- 982      73657273 
- 982      5C4C6F72 
- 982      795C4465 
- 982      736B746F 
- 983 0086 5F355F41 		.ascii	"_5_Assignment\\AY1920_II_HW_05_GUALNIERA_LORENZO\\A"
- 983      73736967 
- 983      6E6D656E 
- 983      745C4159 
- 983      31393230 
- 984 00b7 59313932 		.ascii	"Y1920_II_HW_05_PROJ_2.cydsn\000"
- 984      305F4949 
- 984      5F48575F 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 20
+ 909 009c 0C       		.uleb128 0xc
+ 910 009d 8A8201   		.uleb128 0x410a
+ 911 00a0 00       		.byte	0
+ 912 00a1 02       		.uleb128 0x2
+ 913 00a2 18       		.uleb128 0x18
+ 914 00a3 9142     		.uleb128 0x2111
+ 915 00a5 18       		.uleb128 0x18
+ 916 00a6 00       		.byte	0
+ 917 00a7 00       		.byte	0
+ 918 00a8 0D       		.uleb128 0xd
+ 919 00a9 898201   		.uleb128 0x4109
+ 920 00ac 01       		.byte	0x1
+ 921 00ad 11       		.uleb128 0x11
+ 922 00ae 01       		.uleb128 0x1
+ 923 00af 31       		.uleb128 0x31
+ 924 00b0 13       		.uleb128 0x13
+ 925 00b1 00       		.byte	0
+ 926 00b2 00       		.byte	0
+ 927 00b3 0E       		.uleb128 0xe
+ 928 00b4 898201   		.uleb128 0x4109
+ 929 00b7 00       		.byte	0
+ 930 00b8 11       		.uleb128 0x11
+ 931 00b9 01       		.uleb128 0x1
+ 932 00ba 31       		.uleb128 0x31
+ 933 00bb 13       		.uleb128 0x13
+ 934 00bc 00       		.byte	0
+ 935 00bd 00       		.byte	0
+ 936 00be 0F       		.uleb128 0xf
+ 937 00bf 34       		.uleb128 0x34
+ 938 00c0 00       		.byte	0
+ 939 00c1 03       		.uleb128 0x3
+ 940 00c2 0E       		.uleb128 0xe
+ 941 00c3 3A       		.uleb128 0x3a
+ 942 00c4 0B       		.uleb128 0xb
+ 943 00c5 3B       		.uleb128 0x3b
+ 944 00c6 05       		.uleb128 0x5
+ 945 00c7 49       		.uleb128 0x49
+ 946 00c8 13       		.uleb128 0x13
+ 947 00c9 3F       		.uleb128 0x3f
+ 948 00ca 19       		.uleb128 0x19
+ 949 00cb 3C       		.uleb128 0x3c
+ 950 00cc 19       		.uleb128 0x19
+ 951 00cd 00       		.byte	0
+ 952 00ce 00       		.byte	0
+ 953 00cf 10       		.uleb128 0x10
+ 954 00d0 35       		.uleb128 0x35
+ 955 00d1 00       		.byte	0
+ 956 00d2 49       		.uleb128 0x49
+ 957 00d3 13       		.uleb128 0x13
+ 958 00d4 00       		.byte	0
+ 959 00d5 00       		.byte	0
+ 960 00d6 11       		.uleb128 0x11
+ 961 00d7 01       		.uleb128 0x1
+ 962 00d8 01       		.byte	0x1
+ 963 00d9 49       		.uleb128 0x49
+ 964 00da 13       		.uleb128 0x13
+ 965 00db 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 19
 
 
- 984      30355F50 
- 984      524F4A5F 
- 985              	.LASF26:
- 986 00d3 7A417869 		.ascii	"zAxis\000"
- 986      7300
- 987              	.LASF16:
- 988 00d9 666C6F61 		.ascii	"float\000"
- 988      7400
- 989              	.LASF1:
- 990 00df 756E7369 		.ascii	"unsigned char\000"
- 990      676E6564 
- 990      20636861 
- 990      7200
- 991              	.LASF37:
- 992 00ed 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
- 992      43313120 
- 992      352E342E 
- 992      31203230 
- 992      31363036 
- 993 0120 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
- 993      20726576 
- 993      6973696F 
- 993      6E203233 
- 993      37373135 
- 994 0153 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
- 994      66756E63 
- 994      74696F6E 
- 994      2D736563 
- 994      74696F6E 
- 995              	.LASF8:
- 996 017b 6C6F6E67 		.ascii	"long unsigned int\000"
- 996      20756E73 
- 996      69676E65 
- 996      6420696E 
- 996      7400
- 997              	.LASF34:
- 998 018d 4D696E4D 		.ascii	"MinMaxScaler\000"
- 998      61785363 
- 998      616C6572 
- 998      00
- 999              	.LASF5:
- 1000 019a 73686F72 		.ascii	"short unsigned int\000"
- 1000      7420756E 
- 1000      7369676E 
- 1000      65642069 
- 1000      6E7400
- 1001              	.LASF31:
- 1002 01ad 74656D70 		.ascii	"tempBuffer\000"
- 1002      42756666 
- 1002      657200
- 1003              	.LASF27:
- 1004 01b8 49544D5F 		.ascii	"ITM_RxBuffer\000"
- 1004      52784275 
- 1004      66666572 
- 1004      00
- 1005              	.LASF40:
- 1006 01c5 4953525F 		.ascii	"ISR_ACC_CUSTOM\000"
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 21
+ 966 00dc 13       		.uleb128 0x13
+ 967 00dd 00       		.byte	0
+ 968 00de 00       		.byte	0
+ 969 00df 12       		.uleb128 0x12
+ 970 00e0 21       		.uleb128 0x21
+ 971 00e1 00       		.byte	0
+ 972 00e2 49       		.uleb128 0x49
+ 973 00e3 13       		.uleb128 0x13
+ 974 00e4 2F       		.uleb128 0x2f
+ 975 00e5 0B       		.uleb128 0xb
+ 976 00e6 00       		.byte	0
+ 977 00e7 00       		.byte	0
+ 978 00e8 13       		.uleb128 0x13
+ 979 00e9 34       		.uleb128 0x34
+ 980 00ea 00       		.byte	0
+ 981 00eb 03       		.uleb128 0x3
+ 982 00ec 0E       		.uleb128 0xe
+ 983 00ed 3A       		.uleb128 0x3a
+ 984 00ee 0B       		.uleb128 0xb
+ 985 00ef 3B       		.uleb128 0x3b
+ 986 00f0 0B       		.uleb128 0xb
+ 987 00f1 49       		.uleb128 0x49
+ 988 00f2 13       		.uleb128 0x13
+ 989 00f3 3F       		.uleb128 0x3f
+ 990 00f4 19       		.uleb128 0x19
+ 991 00f5 02       		.uleb128 0x2
+ 992 00f6 18       		.uleb128 0x18
+ 993 00f7 00       		.byte	0
+ 994 00f8 00       		.byte	0
+ 995 00f9 14       		.uleb128 0x14
+ 996 00fa 2E       		.uleb128 0x2e
+ 997 00fb 00       		.byte	0
+ 998 00fc 3F       		.uleb128 0x3f
+ 999 00fd 19       		.uleb128 0x19
+ 1000 00fe 3C       		.uleb128 0x3c
+ 1001 00ff 19       		.uleb128 0x19
+ 1002 0100 6E       		.uleb128 0x6e
+ 1003 0101 0E       		.uleb128 0xe
+ 1004 0102 03       		.uleb128 0x3
+ 1005 0103 0E       		.uleb128 0xe
+ 1006 0104 3A       		.uleb128 0x3a
+ 1007 0105 0B       		.uleb128 0xb
+ 1008 0106 3B       		.uleb128 0x3b
+ 1009 0107 0B       		.uleb128 0xb
+ 1010 0108 00       		.byte	0
+ 1011 0109 00       		.byte	0
+ 1012 010a 00       		.byte	0
+ 1013              		.section	.debug_loc,"",%progbits
+ 1014              	.Ldebug_loc0:
+ 1015              	.LLST0:
+ 1016 0000 44000000 		.4byte	.LVL3
+ 1017 0004 57000000 		.4byte	.LVL4-1
+ 1018 0008 0100     		.2byte	0x1
+ 1019 000a 50       		.byte	0x50
+ 1020 000b 5A000000 		.4byte	.LVL5
+ 1021 000f DE000000 		.4byte	.LVL15
+ 1022 0013 0100     		.2byte	0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 20
 
 
- 1006      4143435F 
- 1006      43555354 
- 1006      4F4D00
- 1007              	.LASF17:
- 1008 01d4 646F7562 		.ascii	"double\000"
- 1008      6C6500
- 1009              	.LASF32:
- 1010 01db 4932435F 		.ascii	"I2C_Peripheral_ReadRegisterMulti\000"
- 1010      50657269 
- 1010      70686572 
- 1010      616C5F52 
- 1010      65616452 
- 1011              	.LASF30:
- 1012 01fc 64617461 		.ascii	"dataBuffer\000"
- 1012      42756666 
- 1012      657200
- 1013              	.LASF11:
- 1014 0207 756E7369 		.ascii	"unsigned int\000"
- 1014      676E6564 
- 1014      20696E74 
- 1014      00
- 1015              	.LASF10:
- 1016 0214 6C6F6E67 		.ascii	"long long unsigned int\000"
- 1016      206C6F6E 
- 1016      6720756E 
- 1016      7369676E 
- 1016      65642069 
- 1017              	.LASF12:
- 1018 022b 75696E74 		.ascii	"uint8_t\000"
- 1018      385F7400 
- 1019              	.LASF13:
- 1020 0233 696E7431 		.ascii	"int16_t\000"
- 1020      365F7400 
- 1021              	.LASF14:
- 1022 023b 696E7433 		.ascii	"int32_t\000"
- 1022      325F7400 
- 1023              	.LASF20:
- 1024 0243 73697A65 		.ascii	"sizetype\000"
- 1024      74797065 
- 1024      00
- 1025              	.LASF29:
- 1026 024c 6572726F 		.ascii	"error\000"
- 1026      7200
- 1027              	.LASF9:
- 1028 0252 6C6F6E67 		.ascii	"long long int\000"
- 1028      206C6F6E 
- 1028      6720696E 
- 1028      7400
- 1029              	.LASF24:
- 1030 0260 78417869 		.ascii	"xAxis\000"
- 1030      7300
- 1031              	.LASF18:
- 1032 0266 63686172 		.ascii	"char\000"
- 1032      00
- 1033              	.LASF36:
- 1034 026b 4932435F 		.ascii	"I2C_Peripheral_ReadRegister\000"
- 1034      50657269 
-ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccHYflDF.s 			page 22
+ 1023 0015 55       		.byte	0x55
+ 1024 0016 00000000 		.4byte	0
+ 1025 001a 00000000 		.4byte	0
+ 1026              	.LLST1:
+ 1027 001e 78000000 		.4byte	.LVL7
+ 1028 0022 8B000000 		.4byte	.LVL8-1
+ 1029 0026 0100     		.2byte	0x1
+ 1030 0028 50       		.byte	0x50
+ 1031 0029 8E000000 		.4byte	.LVL9
+ 1032 002d DE000000 		.4byte	.LVL15
+ 1033 0031 0100     		.2byte	0x1
+ 1034 0033 56       		.byte	0x56
+ 1035 0034 00000000 		.4byte	0
+ 1036 0038 00000000 		.4byte	0
+ 1037              	.LLST2:
+ 1038 003c AC000000 		.4byte	.LVL11
+ 1039 0040 BF000000 		.4byte	.LVL12-1
+ 1040 0044 0100     		.2byte	0x1
+ 1041 0046 50       		.byte	0x50
+ 1042 0047 C0000000 		.4byte	.LVL12
+ 1043 004b D2000000 		.4byte	.LVL13
+ 1044 004f 0100     		.2byte	0x1
+ 1045 0051 50       		.byte	0x50
+ 1046 0052 00000000 		.4byte	0
+ 1047 0056 00000000 		.4byte	0
+ 1048              		.section	.debug_aranges,"",%progbits
+ 1049 0000 1C000000 		.4byte	0x1c
+ 1050 0004 0200     		.2byte	0x2
+ 1051 0006 00000000 		.4byte	.Ldebug_info0
+ 1052 000a 04       		.byte	0x4
+ 1053 000b 00       		.byte	0
+ 1054 000c 0000     		.2byte	0
+ 1055 000e 0000     		.2byte	0
+ 1056 0010 00000000 		.4byte	.LFB63
+ 1057 0014 F8000000 		.4byte	.LFE63-.LFB63
+ 1058 0018 00000000 		.4byte	0
+ 1059 001c 00000000 		.4byte	0
+ 1060              		.section	.debug_ranges,"",%progbits
+ 1061              	.Ldebug_ranges0:
+ 1062 0000 00000000 		.4byte	.LFB63
+ 1063 0004 F8000000 		.4byte	.LFE63
+ 1064 0008 00000000 		.4byte	0
+ 1065 000c 00000000 		.4byte	0
+ 1066              		.section	.debug_line,"",%progbits
+ 1067              	.Ldebug_line0:
+ 1068 0000 EA010000 		.section	.debug_str,"MS",%progbits,1
+ 1068      0200C201 
+ 1068      00000201 
+ 1068      FB0E0D00 
+ 1068      01010101 
+ 1069              	.LASF2:
+ 1070 0000 5F5F7569 		.ascii	"__uint8_t\000"
+ 1070      6E74385F 
+ 1070      7400
+ 1071              	.LASF30:
+ 1072 000a 73746174 		.ascii	"statusReg\000"
+ 1072      75735265 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 21
 
 
- 1034      70686572 
- 1034      616C5F52 
- 1034      65616452 
- 1035              	.LASF4:
- 1036 0287 73686F72 		.ascii	"short int\000"
- 1036      7420696E 
- 1036      7400
- 1037              	.LASF15:
- 1038 0291 75696E74 		.ascii	"uint8\000"
- 1038      3800
- 1039              	.LASF21:
- 1040 0297 4E4F5F45 		.ascii	"NO_ERROR\000"
- 1040      52524F52 
- 1040      00
- 1041              	.LASF22:
- 1042 02a0 4552524F 		.ascii	"ERROR\000"
- 1042      5200
- 1043              	.LASF33:
- 1044 02a6 52696768 		.ascii	"RightAdjustVal\000"
- 1044      7441646A 
- 1044      75737456 
- 1044      616C00
- 1045              	.LASF19:
- 1046 02b5 6C6F6E67 		.ascii	"long double\000"
- 1046      20646F75 
- 1046      626C6500 
- 1047              	.LASF0:
- 1048 02c1 7369676E 		.ascii	"signed char\000"
- 1048      65642063 
- 1048      68617200 
- 1049              	.LASF25:
- 1050 02cd 79417869 		.ascii	"yAxis\000"
- 1050      7300
- 1051              	.LASF38:
- 1052 02d3 496E7465 		.ascii	"InterruptRoutines.c\000"
- 1052      72727570 
- 1052      74526F75 
- 1052      74696E65 
- 1052      732E6300 
- 1053              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
+ 1072      6700
+ 1073              	.LASF3:
+ 1074 0014 5F5F696E 		.ascii	"__int16_t\000"
+ 1074      7431365F 
+ 1074      7400
+ 1075              	.LASF6:
+ 1076 001e 5F5F696E 		.ascii	"__int32_t\000"
+ 1076      7433325F 
+ 1076      7400
+ 1077              	.LASF7:
+ 1078 0028 6C6F6E67 		.ascii	"long int\000"
+ 1078      20696E74 
+ 1078      00
+ 1079              	.LASF35:
+ 1080 0031 4C6F6164 		.ascii	"LoadAxesData\000"
+ 1080      41786573 
+ 1080      44617461 
+ 1080      00
+ 1081              	.LASF36:
+ 1082 003e 55415254 		.ascii	"UART_Debug_PutArray\000"
+ 1082      5F446562 
+ 1082      75675F50 
+ 1082      75744172 
+ 1082      72617900 
+ 1083              	.LASF23:
+ 1084 0052 4572726F 		.ascii	"ErrorCode\000"
+ 1084      72436F64 
+ 1084      6500
+ 1085              	.LASF37:
+ 1086 005c 4953525F 		.ascii	"ISR_Timer_ReadStatusRegister\000"
+ 1086      54696D65 
+ 1086      725F5265 
+ 1086      61645374 
+ 1086      61747573 
+ 1087              	.LASF41:
+ 1088 0079 433A5C55 		.ascii	"C:\\Users\\Lory\\Desktop\\psoc_assignment_git\\PSoC"
+ 1088      73657273 
+ 1088      5C4C6F72 
+ 1088      795C4465 
+ 1088      736B746F 
+ 1089 00a7 5F355F41 		.ascii	"_5_Assignment\\AY1920_II_HW_05_GUALNIERA_LORENZO\\A"
+ 1089      73736967 
+ 1089      6E6D656E 
+ 1089      745C4159 
+ 1089      31393230 
+ 1090 00d8 59313932 		.ascii	"Y1920_II_HW_05_PROJ_2.cydsn\000"
+ 1090      305F4949 
+ 1090      5F48575F 
+ 1090      30355F50 
+ 1090      524F4A5F 
+ 1091              	.LASF26:
+ 1092 00f4 7A417869 		.ascii	"zAxis\000"
+ 1092      7300
+ 1093              	.LASF16:
+ 1094 00fa 666C6F61 		.ascii	"float\000"
+ 1094      7400
+ 1095              	.LASF1:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 22
+
+
+ 1096 0100 756E7369 		.ascii	"unsigned char\000"
+ 1096      676E6564 
+ 1096      20636861 
+ 1096      7200
+ 1097              	.LASF39:
+ 1098 010e 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1098      43313120 
+ 1098      352E342E 
+ 1098      31203230 
+ 1098      31363036 
+ 1099 0141 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1099      20726576 
+ 1099      6973696F 
+ 1099      6E203233 
+ 1099      37373135 
+ 1100 0174 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1100      66756E63 
+ 1100      74696F6E 
+ 1100      2D736563 
+ 1100      74696F6E 
+ 1101              	.LASF8:
+ 1102 019c 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1102      20756E73 
+ 1102      69676E65 
+ 1102      6420696E 
+ 1102      7400
+ 1103              	.LASF34:
+ 1104 01ae 4D696E4D 		.ascii	"MinMaxScaler\000"
+ 1104      61785363 
+ 1104      616C6572 
+ 1104      00
+ 1105              	.LASF5:
+ 1106 01bb 73686F72 		.ascii	"short unsigned int\000"
+ 1106      7420756E 
+ 1106      7369676E 
+ 1106      65642069 
+ 1106      6E7400
+ 1107              	.LASF29:
+ 1108 01ce 74656D70 		.ascii	"tempBuffer\000"
+ 1108      42756666 
+ 1108      657200
+ 1109              	.LASF27:
+ 1110 01d9 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 1110      52784275 
+ 1110      66666572 
+ 1110      00
+ 1111              	.LASF42:
+ 1112 01e6 4953525F 		.ascii	"ISR_ACC_CUSTOM\000"
+ 1112      4143435F 
+ 1112      43555354 
+ 1112      4F4D00
+ 1113              	.LASF17:
+ 1114 01f5 646F7562 		.ascii	"double\000"
+ 1114      6C6500
+ 1115              	.LASF32:
+ 1116 01fc 4932435F 		.ascii	"I2C_Peripheral_ReadRegisterMulti\000"
+ 1116      50657269 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 23
+
+
+ 1116      70686572 
+ 1116      616C5F52 
+ 1116      65616452 
+ 1117              	.LASF28:
+ 1118 021d 64617461 		.ascii	"dataBuffer\000"
+ 1118      42756666 
+ 1118      657200
+ 1119              	.LASF11:
+ 1120 0228 756E7369 		.ascii	"unsigned int\000"
+ 1120      676E6564 
+ 1120      20696E74 
+ 1120      00
+ 1121              	.LASF10:
+ 1122 0235 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1122      206C6F6E 
+ 1122      6720756E 
+ 1122      7369676E 
+ 1122      65642069 
+ 1123              	.LASF12:
+ 1124 024c 75696E74 		.ascii	"uint8_t\000"
+ 1124      385F7400 
+ 1125              	.LASF13:
+ 1126 0254 696E7431 		.ascii	"int16_t\000"
+ 1126      365F7400 
+ 1127              	.LASF14:
+ 1128 025c 696E7433 		.ascii	"int32_t\000"
+ 1128      325F7400 
+ 1129              	.LASF20:
+ 1130 0264 73697A65 		.ascii	"sizetype\000"
+ 1130      74797065 
+ 1130      00
+ 1131              	.LASF31:
+ 1132 026d 6572726F 		.ascii	"error\000"
+ 1132      7200
+ 1133              	.LASF9:
+ 1134 0273 6C6F6E67 		.ascii	"long long int\000"
+ 1134      206C6F6E 
+ 1134      6720696E 
+ 1134      7400
+ 1135              	.LASF24:
+ 1136 0281 78417869 		.ascii	"xAxis\000"
+ 1136      7300
+ 1137              	.LASF18:
+ 1138 0287 63686172 		.ascii	"char\000"
+ 1138      00
+ 1139              	.LASF38:
+ 1140 028c 4932435F 		.ascii	"I2C_Peripheral_ReadRegister\000"
+ 1140      50657269 
+ 1140      70686572 
+ 1140      616C5F52 
+ 1140      65616452 
+ 1141              	.LASF4:
+ 1142 02a8 73686F72 		.ascii	"short int\000"
+ 1142      7420696E 
+ 1142      7400
+ 1143              	.LASF15:
+ 1144 02b2 75696E74 		.ascii	"uint8\000"
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccycmULB.s 			page 24
+
+
+ 1144      3800
+ 1145              	.LASF21:
+ 1146 02b8 4E4F5F45 		.ascii	"NO_ERROR\000"
+ 1146      52524F52 
+ 1146      00
+ 1147              	.LASF22:
+ 1148 02c1 4552524F 		.ascii	"ERROR\000"
+ 1148      5200
+ 1149              	.LASF33:
+ 1150 02c7 52696768 		.ascii	"RightAdjustVal\000"
+ 1150      7441646A 
+ 1150      75737456 
+ 1150      616C00
+ 1151              	.LASF19:
+ 1152 02d6 6C6F6E67 		.ascii	"long double\000"
+ 1152      20646F75 
+ 1152      626C6500 
+ 1153              	.LASF0:
+ 1154 02e2 7369676E 		.ascii	"signed char\000"
+ 1154      65642063 
+ 1154      68617200 
+ 1155              	.LASF25:
+ 1156 02ee 79417869 		.ascii	"yAxis\000"
+ 1156      7300
+ 1157              	.LASF40:
+ 1158 02f4 496E7465 		.ascii	"InterruptRoutines.c\000"
+ 1158      72727570 
+ 1158      74526F75 
+ 1158      74696E65 
+ 1158      732E6300 
+ 1159              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
