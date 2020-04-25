@@ -11,6 +11,7 @@
 
 // Include required header files
 #include "I2C_Interface.h"
+#include "InterruptRoutines.h"
 #include "project.h"
 #include "stdio.h"
 
@@ -137,48 +138,7 @@ int main(void)
     {
         UART_Debug_PutString("Error occurred during I2C comm to read control register 1\r\n");   
     }
-    
-     /******************************************/
-     /* I2C Reading Temperature sensor CFG reg */
-     /******************************************/
 
-    uint8_t tmp_cfg_reg;
-
-    error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
-                                        LIS3DH_TEMP_CFG_REG,
-                                        &tmp_cfg_reg);
-    
-    if (error == NO_ERROR)
-    {
-        sprintf(message, "TEMPERATURE CONFIG REGISTER: 0x%02X\r\n", tmp_cfg_reg);
-        UART_Debug_PutString(message); 
-    }
-    else
-    {
-        UART_Debug_PutString("Error occurred during I2C comm to read temperature config register\r\n");   
-    }
-    
-    
-    tmp_cfg_reg = LIS3DH_TEMP_CFG_REG_ACTIVE; // must be changed to the appropriate value
-    
-    error = I2C_Peripheral_WriteRegister(LIS3DH_DEVICE_ADDRESS,
-                                         LIS3DH_TEMP_CFG_REG,
-                                         tmp_cfg_reg);
-    
-    error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS,
-                                        LIS3DH_TEMP_CFG_REG,
-                                        &tmp_cfg_reg);
-    
-    
-    if (error == NO_ERROR)
-    {
-        sprintf(message, "TEMPERATURE CONFIG REGISTER after being updated: 0x%02X\r\n", tmp_cfg_reg);
-        UART_Debug_PutString(message); 
-    }
-    else
-    {
-        UART_Debug_PutString("Error occurred during I2C comm to read temperature config register\r\n");   
-    }
     
     uint8_t ctrl_reg4;
 
@@ -218,32 +178,20 @@ int main(void)
         UART_Debug_PutString("Error occurred during I2C comm to read control register4\r\n");   
     }
     
-    int16_t OutTemp;
-    uint8_t header = 0xA0;
-    uint8_t footer = 0xC0;
-    uint8_t OutArray[4]; 
-    uint8_t TemperatureData[2];
+    /* Wait 5ms after setup completion. */
+    CyDelay(5);
     
-    OutArray[0] = header;
-    OutArray[3] = footer;
+    /* Start ISR timer. */ 
+    ISR_Timer_Start();
+    
+    /* Start accelerometer ISR. */
+    ISR_Acc_StartEx(ISR_ACC_CUSTOM);
     
     for(;;)
     {
-        CyDelay(100);
         
-        error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS,
-                                                LIS3DH_OUT_ADC_3L,
-                                                2,
-                                                &TemperatureData[0]);
-        
-        if(error == NO_ERROR)
-        {
-            OutTemp = (int16)((TemperatureData[0] | (TemperatureData[1]<<8)))>>6;
-            OutArray[1] = (uint8_t)(OutTemp & 0xFF);
-            OutArray[2] = (uint8_t)(OutTemp >> 8);
-            UART_Debug_PutArray(OutArray, 4);
-        }
     }
 }
+
 
 /* [] END OF FILE */

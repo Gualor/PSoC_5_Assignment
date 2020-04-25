@@ -1,0 +1,2128 @@
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"I2C_Interface.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.I2C_Peripheral_Start,"ax",%progbits
+  20              		.align	2
+  21              		.global	I2C_Peripheral_Start
+  22              		.thumb
+  23              		.thumb_func
+  24              		.type	I2C_Peripheral_Start, %function
+  25              	I2C_Peripheral_Start:
+  26              	.LFB0:
+  27              		.file 1 "I2C_Interface.c"
+   1:I2C_Interface.c **** /*
+   2:I2C_Interface.c **** * This file includes all the required source code to interface
+   3:I2C_Interface.c **** * the I2C peripheral.
+   4:I2C_Interface.c **** */
+   5:I2C_Interface.c **** 
+   6:I2C_Interface.c **** /**
+   7:I2C_Interface.c **** *   \brief Value returned if device present on I2C bus.
+   8:I2C_Interface.c **** */
+   9:I2C_Interface.c **** #ifndef DEVICE_CONNECTED
+  10:I2C_Interface.c ****     #define DEVICE_CONNECTED 1
+  11:I2C_Interface.c **** #endif
+  12:I2C_Interface.c **** 
+  13:I2C_Interface.c **** /**
+  14:I2C_Interface.c **** *   \brief Value returned if device not present on I2C bus.
+  15:I2C_Interface.c **** */
+  16:I2C_Interface.c **** #ifndef DEVICE_UNCONNECTED
+  17:I2C_Interface.c ****     #define DEVICE_UNCONNECTED 0
+  18:I2C_Interface.c **** #endif
+  19:I2C_Interface.c **** 
+  20:I2C_Interface.c **** #include "I2C_Interface.h" 
+  21:I2C_Interface.c **** #include "I2C_Master.h"
+  22:I2C_Interface.c **** 
+  23:I2C_Interface.c ****     ErrorCode I2C_Peripheral_Start(void) 
+  24:I2C_Interface.c ****     {
+  28              		.loc 1 24 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 08B5     		push	{r3, lr}
+  33              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 2
+
+
+  34              		.cfi_offset 3, -8
+  35              		.cfi_offset 14, -4
+  25:I2C_Interface.c ****         // Start I2C peripheral
+  26:I2C_Interface.c ****         I2C_Master_Start();  
+  36              		.loc 1 26 0
+  37 0002 FFF7FEFF 		bl	I2C_Master_Start
+  38              	.LVL0:
+  27:I2C_Interface.c ****         
+  28:I2C_Interface.c ****         // Return no error since start function does not return any error
+  29:I2C_Interface.c ****         return NO_ERROR;
+  30:I2C_Interface.c ****     }
+  39              		.loc 1 30 0
+  40 0006 0020     		movs	r0, #0
+  41 0008 08BD     		pop	{r3, pc}
+  42              		.cfi_endproc
+  43              	.LFE0:
+  44              		.size	I2C_Peripheral_Start, .-I2C_Peripheral_Start
+  45 000a 00BF     		.section	.text.I2C_Peripheral_Stop,"ax",%progbits
+  46              		.align	2
+  47              		.global	I2C_Peripheral_Stop
+  48              		.thumb
+  49              		.thumb_func
+  50              		.type	I2C_Peripheral_Stop, %function
+  51              	I2C_Peripheral_Stop:
+  52              	.LFB1:
+  31:I2C_Interface.c ****     
+  32:I2C_Interface.c ****     
+  33:I2C_Interface.c ****     ErrorCode I2C_Peripheral_Stop(void)
+  34:I2C_Interface.c ****     {
+  53              		.loc 1 34 0
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57 0000 08B5     		push	{r3, lr}
+  58              		.cfi_def_cfa_offset 8
+  59              		.cfi_offset 3, -8
+  60              		.cfi_offset 14, -4
+  35:I2C_Interface.c ****         // Stop I2C peripheral
+  36:I2C_Interface.c ****         I2C_Master_Stop();
+  61              		.loc 1 36 0
+  62 0002 FFF7FEFF 		bl	I2C_Master_Stop
+  63              	.LVL1:
+  37:I2C_Interface.c ****         // Return no error since stop function does not return any error
+  38:I2C_Interface.c ****         return NO_ERROR;
+  39:I2C_Interface.c ****     }
+  64              		.loc 1 39 0
+  65 0006 0020     		movs	r0, #0
+  66 0008 08BD     		pop	{r3, pc}
+  67              		.cfi_endproc
+  68              	.LFE1:
+  69              		.size	I2C_Peripheral_Stop, .-I2C_Peripheral_Stop
+  70 000a 00BF     		.section	.text.I2C_Peripheral_ReadRegister,"ax",%progbits
+  71              		.align	2
+  72              		.global	I2C_Peripheral_ReadRegister
+  73              		.thumb
+  74              		.thumb_func
+  75              		.type	I2C_Peripheral_ReadRegister, %function
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 3
+
+
+  76              	I2C_Peripheral_ReadRegister:
+  77              	.LFB2:
+  40:I2C_Interface.c **** 
+  41:I2C_Interface.c ****     ErrorCode I2C_Peripheral_ReadRegister(uint8_t device_address, 
+  42:I2C_Interface.c ****                                             uint8_t register_address,
+  43:I2C_Interface.c ****                                             uint8_t* data)
+  44:I2C_Interface.c ****     {
+  78              		.loc 1 44 0
+  79              		.cfi_startproc
+  80              		@ args = 0, pretend = 0, frame = 0
+  81              		@ frame_needed = 0, uses_anonymous_args = 0
+  82              	.LVL2:
+  83 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  84              		.cfi_def_cfa_offset 24
+  85              		.cfi_offset 3, -24
+  86              		.cfi_offset 4, -20
+  87              		.cfi_offset 5, -16
+  88              		.cfi_offset 6, -12
+  89              		.cfi_offset 7, -8
+  90              		.cfi_offset 14, -4
+  91 0002 0646     		mov	r6, r0
+  92 0004 0D46     		mov	r5, r1
+  93 0006 1746     		mov	r7, r2
+  45:I2C_Interface.c ****         // Send start condition
+  46:I2C_Interface.c ****         uint8_t error = I2C_Master_MasterSendStart(device_address,I2C_Master_WRITE_XFER_MODE);
+  94              		.loc 1 46 0
+  95 0008 0021     		movs	r1, #0
+  96              	.LVL3:
+  97 000a FFF7FEFF 		bl	I2C_Master_MasterSendStart
+  98              	.LVL4:
+  47:I2C_Interface.c ****         if (error == I2C_Master_MSTR_NO_ERROR)
+  99              		.loc 1 47 0
+ 100 000e 0446     		mov	r4, r0
+ 101 0010 78B9     		cbnz	r0, .L6
+  48:I2C_Interface.c ****         {
+  49:I2C_Interface.c ****             // Write address of register to be read
+  50:I2C_Interface.c ****             error = I2C_Master_MasterWriteByte(register_address);
+ 102              		.loc 1 50 0
+ 103 0012 2846     		mov	r0, r5
+ 104              	.LVL5:
+ 105 0014 FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 106              	.LVL6:
+  51:I2C_Interface.c ****             if (error == I2C_Master_MSTR_NO_ERROR)
+ 107              		.loc 1 51 0
+ 108 0018 0446     		mov	r4, r0
+ 109 001a 50B9     		cbnz	r0, .L6
+  52:I2C_Interface.c ****             {
+  53:I2C_Interface.c ****                 // Send restart condition
+  54:I2C_Interface.c ****                 error = I2C_Master_MasterSendRestart(device_address, I2C_Master_READ_XFER_MODE);
+ 110              		.loc 1 54 0
+ 111 001c 0121     		movs	r1, #1
+ 112 001e 3046     		mov	r0, r6
+ 113              	.LVL7:
+ 114 0020 FFF7FEFF 		bl	I2C_Master_MasterSendRestart
+ 115              	.LVL8:
+  55:I2C_Interface.c ****                 if (error == I2C_Master_MSTR_NO_ERROR)
+ 116              		.loc 1 55 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 4
+
+
+ 117 0024 0446     		mov	r4, r0
+ 118 0026 20B9     		cbnz	r0, .L6
+  56:I2C_Interface.c ****                 {
+  57:I2C_Interface.c ****                     // Read data without acknowledgement
+  58:I2C_Interface.c ****                     *data = I2C_Master_MasterReadByte(I2C_Master_NAK_DATA);
+ 119              		.loc 1 58 0
+ 120 0028 FFF7FEFF 		bl	I2C_Master_MasterReadByte
+ 121              	.LVL9:
+ 122 002c 3870     		strb	r0, [r7]
+  59:I2C_Interface.c ****                     // Send stop condition and return no error
+  60:I2C_Interface.c ****                     I2C_Master_MasterSendStop();
+ 123              		.loc 1 60 0
+ 124 002e FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 125              	.LVL10:
+ 126              	.L6:
+  61:I2C_Interface.c ****                 }
+  62:I2C_Interface.c ****             }
+  63:I2C_Interface.c ****         }
+  64:I2C_Interface.c ****         // Send stop condition if something went wrong
+  65:I2C_Interface.c ****         I2C_Master_MasterSendStop();
+ 127              		.loc 1 65 0
+ 128 0032 FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 129              	.LVL11:
+  66:I2C_Interface.c ****         // Return error code
+  67:I2C_Interface.c ****         return error ? ERROR : NO_ERROR;
+  68:I2C_Interface.c ****     }
+ 130              		.loc 1 68 0
+ 131 0036 201C     		adds	r0, r4, #0
+ 132 0038 18BF     		it	ne
+ 133 003a 0120     		movne	r0, #1
+ 134 003c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 135              		.cfi_endproc
+ 136              	.LFE2:
+ 137              		.size	I2C_Peripheral_ReadRegister, .-I2C_Peripheral_ReadRegister
+ 138 003e 00BF     		.section	.text.I2C_Peripheral_ReadRegisterMulti,"ax",%progbits
+ 139              		.align	2
+ 140              		.global	I2C_Peripheral_ReadRegisterMulti
+ 141              		.thumb
+ 142              		.thumb_func
+ 143              		.type	I2C_Peripheral_ReadRegisterMulti, %function
+ 144              	I2C_Peripheral_ReadRegisterMulti:
+ 145              	.LFB3:
+  69:I2C_Interface.c ****     
+  70:I2C_Interface.c ****     ErrorCode I2C_Peripheral_ReadRegisterMulti(uint8_t device_address,
+  71:I2C_Interface.c ****                                                 uint8_t register_address,
+  72:I2C_Interface.c ****                                                 uint8_t register_count,
+  73:I2C_Interface.c ****                                                 uint8_t* data)
+  74:I2C_Interface.c ****     {
+ 146              		.loc 1 74 0
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 0
+ 149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 150              	.LVL12:
+ 151 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 152              		.cfi_def_cfa_offset 24
+ 153              		.cfi_offset 4, -24
+ 154              		.cfi_offset 5, -20
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 5
+
+
+ 155              		.cfi_offset 6, -16
+ 156              		.cfi_offset 7, -12
+ 157              		.cfi_offset 8, -8
+ 158              		.cfi_offset 14, -4
+ 159 0004 8046     		mov	r8, r0
+ 160 0006 0C46     		mov	r4, r1
+ 161 0008 1646     		mov	r6, r2
+ 162 000a 1F46     		mov	r7, r3
+  75:I2C_Interface.c ****         // Send start condition
+  76:I2C_Interface.c ****         uint8_t error = I2C_Master_MasterSendStart(device_address,I2C_Master_WRITE_XFER_MODE);
+ 163              		.loc 1 76 0
+ 164 000c 0021     		movs	r1, #0
+ 165              	.LVL13:
+ 166 000e FFF7FEFF 		bl	I2C_Master_MasterSendStart
+ 167              	.LVL14:
+  77:I2C_Interface.c ****         if (error == I2C_Master_MSTR_NO_ERROR)
+ 168              		.loc 1 77 0
+ 169 0012 0546     		mov	r5, r0
+ 170 0014 F0B9     		cbnz	r0, .L9
+ 171              	.LVL15:
+  78:I2C_Interface.c ****         {
+  79:I2C_Interface.c ****             // Write address of register to be read with the MSB equal to 1
+  80:I2C_Interface.c ****             register_address |= 0x80;
+  81:I2C_Interface.c ****             error = I2C_Master_MasterWriteByte(register_address);
+ 172              		.loc 1 81 0
+ 173 0016 44F08000 		orr	r0, r4, #128
+ 174              	.LVL16:
+ 175 001a FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 176              	.LVL17:
+  82:I2C_Interface.c ****             if (error == I2C_Master_MSTR_NO_ERROR)
+ 177              		.loc 1 82 0
+ 178 001e 0546     		mov	r5, r0
+ 179 0020 C0B9     		cbnz	r0, .L9
+  83:I2C_Interface.c ****             {
+  84:I2C_Interface.c ****                 // Send restart condition
+  85:I2C_Interface.c ****                 error = I2C_Master_MasterSendRestart(device_address, I2C_Master_READ_XFER_MODE);
+ 180              		.loc 1 85 0
+ 181 0022 0121     		movs	r1, #1
+ 182 0024 4046     		mov	r0, r8
+ 183              	.LVL18:
+ 184 0026 FFF7FEFF 		bl	I2C_Master_MasterSendRestart
+ 185              	.LVL19:
+  86:I2C_Interface.c ****                 if (error == I2C_Master_MSTR_NO_ERROR)
+ 186              		.loc 1 86 0
+ 187 002a 0546     		mov	r5, r0
+ 188 002c 50B1     		cbz	r0, .L12
+ 189 002e 11E0     		b	.L9
+ 190              	.LVL20:
+ 191              	.L11:
+ 192              	.LBB2:
+  87:I2C_Interface.c ****                 {
+  88:I2C_Interface.c ****                     // Continue reading until we have register to read
+  89:I2C_Interface.c ****                     uint8_t counter = register_count;
+  90:I2C_Interface.c ****                     while(counter>1)
+  91:I2C_Interface.c ****                     {
+  92:I2C_Interface.c ****                         data[register_count-counter] =
+ 193              		.loc 1 92 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 6
+
+
+ 194 0030 C4EB0608 		rsb	r8, r4, r6
+  93:I2C_Interface.c ****                             I2C_Master_MasterReadByte(I2C_Master_ACK_DATA);
+ 195              		.loc 1 93 0
+ 196 0034 0120     		movs	r0, #1
+ 197 0036 FFF7FEFF 		bl	I2C_Master_MasterReadByte
+ 198              	.LVL21:
+  92:I2C_Interface.c ****                             I2C_Master_MasterReadByte(I2C_Master_ACK_DATA);
+ 199              		.loc 1 92 0
+ 200 003a 07F80800 		strb	r0, [r7, r8]
+  94:I2C_Interface.c ****                         counter--;
+ 201              		.loc 1 94 0
+ 202 003e 013C     		subs	r4, r4, #1
+ 203              	.LVL22:
+ 204 0040 E4B2     		uxtb	r4, r4
+ 205              	.LVL23:
+ 206 0042 00E0     		b	.L10
+ 207              	.LVL24:
+ 208              	.L12:
+ 209              	.LBE2:
+ 210 0044 3446     		mov	r4, r6
+ 211              	.LVL25:
+ 212              	.L10:
+ 213              	.LBB3:
+  90:I2C_Interface.c ****                     {
+ 214              		.loc 1 90 0
+ 215 0046 012C     		cmp	r4, #1
+ 216 0048 F2D8     		bhi	.L11
+  95:I2C_Interface.c ****                     }
+  96:I2C_Interface.c ****                     // Read last data without acknowledgement
+  97:I2C_Interface.c ****                     data[register_count-1]
+ 217              		.loc 1 97 0
+ 218 004a 013E     		subs	r6, r6, #1
+  98:I2C_Interface.c ****                         = I2C_Master_MasterReadByte(I2C_Master_NAK_DATA);
+ 219              		.loc 1 98 0
+ 220 004c 0020     		movs	r0, #0
+ 221 004e FFF7FEFF 		bl	I2C_Master_MasterReadByte
+ 222              	.LVL26:
+ 223 0052 B855     		strb	r0, [r7, r6]
+ 224              	.LVL27:
+ 225              	.L9:
+ 226              	.LBE3:
+  99:I2C_Interface.c ****                 }
+ 100:I2C_Interface.c ****             }
+ 101:I2C_Interface.c ****         }
+ 102:I2C_Interface.c ****         // Send stop condition
+ 103:I2C_Interface.c ****         I2C_Master_MasterSendStop();
+ 227              		.loc 1 103 0
+ 228 0054 FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 229              	.LVL28:
+ 104:I2C_Interface.c ****         // Return error code
+ 105:I2C_Interface.c ****         return error ? ERROR : NO_ERROR;
+ 106:I2C_Interface.c ****     }
+ 230              		.loc 1 106 0
+ 231 0058 281C     		adds	r0, r5, #0
+ 232 005a 18BF     		it	ne
+ 233 005c 0120     		movne	r0, #1
+ 234 005e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 7
+
+
+ 235              		.cfi_endproc
+ 236              	.LFE3:
+ 237              		.size	I2C_Peripheral_ReadRegisterMulti, .-I2C_Peripheral_ReadRegisterMulti
+ 238 0062 00BF     		.section	.text.I2C_Peripheral_WriteRegister,"ax",%progbits
+ 239              		.align	2
+ 240              		.global	I2C_Peripheral_WriteRegister
+ 241              		.thumb
+ 242              		.thumb_func
+ 243              		.type	I2C_Peripheral_WriteRegister, %function
+ 244              	I2C_Peripheral_WriteRegister:
+ 245              	.LFB4:
+ 107:I2C_Interface.c ****     
+ 108:I2C_Interface.c ****     ErrorCode I2C_Peripheral_WriteRegister(uint8_t device_address,
+ 109:I2C_Interface.c ****                                             uint8_t register_address,
+ 110:I2C_Interface.c ****                                             uint8_t data)
+ 111:I2C_Interface.c ****     {
+ 246              		.loc 1 111 0
+ 247              		.cfi_startproc
+ 248              		@ args = 0, pretend = 0, frame = 0
+ 249              		@ frame_needed = 0, uses_anonymous_args = 0
+ 250              	.LVL29:
+ 251 0000 70B5     		push	{r4, r5, r6, lr}
+ 252              		.cfi_def_cfa_offset 16
+ 253              		.cfi_offset 4, -16
+ 254              		.cfi_offset 5, -12
+ 255              		.cfi_offset 6, -8
+ 256              		.cfi_offset 14, -4
+ 257 0002 0D46     		mov	r5, r1
+ 258 0004 1646     		mov	r6, r2
+ 112:I2C_Interface.c ****         // Send start condition
+ 113:I2C_Interface.c ****         uint8_t error = I2C_Master_MasterSendStart(device_address, I2C_Master_WRITE_XFER_MODE);
+ 259              		.loc 1 113 0
+ 260 0006 0021     		movs	r1, #0
+ 261              	.LVL30:
+ 262 0008 FFF7FEFF 		bl	I2C_Master_MasterSendStart
+ 263              	.LVL31:
+ 114:I2C_Interface.c ****         if (error == I2C_Master_MSTR_NO_ERROR)
+ 264              		.loc 1 114 0
+ 265 000c 0446     		mov	r4, r0
+ 266 000e 40B9     		cbnz	r0, .L15
+ 115:I2C_Interface.c ****         {
+ 116:I2C_Interface.c ****             // Write register address
+ 117:I2C_Interface.c ****             error = I2C_Master_MasterWriteByte(register_address);
+ 267              		.loc 1 117 0
+ 268 0010 2846     		mov	r0, r5
+ 269              	.LVL32:
+ 270 0012 FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 271              	.LVL33:
+ 118:I2C_Interface.c ****             if (error == I2C_Master_MSTR_NO_ERROR)
+ 272              		.loc 1 118 0
+ 273 0016 0446     		mov	r4, r0
+ 274 0018 18B9     		cbnz	r0, .L15
+ 119:I2C_Interface.c ****             {
+ 120:I2C_Interface.c ****                 // Write byte of interest
+ 121:I2C_Interface.c ****                 error = I2C_Master_MasterWriteByte(data);
+ 275              		.loc 1 121 0
+ 276 001a 3046     		mov	r0, r6
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 8
+
+
+ 277              	.LVL34:
+ 278 001c FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 279              	.LVL35:
+ 280 0020 0446     		mov	r4, r0
+ 281              	.LVL36:
+ 282              	.L15:
+ 122:I2C_Interface.c ****             }
+ 123:I2C_Interface.c ****         }
+ 124:I2C_Interface.c ****         // Send stop condition
+ 125:I2C_Interface.c ****         I2C_Master_MasterSendStop();
+ 283              		.loc 1 125 0
+ 284 0022 FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 285              	.LVL37:
+ 126:I2C_Interface.c ****         // Return error code
+ 127:I2C_Interface.c ****         return error ? ERROR : NO_ERROR;
+ 128:I2C_Interface.c ****     }
+ 286              		.loc 1 128 0
+ 287 0026 201C     		adds	r0, r4, #0
+ 288 0028 18BF     		it	ne
+ 289 002a 0120     		movne	r0, #1
+ 290 002c 70BD     		pop	{r4, r5, r6, pc}
+ 291              		.cfi_endproc
+ 292              	.LFE4:
+ 293              		.size	I2C_Peripheral_WriteRegister, .-I2C_Peripheral_WriteRegister
+ 294 002e 00BF     		.section	.text.I2C_Peripheral_WriteRegisterMulti,"ax",%progbits
+ 295              		.align	2
+ 296              		.global	I2C_Peripheral_WriteRegisterMulti
+ 297              		.thumb
+ 298              		.thumb_func
+ 299              		.type	I2C_Peripheral_WriteRegisterMulti, %function
+ 300              	I2C_Peripheral_WriteRegisterMulti:
+ 301              	.LFB5:
+ 129:I2C_Interface.c ****     
+ 130:I2C_Interface.c ****     ErrorCode I2C_Peripheral_WriteRegisterMulti(uint8_t device_address,
+ 131:I2C_Interface.c ****                                             uint8_t register_address,
+ 132:I2C_Interface.c ****                                             uint8_t register_count,
+ 133:I2C_Interface.c ****                                             uint8_t* data)
+ 134:I2C_Interface.c ****     {
+ 302              		.loc 1 134 0
+ 303              		.cfi_startproc
+ 304              		@ args = 0, pretend = 0, frame = 0
+ 305              		@ frame_needed = 0, uses_anonymous_args = 0
+ 306              	.LVL38:
+ 307 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 308              		.cfi_def_cfa_offset 24
+ 309              		.cfi_offset 3, -24
+ 310              		.cfi_offset 4, -20
+ 311              		.cfi_offset 5, -16
+ 312              		.cfi_offset 6, -12
+ 313              		.cfi_offset 7, -8
+ 314              		.cfi_offset 14, -4
+ 315 0002 0F46     		mov	r7, r1
+ 316 0004 1546     		mov	r5, r2
+ 317 0006 1E46     		mov	r6, r3
+ 135:I2C_Interface.c ****         // Send start condition
+ 136:I2C_Interface.c ****         uint8_t error = I2C_Master_MasterSendStart(device_address, I2C_Master_WRITE_XFER_MODE);
+ 318              		.loc 1 136 0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 9
+
+
+ 319 0008 0021     		movs	r1, #0
+ 320              	.LVL39:
+ 321 000a FFF7FEFF 		bl	I2C_Master_MasterSendStart
+ 322              	.LVL40:
+ 137:I2C_Interface.c ****         if (error == I2C_Master_MSTR_NO_ERROR)
+ 323              		.loc 1 137 0
+ 324 000e 0446     		mov	r4, r0
+ 325 0010 88B9     		cbnz	r0, .L18
+ 138:I2C_Interface.c ****         {
+ 139:I2C_Interface.c ****             // Write register address
+ 140:I2C_Interface.c ****             error = I2C_Master_MasterWriteByte(register_address);
+ 326              		.loc 1 140 0
+ 327 0012 3846     		mov	r0, r7
+ 328              	.LVL41:
+ 329 0014 FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 330              	.LVL42:
+ 141:I2C_Interface.c ****             if (error == I2C_Master_MSTR_NO_ERROR)
+ 331              		.loc 1 141 0
+ 332 0018 0446     		mov	r4, r0
+ 333 001a 60B9     		cbnz	r0, .L18
+ 334 001c 2C46     		mov	r4, r5
+ 335              	.L21:
+ 336              	.LVL43:
+ 337              	.LBB4:
+ 142:I2C_Interface.c ****             {
+ 143:I2C_Interface.c ****                 // Continue writing until we have data to write
+ 144:I2C_Interface.c ****                 uint8_t counter = register_count;
+ 145:I2C_Interface.c ****                 while(counter >= 0)
+ 146:I2C_Interface.c ****                 {
+ 147:I2C_Interface.c ****                      error =
+ 148:I2C_Interface.c ****                         I2C_Master_MasterWriteByte(data[register_count-counter]);
+ 338              		.loc 1 148 0
+ 339 001e 2B1B     		subs	r3, r5, r4
+ 147:I2C_Interface.c ****                         I2C_Master_MasterWriteByte(data[register_count-counter]);
+ 340              		.loc 1 147 0
+ 341 0020 F05C     		ldrb	r0, [r6, r3]	@ zero_extendqisi2
+ 342              	.LVL44:
+ 343 0022 FFF7FEFF 		bl	I2C_Master_MasterWriteByte
+ 344              	.LVL45:
+ 149:I2C_Interface.c ****                     if (error != I2C_Master_MSTR_NO_ERROR)
+ 345              		.loc 1 149 0
+ 346 0026 18B1     		cbz	r0, .L19
+ 150:I2C_Interface.c ****                     {
+ 151:I2C_Interface.c ****                         // Send stop condition
+ 152:I2C_Interface.c ****                         I2C_Master_MasterSendStop();
+ 347              		.loc 1 152 0
+ 348 0028 FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 349              	.LVL46:
+ 153:I2C_Interface.c ****                         // Return error code
+ 154:I2C_Interface.c ****                         return ERROR;
+ 350              		.loc 1 154 0
+ 351 002c 0120     		movs	r0, #1
+ 352 002e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 353              	.LVL47:
+ 354              	.L19:
+ 155:I2C_Interface.c ****                     }
+ 156:I2C_Interface.c ****                     counter--;
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 10
+
+
+ 355              		.loc 1 156 0
+ 356 0030 013C     		subs	r4, r4, #1
+ 357              	.LVL48:
+ 358 0032 E4B2     		uxtb	r4, r4
+ 359              	.LVL49:
+ 157:I2C_Interface.c ****                 }
+ 360              		.loc 1 157 0
+ 361 0034 F3E7     		b	.L21
+ 362              	.LVL50:
+ 363              	.L18:
+ 364              	.LBE4:
+ 158:I2C_Interface.c ****             }
+ 159:I2C_Interface.c ****         }
+ 160:I2C_Interface.c ****         // Send stop condition in case something didn't work out correctly
+ 161:I2C_Interface.c ****         I2C_Master_MasterSendStop();
+ 365              		.loc 1 161 0
+ 366 0036 FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 367              	.LVL51:
+ 162:I2C_Interface.c ****         // Return error code
+ 163:I2C_Interface.c ****         return error ? ERROR : NO_ERROR;
+ 368              		.loc 1 163 0
+ 369 003a 201C     		adds	r0, r4, #0
+ 370 003c 18BF     		it	ne
+ 371 003e 0120     		movne	r0, #1
+ 164:I2C_Interface.c ****     }
+ 372              		.loc 1 164 0
+ 373 0040 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 374              		.cfi_endproc
+ 375              	.LFE5:
+ 376              		.size	I2C_Peripheral_WriteRegisterMulti, .-I2C_Peripheral_WriteRegisterMulti
+ 377 0042 00BF     		.section	.text.I2C_Peripheral_IsDeviceConnected,"ax",%progbits
+ 378              		.align	2
+ 379              		.global	I2C_Peripheral_IsDeviceConnected
+ 380              		.thumb
+ 381              		.thumb_func
+ 382              		.type	I2C_Peripheral_IsDeviceConnected, %function
+ 383              	I2C_Peripheral_IsDeviceConnected:
+ 384              	.LFB6:
+ 165:I2C_Interface.c ****     
+ 166:I2C_Interface.c ****     
+ 167:I2C_Interface.c ****     uint8_t I2C_Peripheral_IsDeviceConnected(uint8_t device_address)
+ 168:I2C_Interface.c ****     {
+ 385              		.loc 1 168 0
+ 386              		.cfi_startproc
+ 387              		@ args = 0, pretend = 0, frame = 0
+ 388              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389              	.LVL52:
+ 390 0000 10B5     		push	{r4, lr}
+ 391              		.cfi_def_cfa_offset 8
+ 392              		.cfi_offset 4, -8
+ 393              		.cfi_offset 14, -4
+ 169:I2C_Interface.c ****         // Send a start condition followed by a stop condition
+ 170:I2C_Interface.c ****         uint8_t error = I2C_Master_MasterSendStart(device_address, I2C_Master_WRITE_XFER_MODE);
+ 394              		.loc 1 170 0
+ 395 0002 0021     		movs	r1, #0
+ 396 0004 FFF7FEFF 		bl	I2C_Master_MasterSendStart
+ 397              	.LVL53:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 11
+
+
+ 398 0008 0446     		mov	r4, r0
+ 399              	.LVL54:
+ 171:I2C_Interface.c ****         I2C_Master_MasterSendStop();
+ 400              		.loc 1 171 0
+ 401 000a FFF7FEFF 		bl	I2C_Master_MasterSendStop
+ 402              	.LVL55:
+ 172:I2C_Interface.c ****         // If no error generated during stop, device is connected
+ 173:I2C_Interface.c ****         if (error == I2C_Master_MSTR_NO_ERROR)
+ 403              		.loc 1 173 0
+ 404 000e 0CB9     		cbnz	r4, .L25
+ 174:I2C_Interface.c ****         {
+ 175:I2C_Interface.c ****             return DEVICE_CONNECTED;
+ 405              		.loc 1 175 0
+ 406 0010 0120     		movs	r0, #1
+ 407 0012 10BD     		pop	{r4, pc}
+ 408              	.LVL56:
+ 409              	.L25:
+ 176:I2C_Interface.c ****         }
+ 177:I2C_Interface.c ****         return DEVICE_UNCONNECTED;
+ 410              		.loc 1 177 0
+ 411 0014 0020     		movs	r0, #0
+ 178:I2C_Interface.c ****     }
+ 412              		.loc 1 178 0
+ 413 0016 10BD     		pop	{r4, pc}
+ 414              		.cfi_endproc
+ 415              	.LFE6:
+ 416              		.size	I2C_Peripheral_IsDeviceConnected, .-I2C_Peripheral_IsDeviceConnected
+ 417              		.text
+ 418              	.Letext0:
+ 419              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 420              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 421              		.file 4 "ErrorCodes.h"
+ 422              		.file 5 "Generated_Source\\PSoC5/I2C_Master.h"
+ 423              		.section	.debug_info,"",%progbits
+ 424              	.Ldebug_info0:
+ 425 0000 C2040000 		.4byte	0x4c2
+ 426 0004 0400     		.2byte	0x4
+ 427 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 428 000a 04       		.byte	0x4
+ 429 000b 01       		.uleb128 0x1
+ 430 000c 1D010000 		.4byte	.LASF39
+ 431 0010 0C       		.byte	0xc
+ 432 0011 4E000000 		.4byte	.LASF40
+ 433 0015 89000000 		.4byte	.LASF41
+ 434 0019 18000000 		.4byte	.Ldebug_ranges0+0x18
+ 435 001d 00000000 		.4byte	0
+ 436 0021 00000000 		.4byte	.Ldebug_line0
+ 437 0025 02       		.uleb128 0x2
+ 438 0026 01       		.byte	0x1
+ 439 0027 06       		.byte	0x6
+ 440 0028 7E030000 		.4byte	.LASF0
+ 441 002c 03       		.uleb128 0x3
+ 442 002d 00000000 		.4byte	.LASF9
+ 443 0031 02       		.byte	0x2
+ 444 0032 1D       		.byte	0x1d
+ 445 0033 37000000 		.4byte	0x37
+ 446 0037 02       		.uleb128 0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 12
+
+
+ 447 0038 01       		.byte	0x1
+ 448 0039 08       		.byte	0x8
+ 449 003a 0F010000 		.4byte	.LASF1
+ 450 003e 02       		.uleb128 0x2
+ 451 003f 02       		.byte	0x2
+ 452 0040 05       		.byte	0x5
+ 453 0041 32030000 		.4byte	.LASF2
+ 454 0045 02       		.uleb128 0x2
+ 455 0046 02       		.byte	0x2
+ 456 0047 07       		.byte	0x7
+ 457 0048 CD010000 		.4byte	.LASF3
+ 458 004c 02       		.uleb128 0x2
+ 459 004d 04       		.byte	0x4
+ 460 004e 05       		.byte	0x5
+ 461 004f 64030000 		.4byte	.LASF4
+ 462 0053 02       		.uleb128 0x2
+ 463 0054 04       		.byte	0x4
+ 464 0055 07       		.byte	0x7
+ 465 0056 6C020000 		.4byte	.LASF5
+ 466 005a 02       		.uleb128 0x2
+ 467 005b 08       		.byte	0x8
+ 468 005c 05       		.byte	0x5
+ 469 005d DA020000 		.4byte	.LASF6
+ 470 0061 02       		.uleb128 0x2
+ 471 0062 08       		.byte	0x8
+ 472 0063 07       		.byte	0x7
+ 473 0064 8B020000 		.4byte	.LASF7
+ 474 0068 04       		.uleb128 0x4
+ 475 0069 04       		.byte	0x4
+ 476 006a 05       		.byte	0x5
+ 477 006b 696E7400 		.ascii	"int\000"
+ 478 006f 02       		.uleb128 0x2
+ 479 0070 04       		.byte	0x4
+ 480 0071 07       		.byte	0x7
+ 481 0072 7E020000 		.4byte	.LASF8
+ 482 0076 03       		.uleb128 0x3
+ 483 0077 A2020000 		.4byte	.LASF10
+ 484 007b 03       		.byte	0x3
+ 485 007c 18       		.byte	0x18
+ 486 007d 2C000000 		.4byte	0x2c
+ 487 0081 02       		.uleb128 0x2
+ 488 0082 04       		.byte	0x4
+ 489 0083 04       		.byte	0x4
+ 490 0084 04010000 		.4byte	.LASF11
+ 491 0088 02       		.uleb128 0x2
+ 492 0089 08       		.byte	0x8
+ 493 008a 04       		.byte	0x4
+ 494 008b 27020000 		.4byte	.LASF12
+ 495 008f 02       		.uleb128 0x2
+ 496 0090 01       		.byte	0x1
+ 497 0091 08       		.byte	0x8
+ 498 0092 6D030000 		.4byte	.LASF13
+ 499 0096 05       		.uleb128 0x5
+ 500 0097 01       		.byte	0x1
+ 501 0098 37000000 		.4byte	0x37
+ 502 009c 04       		.byte	0x4
+ 503 009d 15       		.byte	0x15
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 13
+
+
+ 504 009e AF000000 		.4byte	0xaf
+ 505 00a2 06       		.uleb128 0x6
+ 506 00a3 5B030000 		.4byte	.LASF14
+ 507 00a7 00       		.byte	0
+ 508 00a8 06       		.uleb128 0x6
+ 509 00a9 AA020000 		.4byte	.LASF15
+ 510 00ad 01       		.byte	0x1
+ 511 00ae 00       		.byte	0
+ 512 00af 03       		.uleb128 0x3
+ 513 00b0 5E000000 		.4byte	.LASF16
+ 514 00b4 04       		.byte	0x4
+ 515 00b5 18       		.byte	0x18
+ 516 00b6 96000000 		.4byte	0x96
+ 517 00ba 02       		.uleb128 0x2
+ 518 00bb 08       		.byte	0x8
+ 519 00bc 04       		.byte	0x4
+ 520 00bd 72030000 		.4byte	.LASF17
+ 521 00c1 02       		.uleb128 0x2
+ 522 00c2 04       		.byte	0x4
+ 523 00c3 07       		.byte	0x7
+ 524 00c4 CB020000 		.4byte	.LASF18
+ 525 00c8 07       		.uleb128 0x7
+ 526 00c9 8A030000 		.4byte	.LASF19
+ 527 00cd 01       		.byte	0x1
+ 528 00ce 17       		.byte	0x17
+ 529 00cf AF000000 		.4byte	0xaf
+ 530 00d3 00000000 		.4byte	.LFB0
+ 531 00d7 0A000000 		.4byte	.LFE0-.LFB0
+ 532 00db 01       		.uleb128 0x1
+ 533 00dc 9C       		.byte	0x9c
+ 534 00dd EB000000 		.4byte	0xeb
+ 535 00e1 08       		.uleb128 0x8
+ 536 00e2 06000000 		.4byte	.LVL0
+ 537 00e6 78040000 		.4byte	0x478
+ 538 00ea 00       		.byte	0
+ 539 00eb 07       		.uleb128 0x7
+ 540 00ec 02030000 		.4byte	.LASF20
+ 541 00f0 01       		.byte	0x1
+ 542 00f1 21       		.byte	0x21
+ 543 00f2 AF000000 		.4byte	0xaf
+ 544 00f6 00000000 		.4byte	.LFB1
+ 545 00fa 0A000000 		.4byte	.LFE1-.LFB1
+ 546 00fe 01       		.uleb128 0x1
+ 547 00ff 9C       		.byte	0x9c
+ 548 0100 0E010000 		.4byte	0x10e
+ 549 0104 08       		.uleb128 0x8
+ 550 0105 06000000 		.4byte	.LVL1
+ 551 0109 83040000 		.4byte	0x483
+ 552 010d 00       		.byte	0
+ 553 010e 07       		.uleb128 0x7
+ 554 010f 16030000 		.4byte	.LASF21
+ 555 0113 01       		.byte	0x1
+ 556 0114 29       		.byte	0x29
+ 557 0115 AF000000 		.4byte	0xaf
+ 558 0119 00000000 		.4byte	.LFB2
+ 559 011d 3E000000 		.4byte	.LFE2-.LFB2
+ 560 0121 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 14
+
+
+ 561 0122 9C       		.byte	0x9c
+ 562 0123 D0010000 		.4byte	0x1d0
+ 563 0127 09       		.uleb128 0x9
+ 564 0128 3C030000 		.4byte	.LASF22
+ 565 012c 01       		.byte	0x1
+ 566 012d 29       		.byte	0x29
+ 567 012e 76000000 		.4byte	0x76
+ 568 0132 00000000 		.4byte	.LLST0
+ 569 0136 09       		.uleb128 0x9
+ 570 0137 E0010000 		.4byte	.LASF23
+ 571 013b 01       		.byte	0x1
+ 572 013c 2A       		.byte	0x2a
+ 573 013d 76000000 		.4byte	0x76
+ 574 0141 21000000 		.4byte	.LLST1
+ 575 0145 09       		.uleb128 0x9
+ 576 0146 0A010000 		.4byte	.LASF24
+ 577 014a 01       		.byte	0x1
+ 578 014b 2B       		.byte	0x2b
+ 579 014c D0010000 		.4byte	0x1d0
+ 580 0150 42000000 		.4byte	.LLST2
+ 581 0154 0A       		.uleb128 0xa
+ 582 0155 D4020000 		.4byte	.LASF27
+ 583 0159 01       		.byte	0x1
+ 584 015a 2E       		.byte	0x2e
+ 585 015b 76000000 		.4byte	0x76
+ 586 015f 60000000 		.4byte	.LLST3
+ 587 0163 0B       		.uleb128 0xb
+ 588 0164 0E000000 		.4byte	.LVL4
+ 589 0168 8E040000 		.4byte	0x48e
+ 590 016c 7C010000 		.4byte	0x17c
+ 591 0170 0C       		.uleb128 0xc
+ 592 0171 01       		.uleb128 0x1
+ 593 0172 50       		.byte	0x50
+ 594 0173 02       		.uleb128 0x2
+ 595 0174 76       		.byte	0x76
+ 596 0175 00       		.sleb128 0
+ 597 0176 0C       		.uleb128 0xc
+ 598 0177 01       		.uleb128 0x1
+ 599 0178 51       		.byte	0x51
+ 600 0179 01       		.uleb128 0x1
+ 601 017a 30       		.byte	0x30
+ 602 017b 00       		.byte	0
+ 603 017c 0B       		.uleb128 0xb
+ 604 017d 18000000 		.4byte	.LVL6
+ 605 0181 99040000 		.4byte	0x499
+ 606 0185 90010000 		.4byte	0x190
+ 607 0189 0C       		.uleb128 0xc
+ 608 018a 01       		.uleb128 0x1
+ 609 018b 50       		.byte	0x50
+ 610 018c 02       		.uleb128 0x2
+ 611 018d 75       		.byte	0x75
+ 612 018e 00       		.sleb128 0
+ 613 018f 00       		.byte	0
+ 614 0190 0B       		.uleb128 0xb
+ 615 0191 24000000 		.4byte	.LVL8
+ 616 0195 A4040000 		.4byte	0x4a4
+ 617 0199 A9010000 		.4byte	0x1a9
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 15
+
+
+ 618 019d 0C       		.uleb128 0xc
+ 619 019e 01       		.uleb128 0x1
+ 620 019f 50       		.byte	0x50
+ 621 01a0 02       		.uleb128 0x2
+ 622 01a1 76       		.byte	0x76
+ 623 01a2 00       		.sleb128 0
+ 624 01a3 0C       		.uleb128 0xc
+ 625 01a4 01       		.uleb128 0x1
+ 626 01a5 51       		.byte	0x51
+ 627 01a6 01       		.uleb128 0x1
+ 628 01a7 31       		.byte	0x31
+ 629 01a8 00       		.byte	0
+ 630 01a9 0B       		.uleb128 0xb
+ 631 01aa 2C000000 		.4byte	.LVL9
+ 632 01ae AF040000 		.4byte	0x4af
+ 633 01b2 BD010000 		.4byte	0x1bd
+ 634 01b6 0C       		.uleb128 0xc
+ 635 01b7 01       		.uleb128 0x1
+ 636 01b8 50       		.byte	0x50
+ 637 01b9 02       		.uleb128 0x2
+ 638 01ba 74       		.byte	0x74
+ 639 01bb 00       		.sleb128 0
+ 640 01bc 00       		.byte	0
+ 641 01bd 08       		.uleb128 0x8
+ 642 01be 32000000 		.4byte	.LVL10
+ 643 01c2 BA040000 		.4byte	0x4ba
+ 644 01c6 08       		.uleb128 0x8
+ 645 01c7 36000000 		.4byte	.LVL11
+ 646 01cb BA040000 		.4byte	0x4ba
+ 647 01cf 00       		.byte	0
+ 648 01d0 0D       		.uleb128 0xd
+ 649 01d1 04       		.byte	0x4
+ 650 01d2 76000000 		.4byte	0x76
+ 651 01d6 07       		.uleb128 0x7
+ 652 01d7 2E020000 		.4byte	.LASF25
+ 653 01db 01       		.byte	0x1
+ 654 01dc 46       		.byte	0x46
+ 655 01dd AF000000 		.4byte	0xaf
+ 656 01e1 00000000 		.4byte	.LFB3
+ 657 01e5 62000000 		.4byte	.LFE3-.LFB3
+ 658 01e9 01       		.uleb128 0x1
+ 659 01ea 9C       		.byte	0x9c
+ 660 01eb C8020000 		.4byte	0x2c8
+ 661 01ef 09       		.uleb128 0x9
+ 662 01f0 3C030000 		.4byte	.LASF22
+ 663 01f4 01       		.byte	0x1
+ 664 01f5 46       		.byte	0x46
+ 665 01f6 76000000 		.4byte	0x76
+ 666 01fa 94000000 		.4byte	.LLST4
+ 667 01fe 09       		.uleb128 0x9
+ 668 01ff E0010000 		.4byte	.LASF23
+ 669 0203 01       		.byte	0x1
+ 670 0204 47       		.byte	0x47
+ 671 0205 76000000 		.4byte	0x76
+ 672 0209 B5000000 		.4byte	.LLST5
+ 673 020d 09       		.uleb128 0x9
+ 674 020e 3F000000 		.4byte	.LASF26
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 16
+
+
+ 675 0212 01       		.byte	0x1
+ 676 0213 48       		.byte	0x48
+ 677 0214 76000000 		.4byte	0x76
+ 678 0218 F6000000 		.4byte	.LLST6
+ 679 021c 09       		.uleb128 0x9
+ 680 021d 0A010000 		.4byte	.LASF24
+ 681 0221 01       		.byte	0x1
+ 682 0222 49       		.byte	0x49
+ 683 0223 D0010000 		.4byte	0x1d0
+ 684 0227 17010000 		.4byte	.LLST7
+ 685 022b 0A       		.uleb128 0xa
+ 686 022c D4020000 		.4byte	.LASF27
+ 687 0230 01       		.byte	0x1
+ 688 0231 4C       		.byte	0x4c
+ 689 0232 76000000 		.4byte	0x76
+ 690 0236 35010000 		.4byte	.LLST8
+ 691 023a 0E       		.uleb128 0xe
+ 692 023b 00000000 		.4byte	.Ldebug_ranges0+0
+ 693 023f 75020000 		.4byte	0x275
+ 694 0243 0A       		.uleb128 0xa
+ 695 0244 0E020000 		.4byte	.LASF28
+ 696 0248 01       		.byte	0x1
+ 697 0249 59       		.byte	0x59
+ 698 024a 76000000 		.4byte	0x76
+ 699 024e 74010000 		.4byte	.LLST9
+ 700 0252 0B       		.uleb128 0xb
+ 701 0253 3A000000 		.4byte	.LVL21
+ 702 0257 AF040000 		.4byte	0x4af
+ 703 025b 65020000 		.4byte	0x265
+ 704 025f 0C       		.uleb128 0xc
+ 705 0260 01       		.uleb128 0x1
+ 706 0261 50       		.byte	0x50
+ 707 0262 01       		.uleb128 0x1
+ 708 0263 31       		.byte	0x31
+ 709 0264 00       		.byte	0
+ 710 0265 0F       		.uleb128 0xf
+ 711 0266 52000000 		.4byte	.LVL26
+ 712 026a AF040000 		.4byte	0x4af
+ 713 026e 0C       		.uleb128 0xc
+ 714 026f 01       		.uleb128 0x1
+ 715 0270 50       		.byte	0x50
+ 716 0271 01       		.uleb128 0x1
+ 717 0272 30       		.byte	0x30
+ 718 0273 00       		.byte	0
+ 719 0274 00       		.byte	0
+ 720 0275 0B       		.uleb128 0xb
+ 721 0276 12000000 		.4byte	.LVL14
+ 722 027a 8E040000 		.4byte	0x48e
+ 723 027e 8E020000 		.4byte	0x28e
+ 724 0282 0C       		.uleb128 0xc
+ 725 0283 01       		.uleb128 0x1
+ 726 0284 50       		.byte	0x50
+ 727 0285 02       		.uleb128 0x2
+ 728 0286 78       		.byte	0x78
+ 729 0287 00       		.sleb128 0
+ 730 0288 0C       		.uleb128 0xc
+ 731 0289 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 17
+
+
+ 732 028a 51       		.byte	0x51
+ 733 028b 01       		.uleb128 0x1
+ 734 028c 30       		.byte	0x30
+ 735 028d 00       		.byte	0
+ 736 028e 0B       		.uleb128 0xb
+ 737 028f 1E000000 		.4byte	.LVL17
+ 738 0293 99040000 		.4byte	0x499
+ 739 0297 A5020000 		.4byte	0x2a5
+ 740 029b 0C       		.uleb128 0xc
+ 741 029c 01       		.uleb128 0x1
+ 742 029d 50       		.byte	0x50
+ 743 029e 05       		.uleb128 0x5
+ 744 029f 74       		.byte	0x74
+ 745 02a0 00       		.sleb128 0
+ 746 02a1 08       		.byte	0x8
+ 747 02a2 80       		.byte	0x80
+ 748 02a3 21       		.byte	0x21
+ 749 02a4 00       		.byte	0
+ 750 02a5 0B       		.uleb128 0xb
+ 751 02a6 2A000000 		.4byte	.LVL19
+ 752 02aa A4040000 		.4byte	0x4a4
+ 753 02ae BE020000 		.4byte	0x2be
+ 754 02b2 0C       		.uleb128 0xc
+ 755 02b3 01       		.uleb128 0x1
+ 756 02b4 50       		.byte	0x50
+ 757 02b5 02       		.uleb128 0x2
+ 758 02b6 78       		.byte	0x78
+ 759 02b7 00       		.sleb128 0
+ 760 02b8 0C       		.uleb128 0xc
+ 761 02b9 01       		.uleb128 0x1
+ 762 02ba 51       		.byte	0x51
+ 763 02bb 01       		.uleb128 0x1
+ 764 02bc 31       		.byte	0x31
+ 765 02bd 00       		.byte	0
+ 766 02be 08       		.uleb128 0x8
+ 767 02bf 58000000 		.4byte	.LVL28
+ 768 02c3 BA040000 		.4byte	0x4ba
+ 769 02c7 00       		.byte	0
+ 770 02c8 07       		.uleb128 0x7
+ 771 02c9 4F020000 		.4byte	.LASF29
+ 772 02cd 01       		.byte	0x1
+ 773 02ce 6C       		.byte	0x6c
+ 774 02cf AF000000 		.4byte	0xaf
+ 775 02d3 00000000 		.4byte	.LFB4
+ 776 02d7 2E000000 		.4byte	.LFE4-.LFB4
+ 777 02db 01       		.uleb128 0x1
+ 778 02dc 9C       		.byte	0x9c
+ 779 02dd 62030000 		.4byte	0x362
+ 780 02e1 09       		.uleb128 0x9
+ 781 02e2 3C030000 		.4byte	.LASF22
+ 782 02e6 01       		.byte	0x1
+ 783 02e7 6C       		.byte	0x6c
+ 784 02e8 76000000 		.4byte	0x76
+ 785 02ec 9D010000 		.4byte	.LLST10
+ 786 02f0 09       		.uleb128 0x9
+ 787 02f1 E0010000 		.4byte	.LASF23
+ 788 02f5 01       		.byte	0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 18
+
+
+ 789 02f6 6D       		.byte	0x6d
+ 790 02f7 76000000 		.4byte	0x76
+ 791 02fb BE010000 		.4byte	.LLST11
+ 792 02ff 09       		.uleb128 0x9
+ 793 0300 0A010000 		.4byte	.LASF24
+ 794 0304 01       		.byte	0x1
+ 795 0305 6E       		.byte	0x6e
+ 796 0306 76000000 		.4byte	0x76
+ 797 030a DF010000 		.4byte	.LLST12
+ 798 030e 0A       		.uleb128 0xa
+ 799 030f D4020000 		.4byte	.LASF27
+ 800 0313 01       		.byte	0x1
+ 801 0314 71       		.byte	0x71
+ 802 0315 76000000 		.4byte	0x76
+ 803 0319 00020000 		.4byte	.LLST13
+ 804 031d 0B       		.uleb128 0xb
+ 805 031e 0C000000 		.4byte	.LVL31
+ 806 0322 8E040000 		.4byte	0x48e
+ 807 0326 30030000 		.4byte	0x330
+ 808 032a 0C       		.uleb128 0xc
+ 809 032b 01       		.uleb128 0x1
+ 810 032c 51       		.byte	0x51
+ 811 032d 01       		.uleb128 0x1
+ 812 032e 30       		.byte	0x30
+ 813 032f 00       		.byte	0
+ 814 0330 0B       		.uleb128 0xb
+ 815 0331 16000000 		.4byte	.LVL33
+ 816 0335 99040000 		.4byte	0x499
+ 817 0339 44030000 		.4byte	0x344
+ 818 033d 0C       		.uleb128 0xc
+ 819 033e 01       		.uleb128 0x1
+ 820 033f 50       		.byte	0x50
+ 821 0340 02       		.uleb128 0x2
+ 822 0341 75       		.byte	0x75
+ 823 0342 00       		.sleb128 0
+ 824 0343 00       		.byte	0
+ 825 0344 0B       		.uleb128 0xb
+ 826 0345 20000000 		.4byte	.LVL35
+ 827 0349 99040000 		.4byte	0x499
+ 828 034d 58030000 		.4byte	0x358
+ 829 0351 0C       		.uleb128 0xc
+ 830 0352 01       		.uleb128 0x1
+ 831 0353 50       		.byte	0x50
+ 832 0354 02       		.uleb128 0x2
+ 833 0355 76       		.byte	0x76
+ 834 0356 00       		.sleb128 0
+ 835 0357 00       		.byte	0
+ 836 0358 08       		.uleb128 0x8
+ 837 0359 26000000 		.4byte	.LVL37
+ 838 035d BA040000 		.4byte	0x4ba
+ 839 0361 00       		.byte	0
+ 840 0362 07       		.uleb128 0x7
+ 841 0363 AB010000 		.4byte	.LASF30
+ 842 0367 01       		.byte	0x1
+ 843 0368 82       		.byte	0x82
+ 844 0369 AF000000 		.4byte	0xaf
+ 845 036d 00000000 		.4byte	.LFB5
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 19
+
+
+ 846 0371 42000000 		.4byte	.LFE5-.LFB5
+ 847 0375 01       		.uleb128 0x1
+ 848 0376 9C       		.byte	0x9c
+ 849 0377 26040000 		.4byte	0x426
+ 850 037b 09       		.uleb128 0x9
+ 851 037c 3C030000 		.4byte	.LASF22
+ 852 0380 01       		.byte	0x1
+ 853 0381 82       		.byte	0x82
+ 854 0382 76000000 		.4byte	0x76
+ 855 0386 29020000 		.4byte	.LLST14
+ 856 038a 09       		.uleb128 0x9
+ 857 038b E0010000 		.4byte	.LASF23
+ 858 038f 01       		.byte	0x1
+ 859 0390 83       		.byte	0x83
+ 860 0391 76000000 		.4byte	0x76
+ 861 0395 4A020000 		.4byte	.LLST15
+ 862 0399 09       		.uleb128 0x9
+ 863 039a 3F000000 		.4byte	.LASF26
+ 864 039e 01       		.byte	0x1
+ 865 039f 84       		.byte	0x84
+ 866 03a0 76000000 		.4byte	0x76
+ 867 03a4 6B020000 		.4byte	.LLST16
+ 868 03a8 09       		.uleb128 0x9
+ 869 03a9 0A010000 		.4byte	.LASF24
+ 870 03ad 01       		.byte	0x1
+ 871 03ae 85       		.byte	0x85
+ 872 03af D0010000 		.4byte	0x1d0
+ 873 03b3 8C020000 		.4byte	.LLST17
+ 874 03b7 0A       		.uleb128 0xa
+ 875 03b8 D4020000 		.4byte	.LASF27
+ 876 03bc 01       		.byte	0x1
+ 877 03bd 88       		.byte	0x88
+ 878 03be 76000000 		.4byte	0x76
+ 879 03c2 AA020000 		.4byte	.LLST18
+ 880 03c6 10       		.uleb128 0x10
+ 881 03c7 1E000000 		.4byte	.LBB4
+ 882 03cb 18000000 		.4byte	.LBE4-.LBB4
+ 883 03cf F5030000 		.4byte	0x3f5
+ 884 03d3 0A       		.uleb128 0xa
+ 885 03d4 0E020000 		.4byte	.LASF28
+ 886 03d8 01       		.byte	0x1
+ 887 03d9 90       		.byte	0x90
+ 888 03da 76000000 		.4byte	0x76
+ 889 03de E9020000 		.4byte	.LLST19
+ 890 03e2 08       		.uleb128 0x8
+ 891 03e3 26000000 		.4byte	.LVL45
+ 892 03e7 99040000 		.4byte	0x499
+ 893 03eb 08       		.uleb128 0x8
+ 894 03ec 2C000000 		.4byte	.LVL46
+ 895 03f0 BA040000 		.4byte	0x4ba
+ 896 03f4 00       		.byte	0
+ 897 03f5 0B       		.uleb128 0xb
+ 898 03f6 0E000000 		.4byte	.LVL40
+ 899 03fa 8E040000 		.4byte	0x48e
+ 900 03fe 08040000 		.4byte	0x408
+ 901 0402 0C       		.uleb128 0xc
+ 902 0403 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 20
+
+
+ 903 0404 51       		.byte	0x51
+ 904 0405 01       		.uleb128 0x1
+ 905 0406 30       		.byte	0x30
+ 906 0407 00       		.byte	0
+ 907 0408 0B       		.uleb128 0xb
+ 908 0409 18000000 		.4byte	.LVL42
+ 909 040d 99040000 		.4byte	0x499
+ 910 0411 1C040000 		.4byte	0x41c
+ 911 0415 0C       		.uleb128 0xc
+ 912 0416 01       		.uleb128 0x1
+ 913 0417 50       		.byte	0x50
+ 914 0418 02       		.uleb128 0x2
+ 915 0419 77       		.byte	0x77
+ 916 041a 00       		.sleb128 0
+ 917 041b 00       		.byte	0
+ 918 041c 08       		.uleb128 0x8
+ 919 041d 3A000000 		.4byte	.LVL51
+ 920 0421 BA040000 		.4byte	0x4ba
+ 921 0425 00       		.byte	0
+ 922 0426 07       		.uleb128 0x7
+ 923 0427 68000000 		.4byte	.LASF31
+ 924 042b 01       		.byte	0x1
+ 925 042c A7       		.byte	0xa7
+ 926 042d 76000000 		.4byte	0x76
+ 927 0431 00000000 		.4byte	.LFB6
+ 928 0435 18000000 		.4byte	.LFE6-.LFB6
+ 929 0439 01       		.uleb128 0x1
+ 930 043a 9C       		.byte	0x9c
+ 931 043b 78040000 		.4byte	0x478
+ 932 043f 09       		.uleb128 0x9
+ 933 0440 3C030000 		.4byte	.LASF22
+ 934 0444 01       		.byte	0x1
+ 935 0445 A7       		.byte	0xa7
+ 936 0446 76000000 		.4byte	0x76
+ 937 044a 07030000 		.4byte	.LLST20
+ 938 044e 11       		.uleb128 0x11
+ 939 044f D4020000 		.4byte	.LASF27
+ 940 0453 01       		.byte	0x1
+ 941 0454 AA       		.byte	0xaa
+ 942 0455 76000000 		.4byte	0x76
+ 943 0459 01       		.uleb128 0x1
+ 944 045a 54       		.byte	0x54
+ 945 045b 0B       		.uleb128 0xb
+ 946 045c 08000000 		.4byte	.LVL53
+ 947 0460 8E040000 		.4byte	0x48e
+ 948 0464 6E040000 		.4byte	0x46e
+ 949 0468 0C       		.uleb128 0xc
+ 950 0469 01       		.uleb128 0x1
+ 951 046a 51       		.byte	0x51
+ 952 046b 01       		.uleb128 0x1
+ 953 046c 30       		.byte	0x30
+ 954 046d 00       		.byte	0
+ 955 046e 08       		.uleb128 0x8
+ 956 046f 0E000000 		.4byte	.LVL55
+ 957 0473 BA040000 		.4byte	0x4ba
+ 958 0477 00       		.byte	0
+ 959 0478 12       		.uleb128 0x12
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 21
+
+
+ 960 0479 16020000 		.4byte	.LASF32
+ 961 047d 16020000 		.4byte	.LASF32
+ 962 0481 05       		.byte	0x5
+ 963 0482 93       		.byte	0x93
+ 964 0483 12       		.uleb128 0x12
+ 965 0484 4B030000 		.4byte	.LASF33
+ 966 0488 4B030000 		.4byte	.LASF33
+ 967 048c 05       		.byte	0x5
+ 968 048d 94       		.byte	0x94
+ 969 048e 12       		.uleb128 0x12
+ 970 048f B0020000 		.4byte	.LASF34
+ 971 0493 B0020000 		.4byte	.LASF34
+ 972 0497 05       		.byte	0x5
+ 973 0498 B1       		.byte	0xb1
+ 974 0499 12       		.uleb128 0x12
+ 975 049a 24000000 		.4byte	.LASF35
+ 976 049e 24000000 		.4byte	.LASF35
+ 977 04a2 05       		.byte	0x5
+ 978 04a3 B6       		.byte	0xb6
+ 979 04a4 12       		.uleb128 0x12
+ 980 04a5 F1010000 		.4byte	.LASF36
+ 981 04a9 F1010000 		.4byte	.LASF36
+ 982 04ad 05       		.byte	0x5
+ 983 04ae B3       		.byte	0xb3
+ 984 04af 12       		.uleb128 0x12
+ 985 04b0 0A000000 		.4byte	.LASF37
+ 986 04b4 0A000000 		.4byte	.LASF37
+ 987 04b8 05       		.byte	0x5
+ 988 04b9 B7       		.byte	0xb7
+ 989 04ba 12       		.uleb128 0x12
+ 990 04bb E8020000 		.4byte	.LASF38
+ 991 04bf E8020000 		.4byte	.LASF38
+ 992 04c3 05       		.byte	0x5
+ 993 04c4 B5       		.byte	0xb5
+ 994 04c5 00       		.byte	0
+ 995              		.section	.debug_abbrev,"",%progbits
+ 996              	.Ldebug_abbrev0:
+ 997 0000 01       		.uleb128 0x1
+ 998 0001 11       		.uleb128 0x11
+ 999 0002 01       		.byte	0x1
+ 1000 0003 25       		.uleb128 0x25
+ 1001 0004 0E       		.uleb128 0xe
+ 1002 0005 13       		.uleb128 0x13
+ 1003 0006 0B       		.uleb128 0xb
+ 1004 0007 03       		.uleb128 0x3
+ 1005 0008 0E       		.uleb128 0xe
+ 1006 0009 1B       		.uleb128 0x1b
+ 1007 000a 0E       		.uleb128 0xe
+ 1008 000b 55       		.uleb128 0x55
+ 1009 000c 17       		.uleb128 0x17
+ 1010 000d 11       		.uleb128 0x11
+ 1011 000e 01       		.uleb128 0x1
+ 1012 000f 10       		.uleb128 0x10
+ 1013 0010 17       		.uleb128 0x17
+ 1014 0011 00       		.byte	0
+ 1015 0012 00       		.byte	0
+ 1016 0013 02       		.uleb128 0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 22
+
+
+ 1017 0014 24       		.uleb128 0x24
+ 1018 0015 00       		.byte	0
+ 1019 0016 0B       		.uleb128 0xb
+ 1020 0017 0B       		.uleb128 0xb
+ 1021 0018 3E       		.uleb128 0x3e
+ 1022 0019 0B       		.uleb128 0xb
+ 1023 001a 03       		.uleb128 0x3
+ 1024 001b 0E       		.uleb128 0xe
+ 1025 001c 00       		.byte	0
+ 1026 001d 00       		.byte	0
+ 1027 001e 03       		.uleb128 0x3
+ 1028 001f 16       		.uleb128 0x16
+ 1029 0020 00       		.byte	0
+ 1030 0021 03       		.uleb128 0x3
+ 1031 0022 0E       		.uleb128 0xe
+ 1032 0023 3A       		.uleb128 0x3a
+ 1033 0024 0B       		.uleb128 0xb
+ 1034 0025 3B       		.uleb128 0x3b
+ 1035 0026 0B       		.uleb128 0xb
+ 1036 0027 49       		.uleb128 0x49
+ 1037 0028 13       		.uleb128 0x13
+ 1038 0029 00       		.byte	0
+ 1039 002a 00       		.byte	0
+ 1040 002b 04       		.uleb128 0x4
+ 1041 002c 24       		.uleb128 0x24
+ 1042 002d 00       		.byte	0
+ 1043 002e 0B       		.uleb128 0xb
+ 1044 002f 0B       		.uleb128 0xb
+ 1045 0030 3E       		.uleb128 0x3e
+ 1046 0031 0B       		.uleb128 0xb
+ 1047 0032 03       		.uleb128 0x3
+ 1048 0033 08       		.uleb128 0x8
+ 1049 0034 00       		.byte	0
+ 1050 0035 00       		.byte	0
+ 1051 0036 05       		.uleb128 0x5
+ 1052 0037 04       		.uleb128 0x4
+ 1053 0038 01       		.byte	0x1
+ 1054 0039 0B       		.uleb128 0xb
+ 1055 003a 0B       		.uleb128 0xb
+ 1056 003b 49       		.uleb128 0x49
+ 1057 003c 13       		.uleb128 0x13
+ 1058 003d 3A       		.uleb128 0x3a
+ 1059 003e 0B       		.uleb128 0xb
+ 1060 003f 3B       		.uleb128 0x3b
+ 1061 0040 0B       		.uleb128 0xb
+ 1062 0041 01       		.uleb128 0x1
+ 1063 0042 13       		.uleb128 0x13
+ 1064 0043 00       		.byte	0
+ 1065 0044 00       		.byte	0
+ 1066 0045 06       		.uleb128 0x6
+ 1067 0046 28       		.uleb128 0x28
+ 1068 0047 00       		.byte	0
+ 1069 0048 03       		.uleb128 0x3
+ 1070 0049 0E       		.uleb128 0xe
+ 1071 004a 1C       		.uleb128 0x1c
+ 1072 004b 0B       		.uleb128 0xb
+ 1073 004c 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 23
+
+
+ 1074 004d 00       		.byte	0
+ 1075 004e 07       		.uleb128 0x7
+ 1076 004f 2E       		.uleb128 0x2e
+ 1077 0050 01       		.byte	0x1
+ 1078 0051 3F       		.uleb128 0x3f
+ 1079 0052 19       		.uleb128 0x19
+ 1080 0053 03       		.uleb128 0x3
+ 1081 0054 0E       		.uleb128 0xe
+ 1082 0055 3A       		.uleb128 0x3a
+ 1083 0056 0B       		.uleb128 0xb
+ 1084 0057 3B       		.uleb128 0x3b
+ 1085 0058 0B       		.uleb128 0xb
+ 1086 0059 27       		.uleb128 0x27
+ 1087 005a 19       		.uleb128 0x19
+ 1088 005b 49       		.uleb128 0x49
+ 1089 005c 13       		.uleb128 0x13
+ 1090 005d 11       		.uleb128 0x11
+ 1091 005e 01       		.uleb128 0x1
+ 1092 005f 12       		.uleb128 0x12
+ 1093 0060 06       		.uleb128 0x6
+ 1094 0061 40       		.uleb128 0x40
+ 1095 0062 18       		.uleb128 0x18
+ 1096 0063 9742     		.uleb128 0x2117
+ 1097 0065 19       		.uleb128 0x19
+ 1098 0066 01       		.uleb128 0x1
+ 1099 0067 13       		.uleb128 0x13
+ 1100 0068 00       		.byte	0
+ 1101 0069 00       		.byte	0
+ 1102 006a 08       		.uleb128 0x8
+ 1103 006b 898201   		.uleb128 0x4109
+ 1104 006e 00       		.byte	0
+ 1105 006f 11       		.uleb128 0x11
+ 1106 0070 01       		.uleb128 0x1
+ 1107 0071 31       		.uleb128 0x31
+ 1108 0072 13       		.uleb128 0x13
+ 1109 0073 00       		.byte	0
+ 1110 0074 00       		.byte	0
+ 1111 0075 09       		.uleb128 0x9
+ 1112 0076 05       		.uleb128 0x5
+ 1113 0077 00       		.byte	0
+ 1114 0078 03       		.uleb128 0x3
+ 1115 0079 0E       		.uleb128 0xe
+ 1116 007a 3A       		.uleb128 0x3a
+ 1117 007b 0B       		.uleb128 0xb
+ 1118 007c 3B       		.uleb128 0x3b
+ 1119 007d 0B       		.uleb128 0xb
+ 1120 007e 49       		.uleb128 0x49
+ 1121 007f 13       		.uleb128 0x13
+ 1122 0080 02       		.uleb128 0x2
+ 1123 0081 17       		.uleb128 0x17
+ 1124 0082 00       		.byte	0
+ 1125 0083 00       		.byte	0
+ 1126 0084 0A       		.uleb128 0xa
+ 1127 0085 34       		.uleb128 0x34
+ 1128 0086 00       		.byte	0
+ 1129 0087 03       		.uleb128 0x3
+ 1130 0088 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 24
+
+
+ 1131 0089 3A       		.uleb128 0x3a
+ 1132 008a 0B       		.uleb128 0xb
+ 1133 008b 3B       		.uleb128 0x3b
+ 1134 008c 0B       		.uleb128 0xb
+ 1135 008d 49       		.uleb128 0x49
+ 1136 008e 13       		.uleb128 0x13
+ 1137 008f 02       		.uleb128 0x2
+ 1138 0090 17       		.uleb128 0x17
+ 1139 0091 00       		.byte	0
+ 1140 0092 00       		.byte	0
+ 1141 0093 0B       		.uleb128 0xb
+ 1142 0094 898201   		.uleb128 0x4109
+ 1143 0097 01       		.byte	0x1
+ 1144 0098 11       		.uleb128 0x11
+ 1145 0099 01       		.uleb128 0x1
+ 1146 009a 31       		.uleb128 0x31
+ 1147 009b 13       		.uleb128 0x13
+ 1148 009c 01       		.uleb128 0x1
+ 1149 009d 13       		.uleb128 0x13
+ 1150 009e 00       		.byte	0
+ 1151 009f 00       		.byte	0
+ 1152 00a0 0C       		.uleb128 0xc
+ 1153 00a1 8A8201   		.uleb128 0x410a
+ 1154 00a4 00       		.byte	0
+ 1155 00a5 02       		.uleb128 0x2
+ 1156 00a6 18       		.uleb128 0x18
+ 1157 00a7 9142     		.uleb128 0x2111
+ 1158 00a9 18       		.uleb128 0x18
+ 1159 00aa 00       		.byte	0
+ 1160 00ab 00       		.byte	0
+ 1161 00ac 0D       		.uleb128 0xd
+ 1162 00ad 0F       		.uleb128 0xf
+ 1163 00ae 00       		.byte	0
+ 1164 00af 0B       		.uleb128 0xb
+ 1165 00b0 0B       		.uleb128 0xb
+ 1166 00b1 49       		.uleb128 0x49
+ 1167 00b2 13       		.uleb128 0x13
+ 1168 00b3 00       		.byte	0
+ 1169 00b4 00       		.byte	0
+ 1170 00b5 0E       		.uleb128 0xe
+ 1171 00b6 0B       		.uleb128 0xb
+ 1172 00b7 01       		.byte	0x1
+ 1173 00b8 55       		.uleb128 0x55
+ 1174 00b9 17       		.uleb128 0x17
+ 1175 00ba 01       		.uleb128 0x1
+ 1176 00bb 13       		.uleb128 0x13
+ 1177 00bc 00       		.byte	0
+ 1178 00bd 00       		.byte	0
+ 1179 00be 0F       		.uleb128 0xf
+ 1180 00bf 898201   		.uleb128 0x4109
+ 1181 00c2 01       		.byte	0x1
+ 1182 00c3 11       		.uleb128 0x11
+ 1183 00c4 01       		.uleb128 0x1
+ 1184 00c5 31       		.uleb128 0x31
+ 1185 00c6 13       		.uleb128 0x13
+ 1186 00c7 00       		.byte	0
+ 1187 00c8 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 25
+
+
+ 1188 00c9 10       		.uleb128 0x10
+ 1189 00ca 0B       		.uleb128 0xb
+ 1190 00cb 01       		.byte	0x1
+ 1191 00cc 11       		.uleb128 0x11
+ 1192 00cd 01       		.uleb128 0x1
+ 1193 00ce 12       		.uleb128 0x12
+ 1194 00cf 06       		.uleb128 0x6
+ 1195 00d0 01       		.uleb128 0x1
+ 1196 00d1 13       		.uleb128 0x13
+ 1197 00d2 00       		.byte	0
+ 1198 00d3 00       		.byte	0
+ 1199 00d4 11       		.uleb128 0x11
+ 1200 00d5 34       		.uleb128 0x34
+ 1201 00d6 00       		.byte	0
+ 1202 00d7 03       		.uleb128 0x3
+ 1203 00d8 0E       		.uleb128 0xe
+ 1204 00d9 3A       		.uleb128 0x3a
+ 1205 00da 0B       		.uleb128 0xb
+ 1206 00db 3B       		.uleb128 0x3b
+ 1207 00dc 0B       		.uleb128 0xb
+ 1208 00dd 49       		.uleb128 0x49
+ 1209 00de 13       		.uleb128 0x13
+ 1210 00df 02       		.uleb128 0x2
+ 1211 00e0 18       		.uleb128 0x18
+ 1212 00e1 00       		.byte	0
+ 1213 00e2 00       		.byte	0
+ 1214 00e3 12       		.uleb128 0x12
+ 1215 00e4 2E       		.uleb128 0x2e
+ 1216 00e5 00       		.byte	0
+ 1217 00e6 3F       		.uleb128 0x3f
+ 1218 00e7 19       		.uleb128 0x19
+ 1219 00e8 3C       		.uleb128 0x3c
+ 1220 00e9 19       		.uleb128 0x19
+ 1221 00ea 6E       		.uleb128 0x6e
+ 1222 00eb 0E       		.uleb128 0xe
+ 1223 00ec 03       		.uleb128 0x3
+ 1224 00ed 0E       		.uleb128 0xe
+ 1225 00ee 3A       		.uleb128 0x3a
+ 1226 00ef 0B       		.uleb128 0xb
+ 1227 00f0 3B       		.uleb128 0x3b
+ 1228 00f1 0B       		.uleb128 0xb
+ 1229 00f2 00       		.byte	0
+ 1230 00f3 00       		.byte	0
+ 1231 00f4 00       		.byte	0
+ 1232              		.section	.debug_loc,"",%progbits
+ 1233              	.Ldebug_loc0:
+ 1234              	.LLST0:
+ 1235 0000 00000000 		.4byte	.LVL2
+ 1236 0004 0D000000 		.4byte	.LVL4-1
+ 1237 0008 0100     		.2byte	0x1
+ 1238 000a 50       		.byte	0x50
+ 1239 000b 0D000000 		.4byte	.LVL4-1
+ 1240 000f 3E000000 		.4byte	.LFE2
+ 1241 0013 0400     		.2byte	0x4
+ 1242 0015 F3       		.byte	0xf3
+ 1243 0016 01       		.uleb128 0x1
+ 1244 0017 50       		.byte	0x50
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 26
+
+
+ 1245 0018 9F       		.byte	0x9f
+ 1246 0019 00000000 		.4byte	0
+ 1247 001d 00000000 		.4byte	0
+ 1248              	.LLST1:
+ 1249 0021 00000000 		.4byte	.LVL2
+ 1250 0025 0A000000 		.4byte	.LVL3
+ 1251 0029 0100     		.2byte	0x1
+ 1252 002b 51       		.byte	0x51
+ 1253 002c 0A000000 		.4byte	.LVL3
+ 1254 0030 3E000000 		.4byte	.LFE2
+ 1255 0034 0400     		.2byte	0x4
+ 1256 0036 F3       		.byte	0xf3
+ 1257 0037 01       		.uleb128 0x1
+ 1258 0038 51       		.byte	0x51
+ 1259 0039 9F       		.byte	0x9f
+ 1260 003a 00000000 		.4byte	0
+ 1261 003e 00000000 		.4byte	0
+ 1262              	.LLST2:
+ 1263 0042 00000000 		.4byte	.LVL2
+ 1264 0046 0D000000 		.4byte	.LVL4-1
+ 1265 004a 0100     		.2byte	0x1
+ 1266 004c 52       		.byte	0x52
+ 1267 004d 0D000000 		.4byte	.LVL4-1
+ 1268 0051 3E000000 		.4byte	.LFE2
+ 1269 0055 0100     		.2byte	0x1
+ 1270 0057 57       		.byte	0x57
+ 1271 0058 00000000 		.4byte	0
+ 1272 005c 00000000 		.4byte	0
+ 1273              	.LLST3:
+ 1274 0060 0E000000 		.4byte	.LVL4
+ 1275 0064 14000000 		.4byte	.LVL5
+ 1276 0068 0100     		.2byte	0x1
+ 1277 006a 50       		.byte	0x50
+ 1278 006b 18000000 		.4byte	.LVL6
+ 1279 006f 20000000 		.4byte	.LVL7
+ 1280 0073 0100     		.2byte	0x1
+ 1281 0075 50       		.byte	0x50
+ 1282 0076 24000000 		.4byte	.LVL8
+ 1283 007a 2B000000 		.4byte	.LVL9-1
+ 1284 007e 0100     		.2byte	0x1
+ 1285 0080 50       		.byte	0x50
+ 1286 0081 32000000 		.4byte	.LVL10
+ 1287 0085 3E000000 		.4byte	.LFE2
+ 1288 0089 0100     		.2byte	0x1
+ 1289 008b 54       		.byte	0x54
+ 1290 008c 00000000 		.4byte	0
+ 1291 0090 00000000 		.4byte	0
+ 1292              	.LLST4:
+ 1293 0094 00000000 		.4byte	.LVL12
+ 1294 0098 11000000 		.4byte	.LVL14-1
+ 1295 009c 0100     		.2byte	0x1
+ 1296 009e 50       		.byte	0x50
+ 1297 009f 11000000 		.4byte	.LVL14-1
+ 1298 00a3 62000000 		.4byte	.LFE3
+ 1299 00a7 0400     		.2byte	0x4
+ 1300 00a9 F3       		.byte	0xf3
+ 1301 00aa 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 27
+
+
+ 1302 00ab 50       		.byte	0x50
+ 1303 00ac 9F       		.byte	0x9f
+ 1304 00ad 00000000 		.4byte	0
+ 1305 00b1 00000000 		.4byte	0
+ 1306              	.LLST5:
+ 1307 00b5 00000000 		.4byte	.LVL12
+ 1308 00b9 0E000000 		.4byte	.LVL13
+ 1309 00bd 0100     		.2byte	0x1
+ 1310 00bf 51       		.byte	0x51
+ 1311 00c0 0E000000 		.4byte	.LVL13
+ 1312 00c4 16000000 		.4byte	.LVL15
+ 1313 00c8 0400     		.2byte	0x4
+ 1314 00ca F3       		.byte	0xf3
+ 1315 00cb 01       		.uleb128 0x1
+ 1316 00cc 51       		.byte	0x51
+ 1317 00cd 9F       		.byte	0x9f
+ 1318 00ce 16000000 		.4byte	.LVL15
+ 1319 00d2 30000000 		.4byte	.LVL20
+ 1320 00d6 0600     		.2byte	0x6
+ 1321 00d8 74       		.byte	0x74
+ 1322 00d9 00       		.sleb128 0
+ 1323 00da 08       		.byte	0x8
+ 1324 00db 80       		.byte	0x80
+ 1325 00dc 21       		.byte	0x21
+ 1326 00dd 9F       		.byte	0x9f
+ 1327 00de 44000000 		.4byte	.LVL24
+ 1328 00e2 46000000 		.4byte	.LVL25
+ 1329 00e6 0600     		.2byte	0x6
+ 1330 00e8 74       		.byte	0x74
+ 1331 00e9 00       		.sleb128 0
+ 1332 00ea 08       		.byte	0x8
+ 1333 00eb 80       		.byte	0x80
+ 1334 00ec 21       		.byte	0x21
+ 1335 00ed 9F       		.byte	0x9f
+ 1336 00ee 00000000 		.4byte	0
+ 1337 00f2 00000000 		.4byte	0
+ 1338              	.LLST6:
+ 1339 00f6 00000000 		.4byte	.LVL12
+ 1340 00fa 11000000 		.4byte	.LVL14-1
+ 1341 00fe 0100     		.2byte	0x1
+ 1342 0100 52       		.byte	0x52
+ 1343 0101 11000000 		.4byte	.LVL14-1
+ 1344 0105 62000000 		.4byte	.LFE3
+ 1345 0109 0400     		.2byte	0x4
+ 1346 010b F3       		.byte	0xf3
+ 1347 010c 01       		.uleb128 0x1
+ 1348 010d 52       		.byte	0x52
+ 1349 010e 9F       		.byte	0x9f
+ 1350 010f 00000000 		.4byte	0
+ 1351 0113 00000000 		.4byte	0
+ 1352              	.LLST7:
+ 1353 0117 00000000 		.4byte	.LVL12
+ 1354 011b 11000000 		.4byte	.LVL14-1
+ 1355 011f 0100     		.2byte	0x1
+ 1356 0121 53       		.byte	0x53
+ 1357 0122 11000000 		.4byte	.LVL14-1
+ 1358 0126 62000000 		.4byte	.LFE3
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 28
+
+
+ 1359 012a 0100     		.2byte	0x1
+ 1360 012c 57       		.byte	0x57
+ 1361 012d 00000000 		.4byte	0
+ 1362 0131 00000000 		.4byte	0
+ 1363              	.LLST8:
+ 1364 0135 12000000 		.4byte	.LVL14
+ 1365 0139 1A000000 		.4byte	.LVL16
+ 1366 013d 0100     		.2byte	0x1
+ 1367 013f 50       		.byte	0x50
+ 1368 0140 1E000000 		.4byte	.LVL17
+ 1369 0144 26000000 		.4byte	.LVL18
+ 1370 0148 0100     		.2byte	0x1
+ 1371 014a 50       		.byte	0x50
+ 1372 014b 2A000000 		.4byte	.LVL19
+ 1373 014f 30000000 		.4byte	.LVL20
+ 1374 0153 0100     		.2byte	0x1
+ 1375 0155 50       		.byte	0x50
+ 1376 0156 44000000 		.4byte	.LVL24
+ 1377 015a 46000000 		.4byte	.LVL25
+ 1378 015e 0100     		.2byte	0x1
+ 1379 0160 50       		.byte	0x50
+ 1380 0161 54000000 		.4byte	.LVL27
+ 1381 0165 62000000 		.4byte	.LFE3
+ 1382 0169 0100     		.2byte	0x1
+ 1383 016b 55       		.byte	0x55
+ 1384 016c 00000000 		.4byte	0
+ 1385 0170 00000000 		.4byte	0
+ 1386              	.LLST9:
+ 1387 0174 30000000 		.4byte	.LVL20
+ 1388 0178 40000000 		.4byte	.LVL22
+ 1389 017c 0100     		.2byte	0x1
+ 1390 017e 54       		.byte	0x54
+ 1391 017f 42000000 		.4byte	.LVL23
+ 1392 0183 44000000 		.4byte	.LVL24
+ 1393 0187 0100     		.2byte	0x1
+ 1394 0189 54       		.byte	0x54
+ 1395 018a 46000000 		.4byte	.LVL25
+ 1396 018e 54000000 		.4byte	.LVL27
+ 1397 0192 0100     		.2byte	0x1
+ 1398 0194 54       		.byte	0x54
+ 1399 0195 00000000 		.4byte	0
+ 1400 0199 00000000 		.4byte	0
+ 1401              	.LLST10:
+ 1402 019d 00000000 		.4byte	.LVL29
+ 1403 01a1 0B000000 		.4byte	.LVL31-1
+ 1404 01a5 0100     		.2byte	0x1
+ 1405 01a7 50       		.byte	0x50
+ 1406 01a8 0B000000 		.4byte	.LVL31-1
+ 1407 01ac 2E000000 		.4byte	.LFE4
+ 1408 01b0 0400     		.2byte	0x4
+ 1409 01b2 F3       		.byte	0xf3
+ 1410 01b3 01       		.uleb128 0x1
+ 1411 01b4 50       		.byte	0x50
+ 1412 01b5 9F       		.byte	0x9f
+ 1413 01b6 00000000 		.4byte	0
+ 1414 01ba 00000000 		.4byte	0
+ 1415              	.LLST11:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 29
+
+
+ 1416 01be 00000000 		.4byte	.LVL29
+ 1417 01c2 08000000 		.4byte	.LVL30
+ 1418 01c6 0100     		.2byte	0x1
+ 1419 01c8 51       		.byte	0x51
+ 1420 01c9 08000000 		.4byte	.LVL30
+ 1421 01cd 2E000000 		.4byte	.LFE4
+ 1422 01d1 0400     		.2byte	0x4
+ 1423 01d3 F3       		.byte	0xf3
+ 1424 01d4 01       		.uleb128 0x1
+ 1425 01d5 51       		.byte	0x51
+ 1426 01d6 9F       		.byte	0x9f
+ 1427 01d7 00000000 		.4byte	0
+ 1428 01db 00000000 		.4byte	0
+ 1429              	.LLST12:
+ 1430 01df 00000000 		.4byte	.LVL29
+ 1431 01e3 0B000000 		.4byte	.LVL31-1
+ 1432 01e7 0100     		.2byte	0x1
+ 1433 01e9 52       		.byte	0x52
+ 1434 01ea 0B000000 		.4byte	.LVL31-1
+ 1435 01ee 2E000000 		.4byte	.LFE4
+ 1436 01f2 0400     		.2byte	0x4
+ 1437 01f4 F3       		.byte	0xf3
+ 1438 01f5 01       		.uleb128 0x1
+ 1439 01f6 52       		.byte	0x52
+ 1440 01f7 9F       		.byte	0x9f
+ 1441 01f8 00000000 		.4byte	0
+ 1442 01fc 00000000 		.4byte	0
+ 1443              	.LLST13:
+ 1444 0200 0C000000 		.4byte	.LVL31
+ 1445 0204 12000000 		.4byte	.LVL32
+ 1446 0208 0100     		.2byte	0x1
+ 1447 020a 50       		.byte	0x50
+ 1448 020b 16000000 		.4byte	.LVL33
+ 1449 020f 1C000000 		.4byte	.LVL34
+ 1450 0213 0100     		.2byte	0x1
+ 1451 0215 50       		.byte	0x50
+ 1452 0216 22000000 		.4byte	.LVL36
+ 1453 021a 2E000000 		.4byte	.LFE4
+ 1454 021e 0100     		.2byte	0x1
+ 1455 0220 54       		.byte	0x54
+ 1456 0221 00000000 		.4byte	0
+ 1457 0225 00000000 		.4byte	0
+ 1458              	.LLST14:
+ 1459 0229 00000000 		.4byte	.LVL38
+ 1460 022d 0D000000 		.4byte	.LVL40-1
+ 1461 0231 0100     		.2byte	0x1
+ 1462 0233 50       		.byte	0x50
+ 1463 0234 0D000000 		.4byte	.LVL40-1
+ 1464 0238 42000000 		.4byte	.LFE5
+ 1465 023c 0400     		.2byte	0x4
+ 1466 023e F3       		.byte	0xf3
+ 1467 023f 01       		.uleb128 0x1
+ 1468 0240 50       		.byte	0x50
+ 1469 0241 9F       		.byte	0x9f
+ 1470 0242 00000000 		.4byte	0
+ 1471 0246 00000000 		.4byte	0
+ 1472              	.LLST15:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 30
+
+
+ 1473 024a 00000000 		.4byte	.LVL38
+ 1474 024e 0A000000 		.4byte	.LVL39
+ 1475 0252 0100     		.2byte	0x1
+ 1476 0254 51       		.byte	0x51
+ 1477 0255 0A000000 		.4byte	.LVL39
+ 1478 0259 42000000 		.4byte	.LFE5
+ 1479 025d 0400     		.2byte	0x4
+ 1480 025f F3       		.byte	0xf3
+ 1481 0260 01       		.uleb128 0x1
+ 1482 0261 51       		.byte	0x51
+ 1483 0262 9F       		.byte	0x9f
+ 1484 0263 00000000 		.4byte	0
+ 1485 0267 00000000 		.4byte	0
+ 1486              	.LLST16:
+ 1487 026b 00000000 		.4byte	.LVL38
+ 1488 026f 0D000000 		.4byte	.LVL40-1
+ 1489 0273 0100     		.2byte	0x1
+ 1490 0275 52       		.byte	0x52
+ 1491 0276 0D000000 		.4byte	.LVL40-1
+ 1492 027a 42000000 		.4byte	.LFE5
+ 1493 027e 0400     		.2byte	0x4
+ 1494 0280 F3       		.byte	0xf3
+ 1495 0281 01       		.uleb128 0x1
+ 1496 0282 52       		.byte	0x52
+ 1497 0283 9F       		.byte	0x9f
+ 1498 0284 00000000 		.4byte	0
+ 1499 0288 00000000 		.4byte	0
+ 1500              	.LLST17:
+ 1501 028c 00000000 		.4byte	.LVL38
+ 1502 0290 0D000000 		.4byte	.LVL40-1
+ 1503 0294 0100     		.2byte	0x1
+ 1504 0296 53       		.byte	0x53
+ 1505 0297 0D000000 		.4byte	.LVL40-1
+ 1506 029b 42000000 		.4byte	.LFE5
+ 1507 029f 0100     		.2byte	0x1
+ 1508 02a1 56       		.byte	0x56
+ 1509 02a2 00000000 		.4byte	0
+ 1510 02a6 00000000 		.4byte	0
+ 1511              	.LLST18:
+ 1512 02aa 0E000000 		.4byte	.LVL40
+ 1513 02ae 14000000 		.4byte	.LVL41
+ 1514 02b2 0100     		.2byte	0x1
+ 1515 02b4 50       		.byte	0x50
+ 1516 02b5 18000000 		.4byte	.LVL42
+ 1517 02b9 22000000 		.4byte	.LVL44
+ 1518 02bd 0100     		.2byte	0x1
+ 1519 02bf 50       		.byte	0x50
+ 1520 02c0 26000000 		.4byte	.LVL45
+ 1521 02c4 2B000000 		.4byte	.LVL46-1
+ 1522 02c8 0100     		.2byte	0x1
+ 1523 02ca 50       		.byte	0x50
+ 1524 02cb 30000000 		.4byte	.LVL47
+ 1525 02cf 36000000 		.4byte	.LVL50
+ 1526 02d3 0100     		.2byte	0x1
+ 1527 02d5 50       		.byte	0x50
+ 1528 02d6 36000000 		.4byte	.LVL50
+ 1529 02da 42000000 		.4byte	.LFE5
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 31
+
+
+ 1530 02de 0100     		.2byte	0x1
+ 1531 02e0 54       		.byte	0x54
+ 1532 02e1 00000000 		.4byte	0
+ 1533 02e5 00000000 		.4byte	0
+ 1534              	.LLST19:
+ 1535 02e9 1E000000 		.4byte	.LVL43
+ 1536 02ed 32000000 		.4byte	.LVL48
+ 1537 02f1 0100     		.2byte	0x1
+ 1538 02f3 54       		.byte	0x54
+ 1539 02f4 34000000 		.4byte	.LVL49
+ 1540 02f8 36000000 		.4byte	.LVL50
+ 1541 02fc 0100     		.2byte	0x1
+ 1542 02fe 54       		.byte	0x54
+ 1543 02ff 00000000 		.4byte	0
+ 1544 0303 00000000 		.4byte	0
+ 1545              	.LLST20:
+ 1546 0307 00000000 		.4byte	.LVL52
+ 1547 030b 07000000 		.4byte	.LVL53-1
+ 1548 030f 0100     		.2byte	0x1
+ 1549 0311 50       		.byte	0x50
+ 1550 0312 07000000 		.4byte	.LVL53-1
+ 1551 0316 18000000 		.4byte	.LFE6
+ 1552 031a 0400     		.2byte	0x4
+ 1553 031c F3       		.byte	0xf3
+ 1554 031d 01       		.uleb128 0x1
+ 1555 031e 50       		.byte	0x50
+ 1556 031f 9F       		.byte	0x9f
+ 1557 0320 00000000 		.4byte	0
+ 1558 0324 00000000 		.4byte	0
+ 1559              		.section	.debug_aranges,"",%progbits
+ 1560 0000 4C000000 		.4byte	0x4c
+ 1561 0004 0200     		.2byte	0x2
+ 1562 0006 00000000 		.4byte	.Ldebug_info0
+ 1563 000a 04       		.byte	0x4
+ 1564 000b 00       		.byte	0
+ 1565 000c 0000     		.2byte	0
+ 1566 000e 0000     		.2byte	0
+ 1567 0010 00000000 		.4byte	.LFB0
+ 1568 0014 0A000000 		.4byte	.LFE0-.LFB0
+ 1569 0018 00000000 		.4byte	.LFB1
+ 1570 001c 0A000000 		.4byte	.LFE1-.LFB1
+ 1571 0020 00000000 		.4byte	.LFB2
+ 1572 0024 3E000000 		.4byte	.LFE2-.LFB2
+ 1573 0028 00000000 		.4byte	.LFB3
+ 1574 002c 62000000 		.4byte	.LFE3-.LFB3
+ 1575 0030 00000000 		.4byte	.LFB4
+ 1576 0034 2E000000 		.4byte	.LFE4-.LFB4
+ 1577 0038 00000000 		.4byte	.LFB5
+ 1578 003c 42000000 		.4byte	.LFE5-.LFB5
+ 1579 0040 00000000 		.4byte	.LFB6
+ 1580 0044 18000000 		.4byte	.LFE6-.LFB6
+ 1581 0048 00000000 		.4byte	0
+ 1582 004c 00000000 		.4byte	0
+ 1583              		.section	.debug_ranges,"",%progbits
+ 1584              	.Ldebug_ranges0:
+ 1585 0000 30000000 		.4byte	.LBB2
+ 1586 0004 44000000 		.4byte	.LBE2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 32
+
+
+ 1587 0008 46000000 		.4byte	.LBB3
+ 1588 000c 54000000 		.4byte	.LBE3
+ 1589 0010 00000000 		.4byte	0
+ 1590 0014 00000000 		.4byte	0
+ 1591 0018 00000000 		.4byte	.LFB0
+ 1592 001c 0A000000 		.4byte	.LFE0
+ 1593 0020 00000000 		.4byte	.LFB1
+ 1594 0024 0A000000 		.4byte	.LFE1
+ 1595 0028 00000000 		.4byte	.LFB2
+ 1596 002c 3E000000 		.4byte	.LFE2
+ 1597 0030 00000000 		.4byte	.LFB3
+ 1598 0034 62000000 		.4byte	.LFE3
+ 1599 0038 00000000 		.4byte	.LFB4
+ 1600 003c 2E000000 		.4byte	.LFE4
+ 1601 0040 00000000 		.4byte	.LFB5
+ 1602 0044 42000000 		.4byte	.LFE5
+ 1603 0048 00000000 		.4byte	.LFB6
+ 1604 004c 18000000 		.4byte	.LFE6
+ 1605 0050 00000000 		.4byte	0
+ 1606 0054 00000000 		.4byte	0
+ 1607              		.section	.debug_line,"",%progbits
+ 1608              	.Ldebug_line0:
+ 1609 0000 05020000 		.section	.debug_str,"MS",%progbits,1
+ 1609      02005A01 
+ 1609      00000201 
+ 1609      FB0E0D00 
+ 1609      01010101 
+ 1610              	.LASF9:
+ 1611 0000 5F5F7569 		.ascii	"__uint8_t\000"
+ 1611      6E74385F 
+ 1611      7400
+ 1612              	.LASF37:
+ 1613 000a 4932435F 		.ascii	"I2C_Master_MasterReadByte\000"
+ 1613      4D617374 
+ 1613      65725F4D 
+ 1613      61737465 
+ 1613      72526561 
+ 1614              	.LASF35:
+ 1615 0024 4932435F 		.ascii	"I2C_Master_MasterWriteByte\000"
+ 1615      4D617374 
+ 1615      65725F4D 
+ 1615      61737465 
+ 1615      72577269 
+ 1616              	.LASF26:
+ 1617 003f 72656769 		.ascii	"register_count\000"
+ 1617      73746572 
+ 1617      5F636F75 
+ 1617      6E7400
+ 1618              	.LASF40:
+ 1619 004e 4932435F 		.ascii	"I2C_Interface.c\000"
+ 1619      496E7465 
+ 1619      72666163 
+ 1619      652E6300 
+ 1620              	.LASF16:
+ 1621 005e 4572726F 		.ascii	"ErrorCode\000"
+ 1621      72436F64 
+ 1621      6500
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 33
+
+
+ 1622              	.LASF31:
+ 1623 0068 4932435F 		.ascii	"I2C_Peripheral_IsDeviceConnected\000"
+ 1623      50657269 
+ 1623      70686572 
+ 1623      616C5F49 
+ 1623      73446576 
+ 1624              	.LASF41:
+ 1625 0089 433A5C55 		.ascii	"C:\\Users\\Lory\\Desktop\\psoc_assignment_git\\PSoC"
+ 1625      73657273 
+ 1625      5C4C6F72 
+ 1625      795C4465 
+ 1625      736B746F 
+ 1626 00b7 5F355F41 		.ascii	"_5_Assignment\\AY1920_II_HW_05_GUALNIERA_LORENZO\\A"
+ 1626      73736967 
+ 1626      6E6D656E 
+ 1626      745C4159 
+ 1626      31393230 
+ 1627 00e8 59313932 		.ascii	"Y1920_II_HW_05_PROJ_2.cydsn\000"
+ 1627      305F4949 
+ 1627      5F48575F 
+ 1627      30355F50 
+ 1627      524F4A5F 
+ 1628              	.LASF11:
+ 1629 0104 666C6F61 		.ascii	"float\000"
+ 1629      7400
+ 1630              	.LASF24:
+ 1631 010a 64617461 		.ascii	"data\000"
+ 1631      00
+ 1632              	.LASF1:
+ 1633 010f 756E7369 		.ascii	"unsigned char\000"
+ 1633      676E6564 
+ 1633      20636861 
+ 1633      7200
+ 1634              	.LASF39:
+ 1635 011d 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1635      43313120 
+ 1635      352E342E 
+ 1635      31203230 
+ 1635      31363036 
+ 1636 0150 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1636      20726576 
+ 1636      6973696F 
+ 1636      6E203233 
+ 1636      37373135 
+ 1637 0183 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1637      66756E63 
+ 1637      74696F6E 
+ 1637      2D736563 
+ 1637      74696F6E 
+ 1638              	.LASF30:
+ 1639 01ab 4932435F 		.ascii	"I2C_Peripheral_WriteRegisterMulti\000"
+ 1639      50657269 
+ 1639      70686572 
+ 1639      616C5F57 
+ 1639      72697465 
+ 1640              	.LASF3:
+ 1641 01cd 73686F72 		.ascii	"short unsigned int\000"
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 34
+
+
+ 1641      7420756E 
+ 1641      7369676E 
+ 1641      65642069 
+ 1641      6E7400
+ 1642              	.LASF23:
+ 1643 01e0 72656769 		.ascii	"register_address\000"
+ 1643      73746572 
+ 1643      5F616464 
+ 1643      72657373 
+ 1643      00
+ 1644              	.LASF36:
+ 1645 01f1 4932435F 		.ascii	"I2C_Master_MasterSendRestart\000"
+ 1645      4D617374 
+ 1645      65725F4D 
+ 1645      61737465 
+ 1645      7253656E 
+ 1646              	.LASF28:
+ 1647 020e 636F756E 		.ascii	"counter\000"
+ 1647      74657200 
+ 1648              	.LASF32:
+ 1649 0216 4932435F 		.ascii	"I2C_Master_Start\000"
+ 1649      4D617374 
+ 1649      65725F53 
+ 1649      74617274 
+ 1649      00
+ 1650              	.LASF12:
+ 1651 0227 646F7562 		.ascii	"double\000"
+ 1651      6C6500
+ 1652              	.LASF25:
+ 1653 022e 4932435F 		.ascii	"I2C_Peripheral_ReadRegisterMulti\000"
+ 1653      50657269 
+ 1653      70686572 
+ 1653      616C5F52 
+ 1653      65616452 
+ 1654              	.LASF29:
+ 1655 024f 4932435F 		.ascii	"I2C_Peripheral_WriteRegister\000"
+ 1655      50657269 
+ 1655      70686572 
+ 1655      616C5F57 
+ 1655      72697465 
+ 1656              	.LASF5:
+ 1657 026c 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1657      20756E73 
+ 1657      69676E65 
+ 1657      6420696E 
+ 1657      7400
+ 1658              	.LASF8:
+ 1659 027e 756E7369 		.ascii	"unsigned int\000"
+ 1659      676E6564 
+ 1659      20696E74 
+ 1659      00
+ 1660              	.LASF7:
+ 1661 028b 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1661      206C6F6E 
+ 1661      6720756E 
+ 1661      7369676E 
+ 1661      65642069 
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 35
+
+
+ 1662              	.LASF10:
+ 1663 02a2 75696E74 		.ascii	"uint8_t\000"
+ 1663      385F7400 
+ 1664              	.LASF15:
+ 1665 02aa 4552524F 		.ascii	"ERROR\000"
+ 1665      5200
+ 1666              	.LASF34:
+ 1667 02b0 4932435F 		.ascii	"I2C_Master_MasterSendStart\000"
+ 1667      4D617374 
+ 1667      65725F4D 
+ 1667      61737465 
+ 1667      7253656E 
+ 1668              	.LASF18:
+ 1669 02cb 73697A65 		.ascii	"sizetype\000"
+ 1669      74797065 
+ 1669      00
+ 1670              	.LASF27:
+ 1671 02d4 6572726F 		.ascii	"error\000"
+ 1671      7200
+ 1672              	.LASF6:
+ 1673 02da 6C6F6E67 		.ascii	"long long int\000"
+ 1673      206C6F6E 
+ 1673      6720696E 
+ 1673      7400
+ 1674              	.LASF38:
+ 1675 02e8 4932435F 		.ascii	"I2C_Master_MasterSendStop\000"
+ 1675      4D617374 
+ 1675      65725F4D 
+ 1675      61737465 
+ 1675      7253656E 
+ 1676              	.LASF20:
+ 1677 0302 4932435F 		.ascii	"I2C_Peripheral_Stop\000"
+ 1677      50657269 
+ 1677      70686572 
+ 1677      616C5F53 
+ 1677      746F7000 
+ 1678              	.LASF21:
+ 1679 0316 4932435F 		.ascii	"I2C_Peripheral_ReadRegister\000"
+ 1679      50657269 
+ 1679      70686572 
+ 1679      616C5F52 
+ 1679      65616452 
+ 1680              	.LASF2:
+ 1681 0332 73686F72 		.ascii	"short int\000"
+ 1681      7420696E 
+ 1681      7400
+ 1682              	.LASF22:
+ 1683 033c 64657669 		.ascii	"device_address\000"
+ 1683      63655F61 
+ 1683      64647265 
+ 1683      737300
+ 1684              	.LASF33:
+ 1685 034b 4932435F 		.ascii	"I2C_Master_Stop\000"
+ 1685      4D617374 
+ 1685      65725F53 
+ 1685      746F7000 
+ 1686              	.LASF14:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccIOt6dn.s 			page 36
+
+
+ 1687 035b 4E4F5F45 		.ascii	"NO_ERROR\000"
+ 1687      52524F52 
+ 1687      00
+ 1688              	.LASF4:
+ 1689 0364 6C6F6E67 		.ascii	"long int\000"
+ 1689      20696E74 
+ 1689      00
+ 1690              	.LASF13:
+ 1691 036d 63686172 		.ascii	"char\000"
+ 1691      00
+ 1692              	.LASF17:
+ 1693 0372 6C6F6E67 		.ascii	"long double\000"
+ 1693      20646F75 
+ 1693      626C6500 
+ 1694              	.LASF0:
+ 1695 037e 7369676E 		.ascii	"signed char\000"
+ 1695      65642063 
+ 1695      68617200 
+ 1696              	.LASF19:
+ 1697 038a 4932435F 		.ascii	"I2C_Peripheral_Start\000"
+ 1697      50657269 
+ 1697      70686572 
+ 1697      616C5F53 
+ 1697      74617274 
+ 1698              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
