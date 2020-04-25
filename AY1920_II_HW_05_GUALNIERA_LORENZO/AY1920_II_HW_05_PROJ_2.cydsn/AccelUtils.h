@@ -20,6 +20,7 @@
     #include "stdbool.h"
     
     /* Function prototypes. */
+    int16_t MinMaxScaler(int16_t num, int16_t oldMin, int16_t oldMax, int16_t newMin, int16_t newMax);
     int16_t RightAdjustVal(uint8_t *data, bool lowerFirst, uint8_t adjustShift);
     
 #endif

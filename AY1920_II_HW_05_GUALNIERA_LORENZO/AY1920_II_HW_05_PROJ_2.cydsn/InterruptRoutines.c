@@ -48,6 +48,7 @@ CY_ISR(ISR_ACC_CUSTOM)
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
         int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers data
+        xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mG units
         
         /* 
          * TODO: Read Y axis values over I2C communication and process the data. 
@@ -55,6 +56,7 @@ CY_ISR(ISR_ACC_CUSTOM)
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
         int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data    
+        yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mG units
         
         /* 
          * TODO: Read Z axis values over I2C communication and process the data. 
@@ -62,6 +64,7 @@ CY_ISR(ISR_ACC_CUSTOM)
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
         int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data
+        zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mG units
     }
 }
 

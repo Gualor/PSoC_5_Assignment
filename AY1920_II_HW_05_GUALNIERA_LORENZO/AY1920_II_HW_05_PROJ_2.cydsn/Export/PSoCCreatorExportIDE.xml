@@ -39,10 +39,12 @@
           <File BuildType="BUILD" Toolchain="">main.c</File>
           <File BuildType="BUILD" Toolchain="">I2C_Interface.c</File>
           <File BuildType="BUILD" Toolchain="">InterruptRoutines.c</File>
+          <File BuildType="BUILD" Toolchain="">AccelUtils.c</File>
           <File BuildType="BUILD" Toolchain="">cyapicallbacks.h</File>
           <File BuildType="BUILD" Toolchain="">I2C_Interface.h</File>
           <File BuildType="BUILD" Toolchain="">ErrorCodes.h</File>
           <File BuildType="BUILD" Toolchain="">InterruptRoutines.h</File>
+          <File BuildType="BUILD" Toolchain="">AccelUtils.h</File>
         </Files>
       </Folder>
       <Folder BuildType="STRICT" Path="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\Generated_Source\PSoC5">
