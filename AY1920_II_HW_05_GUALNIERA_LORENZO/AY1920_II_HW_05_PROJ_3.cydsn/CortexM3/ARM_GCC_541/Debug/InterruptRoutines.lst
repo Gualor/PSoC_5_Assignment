@@ -1,0 +1,1425 @@
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"InterruptRoutines.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.global	__aeabi_i2f
+  20              		.section	.text.ISR_ACC_CUSTOM,"ax",%progbits
+  21              		.align	2
+  22              		.global	ISR_ACC_CUSTOM
+  23              		.thumb
+  24              		.thumb_func
+  25              		.type	ISR_ACC_CUSTOM, %function
+  26              	ISR_ACC_CUSTOM:
+  27              	.LFB63:
+  28              		.file 1 "InterruptRoutines.c"
+   1:InterruptRoutines.c **** /* ========================================
+   2:InterruptRoutines.c ****  *
+   3:InterruptRoutines.c ****  * In this file a custom interrupt is defined.
+   4:InterruptRoutines.c ****  * The purpose of this ISR is to handle LIS3DH
+   5:InterruptRoutines.c ****  * data retrieval, processing and transmission.
+   6:InterruptRoutines.c ****  * The ISR is sincronized with the data rate
+   7:InterruptRoutines.c ****  * of the accelerometer and is triggered by a
+   8:InterruptRoutines.c ****  * timer every 10ms (100Hz).
+   9:InterruptRoutines.c ****  *
+  10:InterruptRoutines.c ****  * -> Data retrieval (I2C): 
+  11:InterruptRoutines.c ****  * Readings of inertial measurements is archived 
+  12:InterruptRoutines.c ****  * using I2C communication. First the status 
+  13:InterruptRoutines.c ****  * register is read to check for new available data,
+  14:InterruptRoutines.c ****  * then low and high registers of the axis are
+  15:InterruptRoutines.c ****  * retrieved and stored in a temporary uint8 buffer.
+  16:InterruptRoutines.c ****  *
+  17:InterruptRoutines.c ****  * -> Data processing:
+  18:InterruptRoutines.c ****  * Low and high registers are merged together, then right
+  19:InterruptRoutines.c ****  * adjusted and stored in a signed 16-bit integer variable.
+  20:InterruptRoutines.c ****  * Being the measurement a signed 10-bit value, it ranges
+  21:InterruptRoutines.c ****  * from -512 to 511, representing an FSR of +-2g units. 
+  22:InterruptRoutines.c ****  * The value is then converted to a new scale of +-2000mg 
+  23:InterruptRoutines.c ****  * without losing data precision.
+  24:InterruptRoutines.c ****  *
+  25:InterruptRoutines.c ****  * -> Data transmission (UART):
+  26:InterruptRoutines.c ****  * All 3 axes processed measurements are divided in chunks
+  27:InterruptRoutines.c ****  * of 8-bit data each and placed in a buffer as follows:
+  28:InterruptRoutines.c ****  * 
+  29:InterruptRoutines.c ****  * [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | Z_HIGH | TAIL ]
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 2
+
+
+  30:InterruptRoutines.c ****  *
+  31:InterruptRoutines.c ****  * for a total length of 64 bit to be send every 10ms, giving 
+  32:InterruptRoutines.c ****  * us a baudrate (or bitrate in this case) of 6400. To ensure 
+  33:InterruptRoutines.c ****  * a stable and reliable communication over UART, the data 
+  34:InterruptRoutines.c ****  * buffer is transmitted with a baudrate of 9600.
+  35:InterruptRoutines.c ****  *
+  36:InterruptRoutines.c ****  * ========================================
+  37:InterruptRoutines.c **** */
+  38:InterruptRoutines.c **** 
+  39:InterruptRoutines.c **** 
+  40:InterruptRoutines.c **** /* Include project dependencies. */
+  41:InterruptRoutines.c **** #include "InterruptRoutines.h"
+  42:InterruptRoutines.c **** 
+  43:InterruptRoutines.c **** 
+  44:InterruptRoutines.c **** /* Custom ISR function to read, process and transmit LIS3DH inertial measurements data. */
+  45:InterruptRoutines.c **** CY_ISR(ISR_ACC_CUSTOM)
+  46:InterruptRoutines.c **** {
+  29              		.loc 1 46 0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33 0000 70B5     		push	{r4, r5, r6, lr}
+  34              		.cfi_def_cfa_offset 16
+  35              		.cfi_offset 4, -16
+  36              		.cfi_offset 5, -12
+  37              		.cfi_offset 6, -8
+  38              		.cfi_offset 14, -4
+  39 0002 82B0     		sub	sp, sp, #8
+  40              		.cfi_def_cfa_offset 24
+  47:InterruptRoutines.c ****     /* Bring interrupt line low. */
+  48:InterruptRoutines.c ****     ISR_Timer_ReadStatusRegister();
+  41              		.loc 1 48 0
+  42 0004 FFF7FEFF 		bl	ISR_Timer_ReadStatusRegister
+  43              	.LVL0:
+  49:InterruptRoutines.c **** 
+  50:InterruptRoutines.c ****     /* Read accelerometer status register. */
+  51:InterruptRoutines.c ****     error = I2C_Peripheral_ReadRegister(LIS3DH_DEVICE_ADDRESS, LIS3DH_STATUS_REG, &statusReg);
+  44              		.loc 1 51 0
+  45 0008 374A     		ldr	r2, .L4
+  46 000a 2721     		movs	r1, #39
+  47 000c 1820     		movs	r0, #24
+  48 000e FFF7FEFF 		bl	I2C_Peripheral_ReadRegister
+  49              	.LVL1:
+  50 0012 364B     		ldr	r3, .L4+4
+  51 0014 1870     		strb	r0, [r3]
+  52:InterruptRoutines.c ****     if (error == ERROR) return; // If error occurs return from the function
+  52              		.loc 1 52 0
+  53 0016 0128     		cmp	r0, #1
+  54 0018 64D0     		beq	.L1
+  53:InterruptRoutines.c ****     
+  54:InterruptRoutines.c ****     /* If 3-axes accelerometer data is ready for reading. */
+  55:InterruptRoutines.c ****     if ((statusReg & LIS3DH_DATA_READY_MASK) == LIS3DH_DATA_READY_MASK)
+  55              		.loc 1 55 0
+  56 001a 334B     		ldr	r3, .L4
+  57 001c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  58 001e 13F0080F 		tst	r3, #8
+  59 0022 5FD0     		beq	.L1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 3
+
+
+  60              	.LBB2:
+  56:InterruptRoutines.c ****     {
+  57:InterruptRoutines.c ****         /* 
+  58:InterruptRoutines.c ****          * Read X axis values over I2C communication and process the data. 
+  59:InterruptRoutines.c ****          */ 
+  60:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuf
+  61              		.loc 1 60 0
+  62 0024 324B     		ldr	r3, .L4+8
+  63 0026 0222     		movs	r2, #2
+  64 0028 2821     		movs	r1, #40
+  65 002a 1820     		movs	r0, #24
+  66 002c FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+  67              	.LVL2:
+  68 0030 2E4B     		ldr	r3, .L4+4
+  69 0032 1870     		strb	r0, [r3]
+  61:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+  70              		.loc 1 61 0
+  71 0034 0128     		cmp	r0, #1
+  72 0036 55D0     		beq	.L1
+  62:InterruptRoutines.c ****         int16_t xAxis = RightAdjustVal(tempBuffer, true, 4); // Merge X axis low and high registers
+  73              		.loc 1 62 0
+  74 0038 2D4C     		ldr	r4, .L4+8
+  75 003a 0422     		movs	r2, #4
+  76 003c 0121     		movs	r1, #1
+  77 003e 2046     		mov	r0, r4
+  78 0040 FFF7FEFF 		bl	RightAdjustVal
+  79              	.LVL3:
+  63:InterruptRoutines.c ****         
+  64:InterruptRoutines.c ****         /* Convert value in m/s^2 units. */
+  65:InterruptRoutines.c ****         float xAccel = MinMaxScaler(xAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_
+  80              		.loc 1 65 0
+  81 0044 FFF7FEFF 		bl	__aeabi_i2f
+  82              	.LVL4:
+  83 0048 2A4B     		ldr	r3, .L4+12
+  84 004a 0093     		str	r3, [sp]	@ float
+  85 004c 2A4B     		ldr	r3, .L4+16
+  86 004e 4FF08A42 		mov	r2, #1157627904
+  87 0052 4FF04541 		mov	r1, #-989855744
+  88 0056 FFF7FEFF 		bl	MinMaxScaler
+  89              	.LVL5:
+  90 005a 0546     		mov	r5, r0
+  91              	.LVL6:
+  66:InterruptRoutines.c ****         
+  67:InterruptRoutines.c ****         /* 
+  68:InterruptRoutines.c ****          * Read Y axis values over I2C communication and process the data. 
+  69:InterruptRoutines.c ****          */
+  70:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuf
+  92              		.loc 1 70 0
+  93 005c 2346     		mov	r3, r4
+  94 005e 0222     		movs	r2, #2
+  95 0060 2A21     		movs	r1, #42
+  96 0062 1820     		movs	r0, #24
+  97              	.LVL7:
+  98 0064 FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+  99              	.LVL8:
+ 100 0068 204B     		ldr	r3, .L4+4
+ 101 006a 1870     		strb	r0, [r3]
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 4
+
+
+  71:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+ 102              		.loc 1 71 0
+ 103 006c 0128     		cmp	r0, #1
+ 104 006e 39D0     		beq	.L1
+  72:InterruptRoutines.c ****         int16_t yAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Y axis low and high registers
+ 105              		.loc 1 72 0
+ 106 0070 0422     		movs	r2, #4
+ 107 0072 0121     		movs	r1, #1
+ 108 0074 2046     		mov	r0, r4
+ 109 0076 FFF7FEFF 		bl	RightAdjustVal
+ 110              	.LVL9:
+  73:InterruptRoutines.c ****         
+  74:InterruptRoutines.c ****         /* Convert value in m/s^2 units. */
+  75:InterruptRoutines.c ****         float yAccel = MinMaxScaler(yAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_
+ 111              		.loc 1 75 0
+ 112 007a FFF7FEFF 		bl	__aeabi_i2f
+ 113              	.LVL10:
+ 114 007e 1D4B     		ldr	r3, .L4+12
+ 115 0080 0093     		str	r3, [sp]	@ float
+ 116 0082 1D4B     		ldr	r3, .L4+16
+ 117 0084 4FF08A42 		mov	r2, #1157627904
+ 118 0088 4FF04541 		mov	r1, #-989855744
+ 119 008c FFF7FEFF 		bl	MinMaxScaler
+ 120              	.LVL11:
+ 121 0090 0646     		mov	r6, r0
+ 122              	.LVL12:
+  76:InterruptRoutines.c ****         
+  77:InterruptRoutines.c ****         /* 
+  78:InterruptRoutines.c ****          * Read Z axis values over I2C communication and process the data. 
+  79:InterruptRoutines.c ****          */
+  80:InterruptRoutines.c ****         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuf
+ 123              		.loc 1 80 0
+ 124 0092 2346     		mov	r3, r4
+ 125 0094 0222     		movs	r2, #2
+ 126 0096 2C21     		movs	r1, #44
+ 127 0098 1820     		movs	r0, #24
+ 128              	.LVL13:
+ 129 009a FFF7FEFF 		bl	I2C_Peripheral_ReadRegisterMulti
+ 130              	.LVL14:
+ 131 009e 134B     		ldr	r3, .L4+4
+ 132 00a0 1870     		strb	r0, [r3]
+  81:InterruptRoutines.c ****         if (error == ERROR) return; // If error occurs return from the function
+ 133              		.loc 1 81 0
+ 134 00a2 0128     		cmp	r0, #1
+ 135 00a4 1ED0     		beq	.L1
+  82:InterruptRoutines.c ****         int16_t zAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Z axis low and high registers
+ 136              		.loc 1 82 0
+ 137 00a6 0422     		movs	r2, #4
+ 138 00a8 0121     		movs	r1, #1
+ 139 00aa 2046     		mov	r0, r4
+ 140 00ac FFF7FEFF 		bl	RightAdjustVal
+ 141              	.LVL15:
+  83:InterruptRoutines.c ****         
+  84:InterruptRoutines.c ****         /* Convert value in m/s^2 units. */
+  85:InterruptRoutines.c ****         float zAccel = MinMaxScaler(zAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_
+ 142              		.loc 1 85 0
+ 143 00b0 FFF7FEFF 		bl	__aeabi_i2f
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 5
+
+
+ 144              	.LVL16:
+ 145 00b4 0F4B     		ldr	r3, .L4+12
+ 146 00b6 0093     		str	r3, [sp]	@ float
+ 147 00b8 0F4B     		ldr	r3, .L4+16
+ 148 00ba 4FF08A42 		mov	r2, #1157627904
+ 149 00be 4FF04541 		mov	r1, #-989855744
+ 150 00c2 FFF7FEFF 		bl	MinMaxScaler
+ 151              	.LVL17:
+  86:InterruptRoutines.c ****          
+  87:InterruptRoutines.c ****         /* 
+  88:InterruptRoutines.c ****          * Load and send 64-bit message containing all axes data over UART communication. 
+  89:InterruptRoutines.c ****          */
+  90:InterruptRoutines.c ****         LoadAxesData(dataBuffer, xAccel, yAccel, zAccel, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
+ 152              		.loc 1 90 0
+ 153 00c6 0D4C     		ldr	r4, .L4+20
+ 154 00c8 E023     		movs	r3, #224
+ 155 00ca 0193     		str	r3, [sp, #4]
+ 156 00cc A023     		movs	r3, #160
+ 157 00ce 0093     		str	r3, [sp]
+ 158 00d0 0346     		mov	r3, r0
+ 159 00d2 3246     		mov	r2, r6
+ 160 00d4 2946     		mov	r1, r5
+ 161 00d6 2046     		mov	r0, r4
+ 162              	.LVL18:
+ 163 00d8 FFF7FEFF 		bl	LoadAxesData
+ 164              	.LVL19:
+  91:InterruptRoutines.c ****         UART_Debug_PutArray(dataBuffer, 14);
+ 165              		.loc 1 91 0
+ 166 00dc 0E21     		movs	r1, #14
+ 167 00de 2046     		mov	r0, r4
+ 168 00e0 FFF7FEFF 		bl	UART_Debug_PutArray
+ 169              	.LVL20:
+ 170              	.L1:
+ 171              	.LBE2:
+  92:InterruptRoutines.c ****     }
+  93:InterruptRoutines.c **** }
+ 172              		.loc 1 93 0
+ 173 00e4 02B0     		add	sp, sp, #8
+ 174              		.cfi_def_cfa_offset 16
+ 175              		@ sp needed
+ 176 00e6 70BD     		pop	{r4, r5, r6, pc}
+ 177              	.L5:
+ 178              		.align	2
+ 179              	.L4:
+ 180 00e8 00000000 		.word	statusReg
+ 181 00ec 00000000 		.word	error
+ 182 00f0 00000000 		.word	tempBuffer
+ 183 00f4 0AE81C42 		.word	1109190666
+ 184 00f8 0AE81CC2 		.word	-1038292982
+ 185 00fc 00000000 		.word	dataBuffer
+ 186              		.cfi_endproc
+ 187              	.LFE63:
+ 188              		.size	ISR_ACC_CUSTOM, .-ISR_ACC_CUSTOM
+ 189              		.comm	error,1,1
+ 190              		.comm	statusReg,1,1
+ 191              		.comm	tempBuffer,2,4
+ 192              		.comm	dataBuffer,14,4
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 6
+
+
+ 193              		.text
+ 194              	.Letext0:
+ 195              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 196              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.3\\psoc creator\\import\\gnu\\arm\\5.4.
+ 197              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 198              		.file 5 "ErrorCodes.h"
+ 199              		.file 6 "Generated_Source\\PSoC5/core_cm3.h"
+ 200              		.file 7 "InterruptRoutines.h"
+ 201              		.file 8 "I2C_Interface.h"
+ 202              		.file 9 "AccelUtils.h"
+ 203              		.file 10 "Generated_Source\\PSoC5/UART_Debug.h"
+ 204              		.file 11 "Generated_Source\\PSoC5/ISR_Timer.h"
+ 205              		.section	.debug_info,"",%progbits
+ 206              	.Ldebug_info0:
+ 207 0000 8D030000 		.4byte	0x38d
+ 208 0004 0400     		.2byte	0x4
+ 209 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 210 000a 04       		.byte	0x4
+ 211 000b 01       		.uleb128 0x1
+ 212 000c 15010000 		.4byte	.LASF42
+ 213 0010 0C       		.byte	0xc
+ 214 0011 09030000 		.4byte	.LASF43
+ 215 0015 8C000000 		.4byte	.LASF44
+ 216 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 217 001d 00000000 		.4byte	0
+ 218 0021 00000000 		.4byte	.Ldebug_line0
+ 219 0025 02       		.uleb128 0x2
+ 220 0026 04       		.byte	0x4
+ 221 0027 04       		.byte	0x4
+ 222 0028 86000000 		.4byte	.LASF0
+ 223 002c 02       		.uleb128 0x2
+ 224 002d 01       		.byte	0x1
+ 225 002e 06       		.byte	0x6
+ 226 002f F7020000 		.4byte	.LASF1
+ 227 0033 03       		.uleb128 0x3
+ 228 0034 07000000 		.4byte	.LASF3
+ 229 0038 02       		.byte	0x2
+ 230 0039 1D       		.byte	0x1d
+ 231 003a 3E000000 		.4byte	0x3e
+ 232 003e 02       		.uleb128 0x2
+ 233 003f 01       		.byte	0x1
+ 234 0040 08       		.byte	0x8
+ 235 0041 07010000 		.4byte	.LASF2
+ 236 0045 03       		.uleb128 0x3
+ 237 0046 1B000000 		.4byte	.LASF4
+ 238 004a 02       		.byte	0x2
+ 239 004b 29       		.byte	0x29
+ 240 004c 50000000 		.4byte	0x50
+ 241 0050 02       		.uleb128 0x2
+ 242 0051 02       		.byte	0x2
+ 243 0052 05       		.byte	0x5
+ 244 0053 BD020000 		.4byte	.LASF5
+ 245 0057 02       		.uleb128 0x2
+ 246 0058 02       		.byte	0x2
+ 247 0059 07       		.byte	0x7
+ 248 005a C2010000 		.4byte	.LASF6
+ 249 005e 03       		.uleb128 0x3
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 7
+
+
+ 250 005f 25000000 		.4byte	.LASF7
+ 251 0063 02       		.byte	0x2
+ 252 0064 3F       		.byte	0x3f
+ 253 0065 69000000 		.4byte	0x69
+ 254 0069 02       		.uleb128 0x2
+ 255 006a 04       		.byte	0x4
+ 256 006b 05       		.byte	0x5
+ 257 006c 2F000000 		.4byte	.LASF8
+ 258 0070 02       		.uleb128 0x2
+ 259 0071 04       		.byte	0x4
+ 260 0072 07       		.byte	0x7
+ 261 0073 A3010000 		.4byte	.LASF9
+ 262 0077 02       		.uleb128 0x2
+ 263 0078 08       		.byte	0x8
+ 264 0079 05       		.byte	0x5
+ 265 007a 88020000 		.4byte	.LASF10
+ 266 007e 02       		.uleb128 0x2
+ 267 007f 08       		.byte	0x8
+ 268 0080 07       		.byte	0x7
+ 269 0081 43020000 		.4byte	.LASF11
+ 270 0085 04       		.uleb128 0x4
+ 271 0086 04       		.byte	0x4
+ 272 0087 05       		.byte	0x5
+ 273 0088 696E7400 		.ascii	"int\000"
+ 274 008c 02       		.uleb128 0x2
+ 275 008d 04       		.byte	0x4
+ 276 008e 07       		.byte	0x7
+ 277 008f 36020000 		.4byte	.LASF12
+ 278 0093 03       		.uleb128 0x3
+ 279 0094 5A020000 		.4byte	.LASF13
+ 280 0098 03       		.byte	0x3
+ 281 0099 18       		.byte	0x18
+ 282 009a 33000000 		.4byte	0x33
+ 283 009e 03       		.uleb128 0x3
+ 284 009f 62020000 		.4byte	.LASF14
+ 285 00a3 03       		.byte	0x3
+ 286 00a4 20       		.byte	0x20
+ 287 00a5 45000000 		.4byte	0x45
+ 288 00a9 03       		.uleb128 0x3
+ 289 00aa 71020000 		.4byte	.LASF15
+ 290 00ae 03       		.byte	0x3
+ 291 00af 2C       		.byte	0x2c
+ 292 00b0 5E000000 		.4byte	0x5e
+ 293 00b4 05       		.uleb128 0x5
+ 294 00b5 C7020000 		.4byte	.LASF16
+ 295 00b9 04       		.byte	0x4
+ 296 00ba E401     		.2byte	0x1e4
+ 297 00bc 3E000000 		.4byte	0x3e
+ 298 00c0 02       		.uleb128 0x2
+ 299 00c1 08       		.byte	0x8
+ 300 00c2 04       		.byte	0x4
+ 301 00c3 03020000 		.4byte	.LASF17
+ 302 00c7 02       		.uleb128 0x2
+ 303 00c8 01       		.byte	0x1
+ 304 00c9 08       		.byte	0x8
+ 305 00ca 9C020000 		.4byte	.LASF18
+ 306 00ce 02       		.uleb128 0x2
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 8
+
+
+ 307 00cf 08       		.byte	0x8
+ 308 00d0 04       		.byte	0x4
+ 309 00d1 EB020000 		.4byte	.LASF19
+ 310 00d5 02       		.uleb128 0x2
+ 311 00d6 04       		.byte	0x4
+ 312 00d7 07       		.byte	0x7
+ 313 00d8 79020000 		.4byte	.LASF20
+ 314 00dc 06       		.uleb128 0x6
+ 315 00dd 01       		.byte	0x1
+ 316 00de 3E000000 		.4byte	0x3e
+ 317 00e2 05       		.byte	0x5
+ 318 00e3 15       		.byte	0x15
+ 319 00e4 F5000000 		.4byte	0xf5
+ 320 00e8 07       		.uleb128 0x7
+ 321 00e9 CD020000 		.4byte	.LASF21
+ 322 00ed 00       		.byte	0
+ 323 00ee 07       		.uleb128 0x7
+ 324 00ef D6020000 		.4byte	.LASF22
+ 325 00f3 01       		.byte	0x1
+ 326 00f4 00       		.byte	0
+ 327 00f5 03       		.uleb128 0x3
+ 328 00f6 59000000 		.4byte	.LASF23
+ 329 00fa 05       		.byte	0x5
+ 330 00fb 18       		.byte	0x18
+ 331 00fc DC000000 		.4byte	0xdc
+ 332 0100 08       		.uleb128 0x8
+ 333 0101 ED010000 		.4byte	.LASF45
+ 334 0105 01       		.byte	0x1
+ 335 0106 2D       		.byte	0x2d
+ 336 0107 00000000 		.4byte	.LFB63
+ 337 010b 00010000 		.4byte	.LFE63-.LFB63
+ 338 010f 01       		.uleb128 0x1
+ 339 0110 9C       		.byte	0x9c
+ 340 0111 CE020000 		.4byte	0x2ce
+ 341 0115 09       		.uleb128 0x9
+ 342 0116 24000000 		.4byte	.LBB2
+ 343 011a C0000000 		.4byte	.LBE2-.LBB2
+ 344 011e A6020000 		.4byte	0x2a6
+ 345 0122 0A       		.uleb128 0xa
+ 346 0123 96020000 		.4byte	.LASF24
+ 347 0127 01       		.byte	0x1
+ 348 0128 3E       		.byte	0x3e
+ 349 0129 9E000000 		.4byte	0x9e
+ 350 012d 00000000 		.4byte	.LLST0
+ 351 0131 0A       		.uleb128 0xa
+ 352 0132 FC010000 		.4byte	.LASF25
+ 353 0136 01       		.byte	0x1
+ 354 0137 41       		.byte	0x41
+ 355 0138 25000000 		.4byte	0x25
+ 356 013c 13000000 		.4byte	.LLST1
+ 357 0140 0A       		.uleb128 0xa
+ 358 0141 03030000 		.4byte	.LASF26
+ 359 0145 01       		.byte	0x1
+ 360 0146 48       		.byte	0x48
+ 361 0147 9E000000 		.4byte	0x9e
+ 362 014b 31000000 		.4byte	.LLST2
+ 363 014f 0A       		.uleb128 0xa
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 9
+
+
+ 364 0150 6A020000 		.4byte	.LASF27
+ 365 0154 01       		.byte	0x1
+ 366 0155 4B       		.byte	0x4b
+ 367 0156 25000000 		.4byte	0x25
+ 368 015a 44000000 		.4byte	.LLST3
+ 369 015e 0A       		.uleb128 0xa
+ 370 015f 80000000 		.4byte	.LASF28
+ 371 0163 01       		.byte	0x1
+ 372 0164 52       		.byte	0x52
+ 373 0165 9E000000 		.4byte	0x9e
+ 374 0169 62000000 		.4byte	.LLST4
+ 375 016d 0A       		.uleb128 0xa
+ 376 016e 00000000 		.4byte	.LASF29
+ 377 0172 01       		.byte	0x1
+ 378 0173 55       		.byte	0x55
+ 379 0174 25000000 		.4byte	0x25
+ 380 0178 75000000 		.4byte	.LLST5
+ 381 017c 0B       		.uleb128 0xb
+ 382 017d 30000000 		.4byte	.LVL2
+ 383 0181 43030000 		.4byte	0x343
+ 384 0185 A3010000 		.4byte	0x1a3
+ 385 0189 0C       		.uleb128 0xc
+ 386 018a 01       		.uleb128 0x1
+ 387 018b 50       		.byte	0x50
+ 388 018c 01       		.uleb128 0x1
+ 389 018d 48       		.byte	0x48
+ 390 018e 0C       		.uleb128 0xc
+ 391 018f 01       		.uleb128 0x1
+ 392 0190 51       		.byte	0x51
+ 393 0191 02       		.uleb128 0x2
+ 394 0192 08       		.byte	0x8
+ 395 0193 28       		.byte	0x28
+ 396 0194 0C       		.uleb128 0xc
+ 397 0195 01       		.uleb128 0x1
+ 398 0196 52       		.byte	0x52
+ 399 0197 01       		.uleb128 0x1
+ 400 0198 32       		.byte	0x32
+ 401 0199 0C       		.uleb128 0xc
+ 402 019a 01       		.uleb128 0x1
+ 403 019b 53       		.byte	0x53
+ 404 019c 05       		.uleb128 0x5
+ 405 019d 03       		.byte	0x3
+ 406 019e 00000000 		.4byte	tempBuffer
+ 407 01a2 00       		.byte	0
+ 408 01a3 0B       		.uleb128 0xb
+ 409 01a4 44000000 		.4byte	.LVL3
+ 410 01a8 4E030000 		.4byte	0x34e
+ 411 01ac C1010000 		.4byte	0x1c1
+ 412 01b0 0C       		.uleb128 0xc
+ 413 01b1 01       		.uleb128 0x1
+ 414 01b2 50       		.byte	0x50
+ 415 01b3 02       		.uleb128 0x2
+ 416 01b4 74       		.byte	0x74
+ 417 01b5 00       		.sleb128 0
+ 418 01b6 0C       		.uleb128 0xc
+ 419 01b7 01       		.uleb128 0x1
+ 420 01b8 51       		.byte	0x51
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 10
+
+
+ 421 01b9 01       		.uleb128 0x1
+ 422 01ba 31       		.byte	0x31
+ 423 01bb 0C       		.uleb128 0xc
+ 424 01bc 01       		.uleb128 0x1
+ 425 01bd 52       		.byte	0x52
+ 426 01be 01       		.uleb128 0x1
+ 427 01bf 34       		.byte	0x34
+ 428 01c0 00       		.byte	0
+ 429 01c1 0D       		.uleb128 0xd
+ 430 01c2 5A000000 		.4byte	.LVL5
+ 431 01c6 59030000 		.4byte	0x359
+ 432 01ca 0B       		.uleb128 0xb
+ 433 01cb 68000000 		.4byte	.LVL8
+ 434 01cf 43030000 		.4byte	0x343
+ 435 01d3 EE010000 		.4byte	0x1ee
+ 436 01d7 0C       		.uleb128 0xc
+ 437 01d8 01       		.uleb128 0x1
+ 438 01d9 50       		.byte	0x50
+ 439 01da 01       		.uleb128 0x1
+ 440 01db 48       		.byte	0x48
+ 441 01dc 0C       		.uleb128 0xc
+ 442 01dd 01       		.uleb128 0x1
+ 443 01de 51       		.byte	0x51
+ 444 01df 02       		.uleb128 0x2
+ 445 01e0 08       		.byte	0x8
+ 446 01e1 2A       		.byte	0x2a
+ 447 01e2 0C       		.uleb128 0xc
+ 448 01e3 01       		.uleb128 0x1
+ 449 01e4 52       		.byte	0x52
+ 450 01e5 01       		.uleb128 0x1
+ 451 01e6 32       		.byte	0x32
+ 452 01e7 0C       		.uleb128 0xc
+ 453 01e8 01       		.uleb128 0x1
+ 454 01e9 53       		.byte	0x53
+ 455 01ea 02       		.uleb128 0x2
+ 456 01eb 74       		.byte	0x74
+ 457 01ec 00       		.sleb128 0
+ 458 01ed 00       		.byte	0
+ 459 01ee 0B       		.uleb128 0xb
+ 460 01ef 7A000000 		.4byte	.LVL9
+ 461 01f3 4E030000 		.4byte	0x34e
+ 462 01f7 0C020000 		.4byte	0x20c
+ 463 01fb 0C       		.uleb128 0xc
+ 464 01fc 01       		.uleb128 0x1
+ 465 01fd 50       		.byte	0x50
+ 466 01fe 02       		.uleb128 0x2
+ 467 01ff 74       		.byte	0x74
+ 468 0200 00       		.sleb128 0
+ 469 0201 0C       		.uleb128 0xc
+ 470 0202 01       		.uleb128 0x1
+ 471 0203 51       		.byte	0x51
+ 472 0204 01       		.uleb128 0x1
+ 473 0205 31       		.byte	0x31
+ 474 0206 0C       		.uleb128 0xc
+ 475 0207 01       		.uleb128 0x1
+ 476 0208 52       		.byte	0x52
+ 477 0209 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 11
+
+
+ 478 020a 34       		.byte	0x34
+ 479 020b 00       		.byte	0
+ 480 020c 0D       		.uleb128 0xd
+ 481 020d 90000000 		.4byte	.LVL11
+ 482 0211 59030000 		.4byte	0x359
+ 483 0215 0B       		.uleb128 0xb
+ 484 0216 9E000000 		.4byte	.LVL14
+ 485 021a 43030000 		.4byte	0x343
+ 486 021e 39020000 		.4byte	0x239
+ 487 0222 0C       		.uleb128 0xc
+ 488 0223 01       		.uleb128 0x1
+ 489 0224 50       		.byte	0x50
+ 490 0225 01       		.uleb128 0x1
+ 491 0226 48       		.byte	0x48
+ 492 0227 0C       		.uleb128 0xc
+ 493 0228 01       		.uleb128 0x1
+ 494 0229 51       		.byte	0x51
+ 495 022a 02       		.uleb128 0x2
+ 496 022b 08       		.byte	0x8
+ 497 022c 2C       		.byte	0x2c
+ 498 022d 0C       		.uleb128 0xc
+ 499 022e 01       		.uleb128 0x1
+ 500 022f 52       		.byte	0x52
+ 501 0230 01       		.uleb128 0x1
+ 502 0231 32       		.byte	0x32
+ 503 0232 0C       		.uleb128 0xc
+ 504 0233 01       		.uleb128 0x1
+ 505 0234 53       		.byte	0x53
+ 506 0235 02       		.uleb128 0x2
+ 507 0236 74       		.byte	0x74
+ 508 0237 00       		.sleb128 0
+ 509 0238 00       		.byte	0
+ 510 0239 0B       		.uleb128 0xb
+ 511 023a B0000000 		.4byte	.LVL15
+ 512 023e 4E030000 		.4byte	0x34e
+ 513 0242 57020000 		.4byte	0x257
+ 514 0246 0C       		.uleb128 0xc
+ 515 0247 01       		.uleb128 0x1
+ 516 0248 50       		.byte	0x50
+ 517 0249 02       		.uleb128 0x2
+ 518 024a 74       		.byte	0x74
+ 519 024b 00       		.sleb128 0
+ 520 024c 0C       		.uleb128 0xc
+ 521 024d 01       		.uleb128 0x1
+ 522 024e 51       		.byte	0x51
+ 523 024f 01       		.uleb128 0x1
+ 524 0250 31       		.byte	0x31
+ 525 0251 0C       		.uleb128 0xc
+ 526 0252 01       		.uleb128 0x1
+ 527 0253 52       		.byte	0x52
+ 528 0254 01       		.uleb128 0x1
+ 529 0255 34       		.byte	0x34
+ 530 0256 00       		.byte	0
+ 531 0257 0D       		.uleb128 0xd
+ 532 0258 C6000000 		.4byte	.LVL17
+ 533 025c 59030000 		.4byte	0x359
+ 534 0260 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 12
+
+
+ 535 0261 DC000000 		.4byte	.LVL19
+ 536 0265 64030000 		.4byte	0x364
+ 537 0269 90020000 		.4byte	0x290
+ 538 026d 0C       		.uleb128 0xc
+ 539 026e 01       		.uleb128 0x1
+ 540 026f 50       		.byte	0x50
+ 541 0270 02       		.uleb128 0x2
+ 542 0271 74       		.byte	0x74
+ 543 0272 00       		.sleb128 0
+ 544 0273 0C       		.uleb128 0xc
+ 545 0274 01       		.uleb128 0x1
+ 546 0275 51       		.byte	0x51
+ 547 0276 03       		.uleb128 0x3
+ 548 0277 F5       		.byte	0xf5
+ 549 0278 05       		.uleb128 0x5
+ 550 0279 25       		.uleb128 0x25
+ 551 027a 0C       		.uleb128 0xc
+ 552 027b 01       		.uleb128 0x1
+ 553 027c 52       		.byte	0x52
+ 554 027d 03       		.uleb128 0x3
+ 555 027e F5       		.byte	0xf5
+ 556 027f 06       		.uleb128 0x6
+ 557 0280 25       		.uleb128 0x25
+ 558 0281 0C       		.uleb128 0xc
+ 559 0282 02       		.uleb128 0x2
+ 560 0283 7D       		.byte	0x7d
+ 561 0284 00       		.sleb128 0
+ 562 0285 02       		.uleb128 0x2
+ 563 0286 09       		.byte	0x9
+ 564 0287 A0       		.byte	0xa0
+ 565 0288 0C       		.uleb128 0xc
+ 566 0289 02       		.uleb128 0x2
+ 567 028a 7D       		.byte	0x7d
+ 568 028b 04       		.sleb128 4
+ 569 028c 02       		.uleb128 0x2
+ 570 028d 09       		.byte	0x9
+ 571 028e E0       		.byte	0xe0
+ 572 028f 00       		.byte	0
+ 573 0290 0E       		.uleb128 0xe
+ 574 0291 E4000000 		.4byte	.LVL20
+ 575 0295 6F030000 		.4byte	0x36f
+ 576 0299 0C       		.uleb128 0xc
+ 577 029a 01       		.uleb128 0x1
+ 578 029b 50       		.byte	0x50
+ 579 029c 02       		.uleb128 0x2
+ 580 029d 74       		.byte	0x74
+ 581 029e 00       		.sleb128 0
+ 582 029f 0C       		.uleb128 0xc
+ 583 02a0 01       		.uleb128 0x1
+ 584 02a1 51       		.byte	0x51
+ 585 02a2 01       		.uleb128 0x1
+ 586 02a3 3E       		.byte	0x3e
+ 587 02a4 00       		.byte	0
+ 588 02a5 00       		.byte	0
+ 589 02a6 0D       		.uleb128 0xd
+ 590 02a7 08000000 		.4byte	.LVL0
+ 591 02ab 7A030000 		.4byte	0x37a
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 13
+
+
+ 592 02af 0E       		.uleb128 0xe
+ 593 02b0 12000000 		.4byte	.LVL1
+ 594 02b4 85030000 		.4byte	0x385
+ 595 02b8 0C       		.uleb128 0xc
+ 596 02b9 01       		.uleb128 0x1
+ 597 02ba 50       		.byte	0x50
+ 598 02bb 01       		.uleb128 0x1
+ 599 02bc 48       		.byte	0x48
+ 600 02bd 0C       		.uleb128 0xc
+ 601 02be 01       		.uleb128 0x1
+ 602 02bf 51       		.byte	0x51
+ 603 02c0 02       		.uleb128 0x2
+ 604 02c1 08       		.byte	0x8
+ 605 02c2 27       		.byte	0x27
+ 606 02c3 0C       		.uleb128 0xc
+ 607 02c4 01       		.uleb128 0x1
+ 608 02c5 52       		.byte	0x52
+ 609 02c6 05       		.uleb128 0x5
+ 610 02c7 03       		.byte	0x3
+ 611 02c8 00000000 		.4byte	statusReg
+ 612 02cc 00       		.byte	0
+ 613 02cd 00       		.byte	0
+ 614 02ce 0F       		.uleb128 0xf
+ 615 02cf E0010000 		.4byte	.LASF30
+ 616 02d3 06       		.byte	0x6
+ 617 02d4 1207     		.2byte	0x712
+ 618 02d6 DA020000 		.4byte	0x2da
+ 619 02da 10       		.uleb128 0x10
+ 620 02db A9000000 		.4byte	0xa9
+ 621 02df 11       		.uleb128 0x11
+ 622 02e0 93000000 		.4byte	0x93
+ 623 02e4 EF020000 		.4byte	0x2ef
+ 624 02e8 12       		.uleb128 0x12
+ 625 02e9 D5000000 		.4byte	0xd5
+ 626 02ed 0D       		.byte	0xd
+ 627 02ee 00       		.byte	0
+ 628 02ef 13       		.uleb128 0x13
+ 629 02f0 2B020000 		.4byte	.LASF31
+ 630 02f4 07       		.byte	0x7
+ 631 02f5 20       		.byte	0x20
+ 632 02f6 DF020000 		.4byte	0x2df
+ 633 02fa 05       		.uleb128 0x5
+ 634 02fb 03       		.byte	0x3
+ 635 02fc 00000000 		.4byte	dataBuffer
+ 636 0300 11       		.uleb128 0x11
+ 637 0301 93000000 		.4byte	0x93
+ 638 0305 10030000 		.4byte	0x310
+ 639 0309 12       		.uleb128 0x12
+ 640 030a D5000000 		.4byte	0xd5
+ 641 030e 01       		.byte	0x1
+ 642 030f 00       		.byte	0
+ 643 0310 13       		.uleb128 0x13
+ 644 0311 D5010000 		.4byte	.LASF32
+ 645 0315 07       		.byte	0x7
+ 646 0316 23       		.byte	0x23
+ 647 0317 00030000 		.4byte	0x300
+ 648 031b 05       		.uleb128 0x5
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 14
+
+
+ 649 031c 03       		.byte	0x3
+ 650 031d 00000000 		.4byte	tempBuffer
+ 651 0321 13       		.uleb128 0x13
+ 652 0322 11000000 		.4byte	.LASF33
+ 653 0326 07       		.byte	0x7
+ 654 0327 26       		.byte	0x26
+ 655 0328 B4000000 		.4byte	0xb4
+ 656 032c 05       		.uleb128 0x5
+ 657 032d 03       		.byte	0x3
+ 658 032e 00000000 		.4byte	statusReg
+ 659 0332 13       		.uleb128 0x13
+ 660 0333 82020000 		.4byte	.LASF34
+ 661 0337 07       		.byte	0x7
+ 662 0338 29       		.byte	0x29
+ 663 0339 F5000000 		.4byte	0xf5
+ 664 033d 05       		.uleb128 0x5
+ 665 033e 03       		.byte	0x3
+ 666 033f 00000000 		.4byte	error
+ 667 0343 14       		.uleb128 0x14
+ 668 0344 0A020000 		.4byte	.LASF35
+ 669 0348 0A020000 		.4byte	.LASF35
+ 670 034c 08       		.byte	0x8
+ 671 034d 49       		.byte	0x49
+ 672 034e 14       		.uleb128 0x14
+ 673 034f DC020000 		.4byte	.LASF36
+ 674 0353 DC020000 		.4byte	.LASF36
+ 675 0357 09       		.byte	0x9
+ 676 0358 22       		.byte	0x22
+ 677 0359 14       		.uleb128 0x14
+ 678 035a B5010000 		.4byte	.LASF37
+ 679 035e B5010000 		.4byte	.LASF37
+ 680 0362 09       		.byte	0x9
+ 681 0363 1F       		.byte	0x1f
+ 682 0364 14       		.uleb128 0x14
+ 683 0365 38000000 		.4byte	.LASF38
+ 684 0369 38000000 		.4byte	.LASF38
+ 685 036d 09       		.byte	0x9
+ 686 036e 2A       		.byte	0x2a
+ 687 036f 14       		.uleb128 0x14
+ 688 0370 45000000 		.4byte	.LASF39
+ 689 0374 45000000 		.4byte	.LASF39
+ 690 0378 0A       		.byte	0xa
+ 691 0379 8C       		.byte	0x8c
+ 692 037a 14       		.uleb128 0x14
+ 693 037b 63000000 		.4byte	.LASF40
+ 694 037f 63000000 		.4byte	.LASF40
+ 695 0383 0B       		.byte	0xb
+ 696 0384 5E       		.byte	0x5e
+ 697 0385 14       		.uleb128 0x14
+ 698 0386 A1020000 		.4byte	.LASF41
+ 699 038a A1020000 		.4byte	.LASF41
+ 700 038e 08       		.byte	0x8
+ 701 038f 3F       		.byte	0x3f
+ 702 0390 00       		.byte	0
+ 703              		.section	.debug_abbrev,"",%progbits
+ 704              	.Ldebug_abbrev0:
+ 705 0000 01       		.uleb128 0x1
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 15
+
+
+ 706 0001 11       		.uleb128 0x11
+ 707 0002 01       		.byte	0x1
+ 708 0003 25       		.uleb128 0x25
+ 709 0004 0E       		.uleb128 0xe
+ 710 0005 13       		.uleb128 0x13
+ 711 0006 0B       		.uleb128 0xb
+ 712 0007 03       		.uleb128 0x3
+ 713 0008 0E       		.uleb128 0xe
+ 714 0009 1B       		.uleb128 0x1b
+ 715 000a 0E       		.uleb128 0xe
+ 716 000b 55       		.uleb128 0x55
+ 717 000c 17       		.uleb128 0x17
+ 718 000d 11       		.uleb128 0x11
+ 719 000e 01       		.uleb128 0x1
+ 720 000f 10       		.uleb128 0x10
+ 721 0010 17       		.uleb128 0x17
+ 722 0011 00       		.byte	0
+ 723 0012 00       		.byte	0
+ 724 0013 02       		.uleb128 0x2
+ 725 0014 24       		.uleb128 0x24
+ 726 0015 00       		.byte	0
+ 727 0016 0B       		.uleb128 0xb
+ 728 0017 0B       		.uleb128 0xb
+ 729 0018 3E       		.uleb128 0x3e
+ 730 0019 0B       		.uleb128 0xb
+ 731 001a 03       		.uleb128 0x3
+ 732 001b 0E       		.uleb128 0xe
+ 733 001c 00       		.byte	0
+ 734 001d 00       		.byte	0
+ 735 001e 03       		.uleb128 0x3
+ 736 001f 16       		.uleb128 0x16
+ 737 0020 00       		.byte	0
+ 738 0021 03       		.uleb128 0x3
+ 739 0022 0E       		.uleb128 0xe
+ 740 0023 3A       		.uleb128 0x3a
+ 741 0024 0B       		.uleb128 0xb
+ 742 0025 3B       		.uleb128 0x3b
+ 743 0026 0B       		.uleb128 0xb
+ 744 0027 49       		.uleb128 0x49
+ 745 0028 13       		.uleb128 0x13
+ 746 0029 00       		.byte	0
+ 747 002a 00       		.byte	0
+ 748 002b 04       		.uleb128 0x4
+ 749 002c 24       		.uleb128 0x24
+ 750 002d 00       		.byte	0
+ 751 002e 0B       		.uleb128 0xb
+ 752 002f 0B       		.uleb128 0xb
+ 753 0030 3E       		.uleb128 0x3e
+ 754 0031 0B       		.uleb128 0xb
+ 755 0032 03       		.uleb128 0x3
+ 756 0033 08       		.uleb128 0x8
+ 757 0034 00       		.byte	0
+ 758 0035 00       		.byte	0
+ 759 0036 05       		.uleb128 0x5
+ 760 0037 16       		.uleb128 0x16
+ 761 0038 00       		.byte	0
+ 762 0039 03       		.uleb128 0x3
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 16
+
+
+ 763 003a 0E       		.uleb128 0xe
+ 764 003b 3A       		.uleb128 0x3a
+ 765 003c 0B       		.uleb128 0xb
+ 766 003d 3B       		.uleb128 0x3b
+ 767 003e 05       		.uleb128 0x5
+ 768 003f 49       		.uleb128 0x49
+ 769 0040 13       		.uleb128 0x13
+ 770 0041 00       		.byte	0
+ 771 0042 00       		.byte	0
+ 772 0043 06       		.uleb128 0x6
+ 773 0044 04       		.uleb128 0x4
+ 774 0045 01       		.byte	0x1
+ 775 0046 0B       		.uleb128 0xb
+ 776 0047 0B       		.uleb128 0xb
+ 777 0048 49       		.uleb128 0x49
+ 778 0049 13       		.uleb128 0x13
+ 779 004a 3A       		.uleb128 0x3a
+ 780 004b 0B       		.uleb128 0xb
+ 781 004c 3B       		.uleb128 0x3b
+ 782 004d 0B       		.uleb128 0xb
+ 783 004e 01       		.uleb128 0x1
+ 784 004f 13       		.uleb128 0x13
+ 785 0050 00       		.byte	0
+ 786 0051 00       		.byte	0
+ 787 0052 07       		.uleb128 0x7
+ 788 0053 28       		.uleb128 0x28
+ 789 0054 00       		.byte	0
+ 790 0055 03       		.uleb128 0x3
+ 791 0056 0E       		.uleb128 0xe
+ 792 0057 1C       		.uleb128 0x1c
+ 793 0058 0B       		.uleb128 0xb
+ 794 0059 00       		.byte	0
+ 795 005a 00       		.byte	0
+ 796 005b 08       		.uleb128 0x8
+ 797 005c 2E       		.uleb128 0x2e
+ 798 005d 01       		.byte	0x1
+ 799 005e 3F       		.uleb128 0x3f
+ 800 005f 19       		.uleb128 0x19
+ 801 0060 03       		.uleb128 0x3
+ 802 0061 0E       		.uleb128 0xe
+ 803 0062 3A       		.uleb128 0x3a
+ 804 0063 0B       		.uleb128 0xb
+ 805 0064 3B       		.uleb128 0x3b
+ 806 0065 0B       		.uleb128 0xb
+ 807 0066 27       		.uleb128 0x27
+ 808 0067 19       		.uleb128 0x19
+ 809 0068 11       		.uleb128 0x11
+ 810 0069 01       		.uleb128 0x1
+ 811 006a 12       		.uleb128 0x12
+ 812 006b 06       		.uleb128 0x6
+ 813 006c 40       		.uleb128 0x40
+ 814 006d 18       		.uleb128 0x18
+ 815 006e 9642     		.uleb128 0x2116
+ 816 0070 19       		.uleb128 0x19
+ 817 0071 01       		.uleb128 0x1
+ 818 0072 13       		.uleb128 0x13
+ 819 0073 00       		.byte	0
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 17
+
+
+ 820 0074 00       		.byte	0
+ 821 0075 09       		.uleb128 0x9
+ 822 0076 0B       		.uleb128 0xb
+ 823 0077 01       		.byte	0x1
+ 824 0078 11       		.uleb128 0x11
+ 825 0079 01       		.uleb128 0x1
+ 826 007a 12       		.uleb128 0x12
+ 827 007b 06       		.uleb128 0x6
+ 828 007c 01       		.uleb128 0x1
+ 829 007d 13       		.uleb128 0x13
+ 830 007e 00       		.byte	0
+ 831 007f 00       		.byte	0
+ 832 0080 0A       		.uleb128 0xa
+ 833 0081 34       		.uleb128 0x34
+ 834 0082 00       		.byte	0
+ 835 0083 03       		.uleb128 0x3
+ 836 0084 0E       		.uleb128 0xe
+ 837 0085 3A       		.uleb128 0x3a
+ 838 0086 0B       		.uleb128 0xb
+ 839 0087 3B       		.uleb128 0x3b
+ 840 0088 0B       		.uleb128 0xb
+ 841 0089 49       		.uleb128 0x49
+ 842 008a 13       		.uleb128 0x13
+ 843 008b 02       		.uleb128 0x2
+ 844 008c 17       		.uleb128 0x17
+ 845 008d 00       		.byte	0
+ 846 008e 00       		.byte	0
+ 847 008f 0B       		.uleb128 0xb
+ 848 0090 898201   		.uleb128 0x4109
+ 849 0093 01       		.byte	0x1
+ 850 0094 11       		.uleb128 0x11
+ 851 0095 01       		.uleb128 0x1
+ 852 0096 31       		.uleb128 0x31
+ 853 0097 13       		.uleb128 0x13
+ 854 0098 01       		.uleb128 0x1
+ 855 0099 13       		.uleb128 0x13
+ 856 009a 00       		.byte	0
+ 857 009b 00       		.byte	0
+ 858 009c 0C       		.uleb128 0xc
+ 859 009d 8A8201   		.uleb128 0x410a
+ 860 00a0 00       		.byte	0
+ 861 00a1 02       		.uleb128 0x2
+ 862 00a2 18       		.uleb128 0x18
+ 863 00a3 9142     		.uleb128 0x2111
+ 864 00a5 18       		.uleb128 0x18
+ 865 00a6 00       		.byte	0
+ 866 00a7 00       		.byte	0
+ 867 00a8 0D       		.uleb128 0xd
+ 868 00a9 898201   		.uleb128 0x4109
+ 869 00ac 00       		.byte	0
+ 870 00ad 11       		.uleb128 0x11
+ 871 00ae 01       		.uleb128 0x1
+ 872 00af 31       		.uleb128 0x31
+ 873 00b0 13       		.uleb128 0x13
+ 874 00b1 00       		.byte	0
+ 875 00b2 00       		.byte	0
+ 876 00b3 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 18
+
+
+ 877 00b4 898201   		.uleb128 0x4109
+ 878 00b7 01       		.byte	0x1
+ 879 00b8 11       		.uleb128 0x11
+ 880 00b9 01       		.uleb128 0x1
+ 881 00ba 31       		.uleb128 0x31
+ 882 00bb 13       		.uleb128 0x13
+ 883 00bc 00       		.byte	0
+ 884 00bd 00       		.byte	0
+ 885 00be 0F       		.uleb128 0xf
+ 886 00bf 34       		.uleb128 0x34
+ 887 00c0 00       		.byte	0
+ 888 00c1 03       		.uleb128 0x3
+ 889 00c2 0E       		.uleb128 0xe
+ 890 00c3 3A       		.uleb128 0x3a
+ 891 00c4 0B       		.uleb128 0xb
+ 892 00c5 3B       		.uleb128 0x3b
+ 893 00c6 05       		.uleb128 0x5
+ 894 00c7 49       		.uleb128 0x49
+ 895 00c8 13       		.uleb128 0x13
+ 896 00c9 3F       		.uleb128 0x3f
+ 897 00ca 19       		.uleb128 0x19
+ 898 00cb 3C       		.uleb128 0x3c
+ 899 00cc 19       		.uleb128 0x19
+ 900 00cd 00       		.byte	0
+ 901 00ce 00       		.byte	0
+ 902 00cf 10       		.uleb128 0x10
+ 903 00d0 35       		.uleb128 0x35
+ 904 00d1 00       		.byte	0
+ 905 00d2 49       		.uleb128 0x49
+ 906 00d3 13       		.uleb128 0x13
+ 907 00d4 00       		.byte	0
+ 908 00d5 00       		.byte	0
+ 909 00d6 11       		.uleb128 0x11
+ 910 00d7 01       		.uleb128 0x1
+ 911 00d8 01       		.byte	0x1
+ 912 00d9 49       		.uleb128 0x49
+ 913 00da 13       		.uleb128 0x13
+ 914 00db 01       		.uleb128 0x1
+ 915 00dc 13       		.uleb128 0x13
+ 916 00dd 00       		.byte	0
+ 917 00de 00       		.byte	0
+ 918 00df 12       		.uleb128 0x12
+ 919 00e0 21       		.uleb128 0x21
+ 920 00e1 00       		.byte	0
+ 921 00e2 49       		.uleb128 0x49
+ 922 00e3 13       		.uleb128 0x13
+ 923 00e4 2F       		.uleb128 0x2f
+ 924 00e5 0B       		.uleb128 0xb
+ 925 00e6 00       		.byte	0
+ 926 00e7 00       		.byte	0
+ 927 00e8 13       		.uleb128 0x13
+ 928 00e9 34       		.uleb128 0x34
+ 929 00ea 00       		.byte	0
+ 930 00eb 03       		.uleb128 0x3
+ 931 00ec 0E       		.uleb128 0xe
+ 932 00ed 3A       		.uleb128 0x3a
+ 933 00ee 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 19
+
+
+ 934 00ef 3B       		.uleb128 0x3b
+ 935 00f0 0B       		.uleb128 0xb
+ 936 00f1 49       		.uleb128 0x49
+ 937 00f2 13       		.uleb128 0x13
+ 938 00f3 3F       		.uleb128 0x3f
+ 939 00f4 19       		.uleb128 0x19
+ 940 00f5 02       		.uleb128 0x2
+ 941 00f6 18       		.uleb128 0x18
+ 942 00f7 00       		.byte	0
+ 943 00f8 00       		.byte	0
+ 944 00f9 14       		.uleb128 0x14
+ 945 00fa 2E       		.uleb128 0x2e
+ 946 00fb 00       		.byte	0
+ 947 00fc 3F       		.uleb128 0x3f
+ 948 00fd 19       		.uleb128 0x19
+ 949 00fe 3C       		.uleb128 0x3c
+ 950 00ff 19       		.uleb128 0x19
+ 951 0100 6E       		.uleb128 0x6e
+ 952 0101 0E       		.uleb128 0xe
+ 953 0102 03       		.uleb128 0x3
+ 954 0103 0E       		.uleb128 0xe
+ 955 0104 3A       		.uleb128 0x3a
+ 956 0105 0B       		.uleb128 0xb
+ 957 0106 3B       		.uleb128 0x3b
+ 958 0107 0B       		.uleb128 0xb
+ 959 0108 00       		.byte	0
+ 960 0109 00       		.byte	0
+ 961 010a 00       		.byte	0
+ 962              		.section	.debug_loc,"",%progbits
+ 963              	.Ldebug_loc0:
+ 964              	.LLST0:
+ 965 0000 44000000 		.4byte	.LVL3
+ 966 0004 47000000 		.4byte	.LVL4-1
+ 967 0008 0100     		.2byte	0x1
+ 968 000a 50       		.byte	0x50
+ 969 000b 00000000 		.4byte	0
+ 970 000f 00000000 		.4byte	0
+ 971              	.LLST1:
+ 972 0013 5C000000 		.4byte	.LVL6
+ 973 0017 64000000 		.4byte	.LVL7
+ 974 001b 0100     		.2byte	0x1
+ 975 001d 50       		.byte	0x50
+ 976 001e 64000000 		.4byte	.LVL7
+ 977 0022 E4000000 		.4byte	.LVL20
+ 978 0026 0100     		.2byte	0x1
+ 979 0028 55       		.byte	0x55
+ 980 0029 00000000 		.4byte	0
+ 981 002d 00000000 		.4byte	0
+ 982              	.LLST2:
+ 983 0031 7A000000 		.4byte	.LVL9
+ 984 0035 7D000000 		.4byte	.LVL10-1
+ 985 0039 0100     		.2byte	0x1
+ 986 003b 50       		.byte	0x50
+ 987 003c 00000000 		.4byte	0
+ 988 0040 00000000 		.4byte	0
+ 989              	.LLST3:
+ 990 0044 92000000 		.4byte	.LVL12
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 20
+
+
+ 991 0048 9A000000 		.4byte	.LVL13
+ 992 004c 0100     		.2byte	0x1
+ 993 004e 50       		.byte	0x50
+ 994 004f 9A000000 		.4byte	.LVL13
+ 995 0053 E4000000 		.4byte	.LVL20
+ 996 0057 0100     		.2byte	0x1
+ 997 0059 56       		.byte	0x56
+ 998 005a 00000000 		.4byte	0
+ 999 005e 00000000 		.4byte	0
+ 1000              	.LLST4:
+ 1001 0062 B0000000 		.4byte	.LVL15
+ 1002 0066 B3000000 		.4byte	.LVL16-1
+ 1003 006a 0100     		.2byte	0x1
+ 1004 006c 50       		.byte	0x50
+ 1005 006d 00000000 		.4byte	0
+ 1006 0071 00000000 		.4byte	0
+ 1007              	.LLST5:
+ 1008 0075 C6000000 		.4byte	.LVL17
+ 1009 0079 D8000000 		.4byte	.LVL18
+ 1010 007d 0100     		.2byte	0x1
+ 1011 007f 50       		.byte	0x50
+ 1012 0080 D8000000 		.4byte	.LVL18
+ 1013 0084 DB000000 		.4byte	.LVL19-1
+ 1014 0088 0100     		.2byte	0x1
+ 1015 008a 53       		.byte	0x53
+ 1016 008b 00000000 		.4byte	0
+ 1017 008f 00000000 		.4byte	0
+ 1018              		.section	.debug_aranges,"",%progbits
+ 1019 0000 1C000000 		.4byte	0x1c
+ 1020 0004 0200     		.2byte	0x2
+ 1021 0006 00000000 		.4byte	.Ldebug_info0
+ 1022 000a 04       		.byte	0x4
+ 1023 000b 00       		.byte	0
+ 1024 000c 0000     		.2byte	0
+ 1025 000e 0000     		.2byte	0
+ 1026 0010 00000000 		.4byte	.LFB63
+ 1027 0014 00010000 		.4byte	.LFE63-.LFB63
+ 1028 0018 00000000 		.4byte	0
+ 1029 001c 00000000 		.4byte	0
+ 1030              		.section	.debug_ranges,"",%progbits
+ 1031              	.Ldebug_ranges0:
+ 1032 0000 00000000 		.4byte	.LFB63
+ 1033 0004 00010000 		.4byte	.LFE63
+ 1034 0008 00000000 		.4byte	0
+ 1035 000c 00000000 		.4byte	0
+ 1036              		.section	.debug_line,"",%progbits
+ 1037              	.Ldebug_line0:
+ 1038 0000 EA010000 		.section	.debug_str,"MS",%progbits,1
+ 1038      0200C201 
+ 1038      00000201 
+ 1038      FB0E0D00 
+ 1038      01010101 
+ 1039              	.LASF29:
+ 1040 0000 7A416363 		.ascii	"zAccel\000"
+ 1040      656C00
+ 1041              	.LASF3:
+ 1042 0007 5F5F7569 		.ascii	"__uint8_t\000"
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 21
+
+
+ 1042      6E74385F 
+ 1042      7400
+ 1043              	.LASF33:
+ 1044 0011 73746174 		.ascii	"statusReg\000"
+ 1044      75735265 
+ 1044      6700
+ 1045              	.LASF4:
+ 1046 001b 5F5F696E 		.ascii	"__int16_t\000"
+ 1046      7431365F 
+ 1046      7400
+ 1047              	.LASF7:
+ 1048 0025 5F5F696E 		.ascii	"__int32_t\000"
+ 1048      7433325F 
+ 1048      7400
+ 1049              	.LASF8:
+ 1050 002f 6C6F6E67 		.ascii	"long int\000"
+ 1050      20696E74 
+ 1050      00
+ 1051              	.LASF38:
+ 1052 0038 4C6F6164 		.ascii	"LoadAxesData\000"
+ 1052      41786573 
+ 1052      44617461 
+ 1052      00
+ 1053              	.LASF39:
+ 1054 0045 55415254 		.ascii	"UART_Debug_PutArray\000"
+ 1054      5F446562 
+ 1054      75675F50 
+ 1054      75744172 
+ 1054      72617900 
+ 1055              	.LASF23:
+ 1056 0059 4572726F 		.ascii	"ErrorCode\000"
+ 1056      72436F64 
+ 1056      6500
+ 1057              	.LASF40:
+ 1058 0063 4953525F 		.ascii	"ISR_Timer_ReadStatusRegister\000"
+ 1058      54696D65 
+ 1058      725F5265 
+ 1058      61645374 
+ 1058      61747573 
+ 1059              	.LASF28:
+ 1060 0080 7A417869 		.ascii	"zAxis\000"
+ 1060      7300
+ 1061              	.LASF0:
+ 1062 0086 666C6F61 		.ascii	"float\000"
+ 1062      7400
+ 1063              	.LASF44:
+ 1064 008c 433A5C55 		.ascii	"C:\\Users\\Lory\\Desktop\\psoc_assignment_git\\PSoC"
+ 1064      73657273 
+ 1064      5C4C6F72 
+ 1064      795C4465 
+ 1064      736B746F 
+ 1065 00ba 5F355F41 		.ascii	"_5_Assignment\\AY1920_II_HW_05_GUALNIERA_LORENZO\\A"
+ 1065      73736967 
+ 1065      6E6D656E 
+ 1065      745C4159 
+ 1065      31393230 
+ 1066 00eb 59313932 		.ascii	"Y1920_II_HW_05_PROJ_3.cydsn\000"
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 22
+
+
+ 1066      305F4949 
+ 1066      5F48575F 
+ 1066      30355F50 
+ 1066      524F4A5F 
+ 1067              	.LASF2:
+ 1068 0107 756E7369 		.ascii	"unsigned char\000"
+ 1068      676E6564 
+ 1068      20636861 
+ 1068      7200
+ 1069              	.LASF42:
+ 1070 0115 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1070      43313120 
+ 1070      352E342E 
+ 1070      31203230 
+ 1070      31363036 
+ 1071 0148 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1071      20726576 
+ 1071      6973696F 
+ 1071      6E203233 
+ 1071      37373135 
+ 1072 017b 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1072      66756E63 
+ 1072      74696F6E 
+ 1072      2D736563 
+ 1072      74696F6E 
+ 1073              	.LASF9:
+ 1074 01a3 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1074      20756E73 
+ 1074      69676E65 
+ 1074      6420696E 
+ 1074      7400
+ 1075              	.LASF37:
+ 1076 01b5 4D696E4D 		.ascii	"MinMaxScaler\000"
+ 1076      61785363 
+ 1076      616C6572 
+ 1076      00
+ 1077              	.LASF6:
+ 1078 01c2 73686F72 		.ascii	"short unsigned int\000"
+ 1078      7420756E 
+ 1078      7369676E 
+ 1078      65642069 
+ 1078      6E7400
+ 1079              	.LASF32:
+ 1080 01d5 74656D70 		.ascii	"tempBuffer\000"
+ 1080      42756666 
+ 1080      657200
+ 1081              	.LASF30:
+ 1082 01e0 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 1082      52784275 
+ 1082      66666572 
+ 1082      00
+ 1083              	.LASF45:
+ 1084 01ed 4953525F 		.ascii	"ISR_ACC_CUSTOM\000"
+ 1084      4143435F 
+ 1084      43555354 
+ 1084      4F4D00
+ 1085              	.LASF25:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 23
+
+
+ 1086 01fc 78416363 		.ascii	"xAccel\000"
+ 1086      656C00
+ 1087              	.LASF17:
+ 1088 0203 646F7562 		.ascii	"double\000"
+ 1088      6C6500
+ 1089              	.LASF35:
+ 1090 020a 4932435F 		.ascii	"I2C_Peripheral_ReadRegisterMulti\000"
+ 1090      50657269 
+ 1090      70686572 
+ 1090      616C5F52 
+ 1090      65616452 
+ 1091              	.LASF31:
+ 1092 022b 64617461 		.ascii	"dataBuffer\000"
+ 1092      42756666 
+ 1092      657200
+ 1093              	.LASF12:
+ 1094 0236 756E7369 		.ascii	"unsigned int\000"
+ 1094      676E6564 
+ 1094      20696E74 
+ 1094      00
+ 1095              	.LASF11:
+ 1096 0243 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1096      206C6F6E 
+ 1096      6720756E 
+ 1096      7369676E 
+ 1096      65642069 
+ 1097              	.LASF13:
+ 1098 025a 75696E74 		.ascii	"uint8_t\000"
+ 1098      385F7400 
+ 1099              	.LASF14:
+ 1100 0262 696E7431 		.ascii	"int16_t\000"
+ 1100      365F7400 
+ 1101              	.LASF27:
+ 1102 026a 79416363 		.ascii	"yAccel\000"
+ 1102      656C00
+ 1103              	.LASF15:
+ 1104 0271 696E7433 		.ascii	"int32_t\000"
+ 1104      325F7400 
+ 1105              	.LASF20:
+ 1106 0279 73697A65 		.ascii	"sizetype\000"
+ 1106      74797065 
+ 1106      00
+ 1107              	.LASF34:
+ 1108 0282 6572726F 		.ascii	"error\000"
+ 1108      7200
+ 1109              	.LASF10:
+ 1110 0288 6C6F6E67 		.ascii	"long long int\000"
+ 1110      206C6F6E 
+ 1110      6720696E 
+ 1110      7400
+ 1111              	.LASF24:
+ 1112 0296 78417869 		.ascii	"xAxis\000"
+ 1112      7300
+ 1113              	.LASF18:
+ 1114 029c 63686172 		.ascii	"char\000"
+ 1114      00
+ 1115              	.LASF41:
+ARM GAS  C:\Users\Lory\AppData\Local\Temp\ccXRdUee.s 			page 24
+
+
+ 1116 02a1 4932435F 		.ascii	"I2C_Peripheral_ReadRegister\000"
+ 1116      50657269 
+ 1116      70686572 
+ 1116      616C5F52 
+ 1116      65616452 
+ 1117              	.LASF5:
+ 1118 02bd 73686F72 		.ascii	"short int\000"
+ 1118      7420696E 
+ 1118      7400
+ 1119              	.LASF16:
+ 1120 02c7 75696E74 		.ascii	"uint8\000"
+ 1120      3800
+ 1121              	.LASF21:
+ 1122 02cd 4E4F5F45 		.ascii	"NO_ERROR\000"
+ 1122      52524F52 
+ 1122      00
+ 1123              	.LASF22:
+ 1124 02d6 4552524F 		.ascii	"ERROR\000"
+ 1124      5200
+ 1125              	.LASF36:
+ 1126 02dc 52696768 		.ascii	"RightAdjustVal\000"
+ 1126      7441646A 
+ 1126      75737456 
+ 1126      616C00
+ 1127              	.LASF19:
+ 1128 02eb 6C6F6E67 		.ascii	"long double\000"
+ 1128      20646F75 
+ 1128      626C6500 
+ 1129              	.LASF1:
+ 1130 02f7 7369676E 		.ascii	"signed char\000"
+ 1130      65642063 
+ 1130      68617200 
+ 1131              	.LASF26:
+ 1132 0303 79417869 		.ascii	"yAxis\000"
+ 1132      7300
+ 1133              	.LASF43:
+ 1134 0309 496E7465 		.ascii	"InterruptRoutines.c\000"
+ 1134      72727570 
+ 1134      74526F75 
+ 1134      74696E65 
+ 1134      732E6300 
+ 1135              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran

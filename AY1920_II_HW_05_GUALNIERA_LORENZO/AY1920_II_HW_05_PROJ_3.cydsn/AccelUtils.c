@@ -32,7 +32,7 @@
 
 
 /* Return a 16-bit integer converted into a new scale defined by a min and max values. */
-int16_t MinMaxScaler(int16_t num, int16_t oldMin, int16_t oldMax, int16_t newMin, int16_t newMax)
+float MinMaxScaler(float num, float oldMin, float oldMax, float newMin, float newMax)
 {
     /* Offset num to be positive. */
     float posNum = num - oldMin; 
@@ -44,7 +44,7 @@ int16_t MinMaxScaler(int16_t num, int16_t oldMin, int16_t oldMax, int16_t newMin
     float newScale = newMax - newMin;
     
     /* Return number converted into the new scale. */
-    return (int16_t)(posNum * (newScale/oldScale) + newMin);
+    return (float)(posNum * (newScale/oldScale) + newMin);
 }
 
 
@@ -64,31 +64,43 @@ int16_t RightAdjustVal(uint8_t *data, bool lowerFirst, uint8_t adjustShift)
 }
 
 
-/* Load axes data into a 64-bit data buffer organized as follows: 
- * DATA = [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | L_HIGH | TAIL ]. */
-void LoadAxesData(uint8_t *data, int16_t x, int16_t y, int16_t z, uint8_t header, uint8_t tail)
+/* Load axes data into a 112-bit data buffer organized as follows: 
+ * DATA = [         HEADER        |  8-bit
+          | X_1 | X_2 | X_3 | X_4 | 32-bit
+          | Y_1 | Y_2 | Y_3 | Y_4 | 32-bit
+          | Z_1 | Z_2 | Z_3 | Z_4 | 32-bit
+          |          TAIL         ]  8-bit */
+void LoadAxesData(uint8_t *data, float x, float y, float z, uint8_t header, uint8_t tail)
 {
     /* Define axis vector to loop over. */
-    int16_t axisVect[3] = {x, y, z};
+    float axisVect[3] = {x, y, z};
     
     /* Load header and tail values into the buffer. */
     data[0] = header;
-    data[7] = tail;
+    data[13] = tail;
     
     /* Load axes values in the corresponding addresses in the buffer. */
     for (uint8_t i=0; i<3; i++)
     {
-        /* Unpack 16-bit data into 2 separate 8-bit unsigned variables. */
-        UnpackAxisData(axisVect[i], &data[1+i*2]);
+        /* Unpack float data into 4 separate 8-bit unsigned variables. */
+        UnpackAxisData(axisVect[i], &data[1+i*4]);
     }
 }
 
 
-/* Unpack 16-bit val into 2 successive 8-bit addresses pointed by dataPtr. */
- void UnpackAxisData(int16_t val, uint8_t *dataPtr)
+/* Unpack float val into 4 successive 8-bit addresses pointed by dataPtr. */
+ void UnpackAxisData(float val, uint8_t *dataPtr)
 {
-    *dataPtr = (uint8_t)(val & 0xFF);
-    *(dataPtr+1) = (uint8_t)(val >> 8);
+    /* Define byte pointer. */
+    uint8_t *chptr;
+    chptr = (uint8_t *) &val;
+    
+    /* Access each byte inside float var. */
+    for (uint8_t i=0; i<4; i++)
+    {
+        /* Assign byte to uint8_t data buffer. */
+        *(dataPtr+i) = *(chptr+i);
+    }
 }
 
 

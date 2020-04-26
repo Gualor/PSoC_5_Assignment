@@ -29,7 +29,7 @@
     #define DATA_BUFFER_TAIL 0xE0
     
     /* Data buffer to store message to be sent over UART. */
-    uint8_t dataBuffer[8];
+    uint8_t dataBuffer[14];
     
     /* Temporary data buffer to store low and high data registers. */
     uint8_t tempBuffer[2];

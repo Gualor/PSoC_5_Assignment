@@ -59,30 +59,36 @@ CY_ISR(ISR_ACC_CUSTOM)
          */ 
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t xAxis = RightAdjustVal(tempBuffer, true, 6); // Merge X axis low and high registers data
-        xAxis = MinMaxScaler(xAxis, -512, 512, -2000, 2000); // Convert value in mg units
+        int16_t xAxis = RightAdjustVal(tempBuffer, true, 4); // Merge X axis low and high registers data
+        
+        /* Convert value in m/s^2 units. */
+        float xAccel = MinMaxScaler(xAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR); 
         
         /* 
          * Read Y axis values over I2C communication and process the data. 
          */
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t yAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data
-        yAxis = MinMaxScaler(yAxis, -512, 512, -2000, 2000); // Convert value in mg units
+        int16_t yAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Y axis low and high registers data
+        
+        /* Convert value in m/s^2 units. */
+        float yAccel = MinMaxScaler(yAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR);
         
         /* 
          * Read Z axis values over I2C communication and process the data. 
          */
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t zAxis = RightAdjustVal(tempBuffer, true, 6); // Merge Y axis low and high registers data
-        zAxis = MinMaxScaler(zAxis, -512, 512, -2000, 2000); // Convert value in mg units
+        int16_t zAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Z axis low and high registers data
+        
+        /* Convert value in m/s^2 units. */
+        float zAccel = MinMaxScaler(zAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR);
          
         /* 
          * Load and send 64-bit message containing all axes data over UART communication. 
          */
-        LoadAxesData(dataBuffer, xAxis, yAxis, zAxis, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
-        UART_Debug_PutArray(dataBuffer, 8);
+        LoadAxesData(dataBuffer, xAccel, yAccel, zAccel, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
+        UART_Debug_PutArray(dataBuffer, 14);
     }
 }
 
