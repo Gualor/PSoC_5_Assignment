@@ -1,4 +1,4 @@
---------------- Rebuild Started: 04/26/2020 18:17:19 Project: AY1920_II_HW_05_PROJ_3, Configuration: ARM GCC 5.4-2016-q2-update Debug ---------------
+--------------- Rebuild Started: 04/27/2020 15:08:54 Project: AY1920_II_HW_05_PROJ_3, Configuration: ARM GCC 5.4-2016-q2-update Debug ---------------
 Deleting file ".\CortexM3\ARM_GCC_541\Debug\main.o"
 Deleting file ".\CortexM3\ARM_GCC_541\Debug\I2C_Interface.o"
 Deleting file ".\CortexM3\ARM_GCC_541\Debug\InterruptRoutines.o"
@@ -96,6 +96,6 @@ No ELF section .cychecksum found, creating one
 Application checksum calculated and stored in ELF section .cychecksum
 Checksum calculated and stored in ELF section .cymeta
 cyelftool.exe -S C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_3.cydsn\CortexM3\ARM_GCC_541\Debug\AY1920_II_HW_05_PROJ_3.elf
-Flash used: 8336 of 262144 bytes (3,2%).
+Flash used: 8456 of 262144 bytes (3,2%).
 SRAM used: 2577 of 65536 bytes (3,9%). Stack: 2048 bytes. Heap: 128 bytes.
---------------- Rebuild Succeeded: 04/26/2020 18:17:37 ---------------
+--------------- Rebuild Succeeded: 04/27/2020 15:09:11 ---------------

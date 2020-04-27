@@ -23,8 +23,8 @@
     #include "I2C_Interface.h"
     #include "AccelUtils.h"
     
-    /* Header and tail for data buffer.
-     * (0xA0-0xE0)=64 message bit length. */
+    /* Header and tail for data buffer:
+     * (0xA0-0xE0)=64-bit message length. */
     #define DATA_BUFFER_HEADER 0xA0
     #define DATA_BUFFER_TAIL 0xE0
     
@@ -34,6 +34,11 @@
     /* Temporary data buffer to store low and high data registers. */
     uint8_t tempBuffer[2];
         
+    /* Syncronize data transmission:
+     * -> true: new data is available;
+     * -> false: wait for new data to be read; */
+    volatile bool packetReadyFlag;
+    
     /* Store status register reading. */
     uint8 statusReg;
     

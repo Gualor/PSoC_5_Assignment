@@ -5,7 +5,9 @@
  * useful addresses and function prototypes
  * for interfacing with LIS3DH.
  *
+ * ========================================
 */
+
 
 #ifndef I2C_INTERFACE_H
     

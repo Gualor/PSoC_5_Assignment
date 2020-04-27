@@ -5,10 +5,8 @@
  * measurements data.
  *
  * MinMaxScaler:
- * Convert accelerometer axis value to a new scale.
- * NB: The raw value is a signed 10-bit integer, which means it ranges
- * from -512 to 511 (1024 values total, including zero) but in order to
- * line up the zeros in the two scales a max values of 512 has been adopted.
+ * Convert accelerometer axis value to a new scale
+ * defined by its minimum and maximum values.
  * 
  * RightAdjustVal:
  * Merge 2-bit lower and 8-bit higher registers into a single signed
@@ -65,7 +63,13 @@ int16_t RightAdjustVal(uint8_t *data, bool lowerFirst, uint8_t adjustShift)
 
 
 /* Load axes data into a 64-bit data buffer organized as follows: 
- * DATA = [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | L_HIGH | TAIL ]. */
+ *
+ * DATA = [         HEADER        |  8-bit
+ *        |    X_1    |    X_2    | 16-bit
+ *        |    Y_1    |    Y_2    | 16-bit
+ *        |    Z_1    |    Z_2    | 16-bit
+ *        |          TAIL         ]  8-bit  
+ */
 void LoadAxesData(uint8_t *data, int16_t x, int16_t y, int16_t z, uint8_t header, uint8_t tail)
 {
     /* Define axis vector to loop over. */

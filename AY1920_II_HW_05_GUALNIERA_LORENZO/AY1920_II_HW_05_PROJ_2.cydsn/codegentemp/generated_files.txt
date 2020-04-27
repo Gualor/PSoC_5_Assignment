@@ -18,17 +18,13 @@
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\cyfitteriar.inc" value="HEADER;;;;;" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\cyfitter.h" value="HEADER;;;;;" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\cydisabledsheets.h" value="HEADER;;;;;" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug.h" value="HEADER;;;;;UART_Debug" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_PM.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_INT.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_BOOT.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1_aliases.h" value="HEADER;;;;;SDA_1" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1.c" value="SOURCE_C;CortexM3;;;;SDA_1" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1.h" value="HEADER;;;;;SDA_1" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1_aliases.h" value="HEADER;;;;;SCL_1" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1.c" value="SOURCE_C;CortexM3;;;;SCL_1" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1.h" value="HEADER;;;;;SCL_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Acc.c" value="SOURCE_C;CortexM3;;;;ISR_Acc" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Acc.h" value="HEADER;;;;;ISR_Acc" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer.c" value="SOURCE_C;CortexM3;;;;ISR_Timer" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer.h" value="HEADER;;;;;ISR_Timer" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer_PM.c" value="SOURCE_C;CortexM3;;;;ISR_Timer" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\CLOCK_TIMER.c" value="SOURCE_C;CortexM3;;;;CLOCK_TIMER" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\CLOCK_TIMER.h" value="HEADER;;;;;CLOCK_TIMER" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master.c" value="SOURCE_C;CortexM3;;;;I2C_Master" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master.h" value="HEADER;;;;;I2C_Master" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master_BOOT.c" value="SOURCE_C;CortexM3;;;;I2C_Master" />
@@ -37,13 +33,17 @@
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master_SLAVE.c" value="SOURCE_C;CortexM3;;;;I2C_Master" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master_MASTER.c" value="SOURCE_C;CortexM3;;;;I2C_Master" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\I2C_Master_PVT.h" value="HEADER;;;;;I2C_Master" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\CLOCK_TIMER.c" value="SOURCE_C;CortexM3;;;;CLOCK_TIMER" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\CLOCK_TIMER.h" value="HEADER;;;;;CLOCK_TIMER" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer.c" value="SOURCE_C;CortexM3;;;;ISR_Timer" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer.h" value="HEADER;;;;;ISR_Timer" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Timer_PM.c" value="SOURCE_C;CortexM3;;;;ISR_Timer" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Acc.c" value="SOURCE_C;CortexM3;;;;ISR_Acc" />
-  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\ISR_Acc.h" value="HEADER;;;;;ISR_Acc" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1_aliases.h" value="HEADER;;;;;SCL_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1.c" value="SOURCE_C;CortexM3;;;;SCL_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SCL_1.h" value="HEADER;;;;;SCL_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1_aliases.h" value="HEADER;;;;;SDA_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1.c" value="SOURCE_C;CortexM3;;;;SDA_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\SDA_1.h" value="HEADER;;;;;SDA_1" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug.h" value="HEADER;;;;;UART_Debug" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_PM.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_INT.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
+  <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_BOOT.c" value="SOURCE_C;CortexM3;;;;UART_Debug" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_IntClock.c" value="SOURCE_C;CortexM3;;;;UART_Debug_IntClock" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\UART_Debug_IntClock.h" value="HEADER;;;;;UART_Debug_IntClock" />
   <file name="C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\codegentemp\cm3gcc.ld" value="LINKER_SCRIPT;;;b98f980c-3bd1-4fc7-a887-c56a20a46fdd;;cy_boot" />

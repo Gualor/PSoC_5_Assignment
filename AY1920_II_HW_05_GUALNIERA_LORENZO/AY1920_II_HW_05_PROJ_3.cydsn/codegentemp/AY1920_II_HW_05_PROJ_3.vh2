@@ -2,7 +2,7 @@
 --	Conversion of AY1920_II_HW_05_PROJ_3.v to vh2:
 --
 --	Cypress Semiconductor - WARP Version 6.3 IR 41
---	Sun Apr 26 18:17:24 2020
+--	Mon Apr 27 18:11:40 2020
 --
 
 USE cypress.cypress.all;
@@ -126,19 +126,19 @@ SIGNAL tmpOE__Tx_1_net_0 : bit;
 SIGNAL tmpFB_0__Tx_1_net_0 : bit;
 SIGNAL tmpIO_0__Tx_1_net_0 : bit;
 TERMINAL tmpSIOVREF__Tx_1_net_0 : bit;
-TERMINAL Net_234 : bit;
+TERMINAL Net_536 : bit;
 SIGNAL tmpINTERRUPT_0__Tx_1_net_0 : bit;
 SIGNAL tmpOE__SDA_1_net_0 : bit;
 SIGNAL tmpFB_0__SDA_1_net_0 : bit;
-SIGNAL Net_269 : bit;
+SIGNAL Net_412 : bit;
 TERMINAL tmpSIOVREF__SDA_1_net_0 : bit;
-TERMINAL Net_191 : bit;
+TERMINAL Net_553 : bit;
 SIGNAL tmpINTERRUPT_0__SDA_1_net_0 : bit;
 SIGNAL tmpOE__SCL_1_net_0 : bit;
 SIGNAL tmpFB_0__SCL_1_net_0 : bit;
-SIGNAL Net_15 : bit;
+SIGNAL Net_413 : bit;
 TERMINAL tmpSIOVREF__SCL_1_net_0 : bit;
-TERMINAL Net_189 : bit;
+TERMINAL Net_554 : bit;
 SIGNAL tmpINTERRUPT_0__SCL_1_net_0 : bit;
 SIGNAL \I2C_Master:sda_x_wire\ : bit;
 SIGNAL \I2C_Master:Net_643_1\ : bit;
@@ -152,75 +152,75 @@ SIGNAL \I2C_Master:scl_x_wire\ : bit;
 SIGNAL \I2C_Master:Net_969\ : bit;
 SIGNAL \I2C_Master:Net_968\ : bit;
 SIGNAL \I2C_Master:udb_clk\ : bit;
-SIGNAL Net_255 : bit;
+SIGNAL Net_431 : bit;
 SIGNAL \I2C_Master:Net_973\ : bit;
-SIGNAL Net_256 : bit;
+SIGNAL Net_432 : bit;
 SIGNAL \I2C_Master:Net_974\ : bit;
 SIGNAL \I2C_Master:scl_yfb\ : bit;
 SIGNAL \I2C_Master:sda_yfb\ : bit;
 SIGNAL \I2C_Master:tmpOE__Bufoe_scl_net_0\ : bit;
 SIGNAL \I2C_Master:tmpOE__Bufoe_sda_net_0\ : bit;
 SIGNAL \I2C_Master:timeout_clk\ : bit;
-SIGNAL Net_261 : bit;
+SIGNAL Net_437 : bit;
 SIGNAL \I2C_Master:Net_975\ : bit;
-SIGNAL Net_259 : bit;
-SIGNAL Net_260 : bit;
-TERMINAL Net_332 : bit;
-TERMINAL Net_333 : bit;
-TERMINAL Net_334 : bit;
-TERMINAL Net_335 : bit;
-TERMINAL Net_336 : bit;
-TERMINAL Net_337 : bit;
-TERMINAL Net_338 : bit;
-TERMINAL Net_339 : bit;
-TERMINAL Net_377 : bit;
-TERMINAL Net_376 : bit;
-TERMINAL Net_375 : bit;
-TERMINAL Net_366 : bit;
-TERMINAL Net_367 : bit;
-TERMINAL Net_368 : bit;
-TERMINAL Net_369 : bit;
-TERMINAL Net_263 : bit;
-TERMINAL Net_374 : bit;
-TERMINAL Net_373 : bit;
-TERMINAL Net_372 : bit;
-TERMINAL Net_340 : bit;
-TERMINAL Net_341 : bit;
-TERMINAL Net_342 : bit;
-TERMINAL Net_343 : bit;
-TERMINAL Net_344 : bit;
-TERMINAL Net_345 : bit;
-TERMINAL Net_371 : bit;
-TERMINAL Net_370 : bit;
-TERMINAL Net_365 : bit;
-TERMINAL Net_364 : bit;
-TERMINAL Net_363 : bit;
-TERMINAL Net_362 : bit;
-TERMINAL Net_361 : bit;
-TERMINAL Net_360 : bit;
-TERMINAL Net_359 : bit;
-TERMINAL Net_358 : bit;
-TERMINAL Net_346 : bit;
-TERMINAL Net_347 : bit;
-TERMINAL Net_348 : bit;
-TERMINAL Net_349 : bit;
-TERMINAL Net_350 : bit;
-TERMINAL Net_351 : bit;
-TERMINAL Net_352 : bit;
-TERMINAL Net_353 : bit;
-TERMINAL Net_381 : bit;
-TERMINAL Net_382 : bit;
-TERMINAL Net_383 : bit;
-TERMINAL Net_384 : bit;
-TERMINAL Net_385 : bit;
-TERMINAL Net_356 : bit;
-TERMINAL Net_379 : bit;
-TERMINAL Net_354 : bit;
-TERMINAL Net_355 : bit;
-TERMINAL Net_357 : bit;
-TERMINAL Net_378 : bit;
-TERMINAL Net_380_1 : bit;
-TERMINAL Net_380_0 : bit;
+SIGNAL Net_435 : bit;
+SIGNAL Net_436 : bit;
+TERMINAL Net_497 : bit;
+TERMINAL Net_498 : bit;
+TERMINAL Net_499 : bit;
+TERMINAL Net_500 : bit;
+TERMINAL Net_501 : bit;
+TERMINAL Net_502 : bit;
+TERMINAL Net_503 : bit;
+TERMINAL Net_504 : bit;
+TERMINAL Net_544 : bit;
+TERMINAL Net_543 : bit;
+TERMINAL Net_542 : bit;
+TERMINAL Net_531 : bit;
+TERMINAL Net_532 : bit;
+TERMINAL Net_533 : bit;
+TERMINAL Net_534 : bit;
+TERMINAL Net_535 : bit;
+TERMINAL Net_541 : bit;
+TERMINAL Net_540 : bit;
+TERMINAL Net_539 : bit;
+TERMINAL Net_505 : bit;
+TERMINAL Net_506 : bit;
+TERMINAL Net_507 : bit;
+TERMINAL Net_508 : bit;
+TERMINAL Net_509 : bit;
+TERMINAL Net_510 : bit;
+TERMINAL Net_538 : bit;
+TERMINAL Net_537 : bit;
+TERMINAL Net_530 : bit;
+TERMINAL Net_529 : bit;
+TERMINAL Net_528 : bit;
+TERMINAL Net_527 : bit;
+TERMINAL Net_526 : bit;
+TERMINAL Net_525 : bit;
+TERMINAL Net_524 : bit;
+TERMINAL Net_523 : bit;
+TERMINAL Net_511 : bit;
+TERMINAL Net_512 : bit;
+TERMINAL Net_513 : bit;
+TERMINAL Net_514 : bit;
+TERMINAL Net_515 : bit;
+TERMINAL Net_516 : bit;
+TERMINAL Net_517 : bit;
+TERMINAL Net_518 : bit;
+TERMINAL Net_548 : bit;
+TERMINAL Net_549 : bit;
+TERMINAL Net_550 : bit;
+TERMINAL Net_551 : bit;
+TERMINAL Net_552 : bit;
+TERMINAL Net_521 : bit;
+TERMINAL Net_546 : bit;
+TERMINAL Net_519 : bit;
+TERMINAL Net_520 : bit;
+TERMINAL Net_522 : bit;
+TERMINAL Net_545 : bit;
+TERMINAL Net_547_1 : bit;
+TERMINAL Net_547_0 : bit;
 SIGNAL Net_386 : bit;
 SIGNAL Net_388 : bit;
 SIGNAL \ISR_Timer:Net_260\ : bit;
@@ -228,7 +228,7 @@ SIGNAL \ISR_Timer:Net_266\ : bit;
 SIGNAL \ISR_Timer:Net_51\ : bit;
 SIGNAL \ISR_Timer:Net_261\ : bit;
 SIGNAL \ISR_Timer:Net_57\ : bit;
-SIGNAL Net_389 : bit;
+SIGNAL Net_555 : bit;
 SIGNAL Net_399 : bit;
 SIGNAL \ISR_Timer:Net_102\ : bit;
 SIGNAL \UART_Debug:BUART:reset_reg\\D\ : bit;
@@ -555,7 +555,7 @@ Tx_1:cy_psoc3_pins_v1_10
 		analog=>(open),
 		io=>(tmpIO_0__Tx_1_net_0),
 		siovref=>(tmpSIOVREF__Tx_1_net_0),
-		annotation=>Net_234,
+		annotation=>Net_536,
 		in_clock=>zero,
 		in_clock_en=>one,
 		in_reset=>zero,
@@ -623,9 +623,9 @@ SDA_1:cy_psoc3_pins_v1_10
 		y=>(zero),
 		fb=>(tmpFB_0__SDA_1_net_0),
 		analog=>(open),
-		io=>Net_269,
+		io=>Net_412,
 		siovref=>(tmpSIOVREF__SDA_1_net_0),
-		annotation=>Net_191,
+		annotation=>Net_553,
 		in_clock=>zero,
 		in_clock_en=>one,
 		in_reset=>zero,
@@ -693,9 +693,9 @@ SCL_1:cy_psoc3_pins_v1_10
 		y=>(zero),
 		fb=>(tmpFB_0__SCL_1_net_0),
 		analog=>(open),
-		io=>Net_15,
+		io=>Net_413,
 		siovref=>(tmpSIOVREF__SCL_1_net_0),
-		annotation=>Net_189,
+		annotation=>Net_554,
 		in_clock=>zero,
 		in_clock_en=>one,
 		in_reset=>zero,
@@ -729,32 +729,32 @@ SCL_1:cy_psoc3_pins_v1_10
 \I2C_Master:Bufoe_scl\:cy_bufoe
 	PORT MAP(x=>\I2C_Master:Net_643_0\,
 		oe=>one,
-		y=>Net_15,
+		y=>Net_413,
 		yfb=>\I2C_Master:Net_1109_0\);
 \I2C_Master:Bufoe_sda\:cy_bufoe
 	PORT MAP(x=>\I2C_Master:sda_x_wire\,
 		oe=>one,
-		y=>Net_269,
+		y=>Net_412,
 		yfb=>\I2C_Master:Net_1109_1\);
 KIT_059_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"KIT_059_v1_0",
 		port_names=>"P_00, P_01, P_02, P_03, P_04, P_05, P_06, P_07, P_10, P_11, P_12, P_120, P_121, P_122, P_123, P_124, P_125, P_126, P_127, P_13, P_14, P_15, P_150, P_151, P_152, P_153, P_154, P_155, P_16, P_17, P_20, P_21, P_22, P_23, P_24, P_25, P_26, P_27, P_30, P_31, P_32, P_33, P_34, P_35, P_36, P_37, P_59, P_60, P_61, P_62, P_63, P_GND_0, P_GND_1, P_GND_3, P_RST_0, P_VDD_0, P_VDDIO, USB_1_1, USB_1_0",
 		width=>59)
-	PORT MAP(connect=>(Net_332, Net_333, Net_334, Net_335,
-			Net_336, Net_337, Net_338, Net_339,
-			Net_377, Net_376, Net_375, Net_189,
-			Net_191, Net_366, Net_367, Net_368,
-			Net_369, Net_263, Net_234, Net_374,
-			Net_373, Net_372, Net_340, Net_341,
-			Net_342, Net_343, Net_344, Net_345,
-			Net_371, Net_370, Net_365, Net_364,
-			Net_363, Net_362, Net_361, Net_360,
-			Net_359, Net_358, Net_346, Net_347,
-			Net_348, Net_349, Net_350, Net_351,
-			Net_352, Net_353, Net_381, Net_382,
-			Net_383, Net_384, Net_385, Net_356,
-			Net_379, Net_354, Net_355, Net_357,
-			Net_378, Net_380_1, Net_380_0));
+	PORT MAP(connect=>(Net_497, Net_498, Net_499, Net_500,
+			Net_501, Net_502, Net_503, Net_504,
+			Net_544, Net_543, Net_542, Net_554,
+			Net_553, Net_531, Net_532, Net_533,
+			Net_534, Net_535, Net_536, Net_541,
+			Net_540, Net_539, Net_505, Net_506,
+			Net_507, Net_508, Net_509, Net_510,
+			Net_538, Net_537, Net_530, Net_529,
+			Net_528, Net_527, Net_526, Net_525,
+			Net_524, Net_523, Net_511, Net_512,
+			Net_513, Net_514, Net_515, Net_516,
+			Net_517, Net_518, Net_548, Net_549,
+			Net_550, Net_551, Net_552, Net_521,
+			Net_546, Net_519, Net_520, Net_522,
+			Net_545, Net_547_1, Net_547_0));
 CLOCK_TIMER:cy_clock_v1_0
 	GENERIC MAP(cy_registers=>"",
 		id=>"c0fb34bd-1044-4931-9788-16b01ce89812",

@@ -2,8 +2,8 @@
  *
  * In this file a custom interrupt is defined.
  * The purpose of this ISR is to handle LIS3DH
- * data retrieval, processing and transmission.
- * The ISR is sincronized with the data rate
+ * data retrieval, processing and packing.
+ * The ISR is syncronized with the data rate
  * of the accelerometer and is triggered by a
  * timer every 10ms (100Hz).
  *
@@ -17,21 +17,23 @@
  * -> Data processing:
  * Low and high registers are merged together, then right
  * adjusted and stored in a signed 16-bit integer variable.
- * Being the measurement a signed 10-bit value, it ranges
- * from -512 to 511, representing an FSR of +-2g units. 
- * The value is then converted to a new scale of +-2000mg 
- * without losing data precision.
+ * Being the measurement a signed 12-bit value, it ranges
+ * from -2048 to 2047, representing an FSR of +-4g units. 
+ * The value is then converted in um/s^2 units 
+ * (10^-6 * m/s^2) without losing data precision.
  *
- * -> Data transmission (UART):
- * All 3 axes processed measurements are divided in chunks
+ * -> Data packing:
+ * All 3 axes processed measurements are divided in 4 chunks
  * of 8-bit data each and placed in a buffer as follows:
  * 
- * [ HEADER | X_LOW | X_HIGH | Y_LOW | Y_HIGH | Z_LOW | Z_HIGH | TAIL ]
+ * DATA = [         HEADER        |  8-bit
+ *        | X_1 | X_2 | X_3 | X_4 | 32-bit
+ *        | Y_1 | Y_2 | Y_3 | Y_4 | 32-bit
+ *        | Z_1 | Z_2 | Z_3 | Z_4 | 32-bit
+ *        |          TAIL         ]  8-bit 
  *
- * for a total length of 64 bit to be send every 10ms, giving 
- * us a baudrate (or bitrate in this case) of 6400. To ensure 
- * a stable and reliable communication over UART, the data 
- * buffer is transmitted with a baudrate of 9600.
+ * for a total length of 112 bit of new data available 
+ * for UART transmission every 10ms.
  *
  * ========================================
 */
@@ -41,7 +43,7 @@
 #include "InterruptRoutines.h"
 
 
-/* Custom ISR function to read, process and transmit LIS3DH inertial measurements data. */
+/* Custom ISR function to read, process and pack LIS3DH inertial measurements data. */
 CY_ISR(ISR_ACC_CUSTOM)
 {
     /* Bring interrupt line low. */
@@ -59,36 +61,30 @@ CY_ISR(ISR_ACC_CUSTOM)
          */ 
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_X_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t xAxis = RightAdjustVal(tempBuffer, true, 4); // Merge X axis low and high registers data
-        
-        /* Convert value in m/s^2 units. */
-        float xAccel = MinMaxScaler(xAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR); 
+        int32_t xAxis = RightAdjustVal(tempBuffer, true, 4); // Merge X axis low and high registers data
+        xAxis = MinMaxScaler(xAxis, -ACC_RAW_SCALE, ACC_RAW_SCALE, -ACC_UMS2_SCALE, ACC_UMS2_SCALE); // Convert value in mm/s^2 units
         
         /* 
          * Read Y axis values over I2C communication and process the data. 
          */
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Y_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t yAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Y axis low and high registers data
-        
-        /* Convert value in m/s^2 units. */
-        float yAccel = MinMaxScaler(yAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR);
+        int32_t yAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Y axis low and high registers data
+        yAxis = MinMaxScaler(yAxis, -ACC_RAW_SCALE, ACC_RAW_SCALE, -ACC_UMS2_SCALE, ACC_UMS2_SCALE); // Convert value in mm/s^2 units
         
         /* 
          * Read Z axis values over I2C communication and process the data. 
          */
         error = I2C_Peripheral_ReadRegisterMulti(LIS3DH_DEVICE_ADDRESS, LIS3DH_OUT_Z_L, 2, &tempBuffer[0]);
         if (error == ERROR) return; // If error occurs return from the function
-        int16_t zAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Z axis low and high registers data
+        int32_t zAxis = RightAdjustVal(tempBuffer, true, 4); // Merge Z axis low and high registers data
+        zAxis = MinMaxScaler(zAxis, -ACC_RAW_SCALE, ACC_RAW_SCALE, -ACC_UMS2_SCALE, ACC_UMS2_SCALE); // Convert value in mm/s^2 units
         
-        /* Convert value in m/s^2 units. */
-        float zAccel = MinMaxScaler(zAxis, -LIS3DH_RAW_FSR, LIS3DH_RAW_FSR, -LIS3DH_4G_FSR, LIS3DH_4G_FSR);
-         
         /* 
-         * Load and send 64-bit message containing all axes data over UART communication. 
+         * Load 112-bit message containing all axes data to be send in main function over UART comm. 
          */
-        LoadAxesData(dataBuffer, xAccel, yAccel, zAccel, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
-        UART_Debug_PutArray(dataBuffer, 14);
+        LoadAxesData(dataBuffer, xAxis, yAxis, zAxis, DATA_BUFFER_HEADER, DATA_BUFFER_TAIL);
+        packetReadyFlag = true; // New data ready for transmission
     }
 }
 

@@ -8,7 +8,7 @@ set_location "\UART_Debug:BUART:sTX:TxSts\" statusicell 0 0 4
 set_location "\UART_Debug:BUART:sTX:TxShifter:u0\" datapathcell 0 0 2 
 set_location "\UART_Debug:BUART:tx_status_0\" macrocell 0 0 0 1
 set_location "\UART_Debug:BUART:tx_status_2\" macrocell 0 0 0 2
-set_location "Net_2" macrocell 0 0 0 3
+set_location "Net_405" macrocell 0 0 0 3
 set_location "\UART_Debug:BUART:counter_load_not\" macrocell 1 0 1 1
 set_location "\UART_Debug:BUART:tx_state_2\" macrocell 1 0 1 0
 set_location "\UART_Debug:BUART:txn\" macrocell 0 0 1 0

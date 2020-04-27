@@ -1,12 +1,12 @@
 -- Project:   C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\AY1920_II_HW_05_PROJ_2.cyprj
--- Generated: 04/25/2020 18:12:25
+-- Generated: 04/27/2020 18:25:23
 -- PSoC Creator  4.3
 
 ENTITY AY1920_II_HW_05_PROJ_2 IS
     PORT(
-        Tx_1(0)_PAD : OUT std_ulogic;
+        SCL_1(0)_PAD : INOUT std_ulogic;
         SDA_1(0)_PAD : INOUT std_ulogic;
-        SCL_1(0)_PAD : INOUT std_ulogic);
+        Tx_1(0)_PAD : OUT std_ulogic);
     ATTRIBUTE voltage_VDDABUF OF __DEFAULT__ : ENTITY IS 5e0;
     ATTRIBUTE voltage_VDDA OF __DEFAULT__ : ENTITY IS 5e0;
     ATTRIBUTE voltage_VUSB OF __DEFAULT__ : ENTITY IS 5e0;
@@ -30,12 +30,12 @@ ARCHITECTURE __DEFAULT__ OF AY1920_II_HW_05_PROJ_2 IS
     SIGNAL ClockBlock_PLL_OUT : bit;
     SIGNAL ClockBlock_XTAL : bit;
     SIGNAL ClockBlock_XTAL_32KHZ : bit;
-    SIGNAL Net_2 : bit;
-    ATTRIBUTE placement_force OF Net_2 : SIGNAL IS "U(0,0,A)3";
     SIGNAL Net_386 : bit;
     ATTRIBUTE global_signal OF Net_386 : SIGNAL IS true;
     SIGNAL Net_386_local : bit;
     SIGNAL Net_399 : bit;
+    SIGNAL Net_405 : bit;
+    ATTRIBUTE placement_force OF Net_405 : SIGNAL IS "U(0,0,A)3";
     SIGNAL SCL_1(0)__PA : bit;
     SIGNAL SDA_1(0)__PA : bit;
     SIGNAL Tx_1(0)__PA : bit;
@@ -76,39 +76,39 @@ ARCHITECTURE __DEFAULT__ OF AY1920_II_HW_05_PROJ_2 IS
     ATTRIBUTE POWER OF __ONE__ : SIGNAL IS true;
     SIGNAL __ZERO__ : bit;
     ATTRIBUTE GROUND OF __ZERO__ : SIGNAL IS true;
-    SIGNAL one : bit;
-    ATTRIBUTE POWER OF one : SIGNAL IS true;
+    SIGNAL tmpOE__SCL_1_net_0 : bit;
+    ATTRIBUTE POWER OF tmpOE__SCL_1_net_0 : SIGNAL IS true;
     SIGNAL zero : bit;
     ATTRIBUTE GROUND OF zero : SIGNAL IS true;
     SIGNAL \ClockBlock.clk_bus_glb_ff__sig\ : bit;
     SIGNAL \ClockBlock.dclk_glb_ff_1__sig\ : bit;
     ATTRIBUTE Location OF ClockBlock : LABEL IS "F(Clock,0)";
-    ATTRIBUTE lib_model OF Tx_1(0) : LABEL IS "iocell1";
-    ATTRIBUTE Location OF Tx_1(0) : LABEL IS "P12[7]";
+    ATTRIBUTE lib_model OF SCL_1(0) : LABEL IS "iocell1";
+    ATTRIBUTE Location OF SCL_1(0) : LABEL IS "P12[0]";
     ATTRIBUTE lib_model OF SDA_1(0) : LABEL IS "iocell2";
     ATTRIBUTE Location OF SDA_1(0) : LABEL IS "P12[1]";
-    ATTRIBUTE lib_model OF SCL_1(0) : LABEL IS "iocell3";
-    ATTRIBUTE Location OF SCL_1(0) : LABEL IS "P12[0]";
-    ATTRIBUTE lib_model OF Net_2 : LABEL IS "macrocell1";
-    ATTRIBUTE Location OF Net_2 : LABEL IS "U(0,0)";
+    ATTRIBUTE lib_model OF Tx_1(0) : LABEL IS "iocell3";
+    ATTRIBUTE Location OF Tx_1(0) : LABEL IS "P12[7]";
+    ATTRIBUTE lib_model OF Net_405 : LABEL IS "macrocell1";
+    ATTRIBUTE Location OF Net_405 : LABEL IS "U(0,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:counter_load_not\ : LABEL IS "macrocell2";
     ATTRIBUTE Location OF \UART_Debug:BUART:counter_load_not\ : LABEL IS "U(1,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:tx_status_0\ : LABEL IS "macrocell3";
     ATTRIBUTE Location OF \UART_Debug:BUART:tx_status_0\ : LABEL IS "U(0,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:tx_status_2\ : LABEL IS "macrocell4";
     ATTRIBUTE Location OF \UART_Debug:BUART:tx_status_2\ : LABEL IS "U(0,0)";
+    ATTRIBUTE Location OF ISR_Acc : LABEL IS "[IntrContainer=(0)][IntrId=(0)]";
+    ATTRIBUTE Location OF \ISR_Timer:TimerHW\ : LABEL IS "F(Timer,0)";
     ATTRIBUTE lib_model OF __ONE__ : LABEL IS "macrocell5";
     ATTRIBUTE Location OF __ONE__ : LABEL IS "U(1,0)";
+    ATTRIBUTE Location OF \I2C_Master:I2C_IRQ\ : LABEL IS "[IntrContainer=(0)][IntrId=(15)]";
+    ATTRIBUTE Location OF \I2C_Master:I2C_FF\ : LABEL IS "F(I2C,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:sTX:TxShifter:u0\ : LABEL IS "datapathcell1";
     ATTRIBUTE Location OF \UART_Debug:BUART:sTX:TxShifter:u0\ : LABEL IS "U(0,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:sTX:sCLOCK:TxBitClkGen\ : LABEL IS "datapathcell2";
     ATTRIBUTE Location OF \UART_Debug:BUART:sTX:sCLOCK:TxBitClkGen\ : LABEL IS "U(1,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:sTX:TxSts\ : LABEL IS "statusicell1";
     ATTRIBUTE Location OF \UART_Debug:BUART:sTX:TxSts\ : LABEL IS "U(0,0)";
-    ATTRIBUTE Location OF \I2C_Master:I2C_IRQ\ : LABEL IS "[IntrContainer=(0)][IntrId=(15)]";
-    ATTRIBUTE Location OF \I2C_Master:I2C_FF\ : LABEL IS "F(I2C,0)";
-    ATTRIBUTE Location OF \ISR_Timer:TimerHW\ : LABEL IS "F(Timer,0)";
-    ATTRIBUTE Location OF ISR_Acc : LABEL IS "[IntrContainer=(0)][IntrId=(0)]";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:txn\ : LABEL IS "macrocell6";
     ATTRIBUTE Location OF \UART_Debug:BUART:txn\ : LABEL IS "U(0,0)";
     ATTRIBUTE lib_model OF \UART_Debug:BUART:tx_state_1\ : LABEL IS "macrocell7";
@@ -431,11 +431,11 @@ BEGIN
             clk_bus_glb_ff => \ClockBlock.clk_bus_glb_ff__sig\,
             dclk_glb_ff_1 => \ClockBlock.dclk_glb_ff_1__sig\);
 
-    Tx_1:logicalport
+    SCL_1:logicalport
         GENERIC MAP(
-            drive_mode => "110",
+            drive_mode => "100",
             ibuf_enabled => "1",
-            id => "ed092b9b-d398-4703-be89-cebf998501f6",
+            id => "02f2cf2c-2c7a-49df-9246-7a3435c21be3",
             init_dr_st => "1",
             input_buffer_sel => "00",
             input_clk_en => 0,
@@ -455,7 +455,7 @@ BEGIN
             oe_sync => "0",
             output_clk_en => 0,
             output_clock_mode => "0",
-            output_conn => "1",
+            output_conn => "0",
             output_mode => "0",
             output_reset => 0,
             output_sync => "0",
@@ -469,7 +469,7 @@ BEGIN
             pa_out_clock_en => -1,
             pa_out_reset => -1,
             pin_aliases => "",
-            pin_mode => "O",
+            pin_mode => "B",
             por_state => 4,
             port_alias_group => "",
             port_alias_required => 0,
@@ -486,7 +486,7 @@ BEGIN
             spanning => 0,
             sw_only => 0,
             use_annotation => "1",
-            vtrip => "10",
+            vtrip => "00",
             width => 1,
             in_clk_inv => 0,
             in_clken_inv => 0,
@@ -500,23 +500,25 @@ BEGIN
             in_clock_en => open,
             in_reset => open,
             out_clock_en => open,
-            out_reset => open);
+            out_reset => open,
+            in_clock => open);
 
-    Tx_1(0):iocell
+    SCL_1(0):iocell
         GENERIC MAP(
-            in_sync_mode => 0,
+            in_sync_mode => 2,
             out_sync_mode => 0,
             oe_sync_mode => 0,
-            logicalport => "Tx_1",
+            logicalport => "SCL_1",
             logicalport_pin_id => 0,
             io_capabilities => "0000000000000000000000000000000000000000000000000000000000000101")
         PORT MAP(
-            pa_out => Tx_1(0)__PA,
+            pa_out => SCL_1(0)__PA,
             oe => open,
-            pin_input => Net_2,
-            pad_out => Tx_1(0)_PAD,
-            pad_in => Tx_1(0)_PAD,
-            in_clock => open,
+            fb => \I2C_Master:Net_1109_0\,
+            pin_input => \I2C_Master:Net_643_0\,
+            pad_out => SCL_1(0)_PAD,
+            pad_in => SCL_1(0)_PAD,
+            in_clock => ClockBlock_BUS_CLK,
             in_clock_en => '1',
             in_reset => '0',
             out_clock => open,
@@ -617,11 +619,11 @@ BEGIN
             out_clock_en => '1',
             out_reset => '0');
 
-    SCL_1:logicalport
+    Tx_1:logicalport
         GENERIC MAP(
-            drive_mode => "100",
+            drive_mode => "110",
             ibuf_enabled => "1",
-            id => "02f2cf2c-2c7a-49df-9246-7a3435c21be3",
+            id => "ed092b9b-d398-4703-be89-cebf998501f6",
             init_dr_st => "1",
             input_buffer_sel => "00",
             input_clk_en => 0,
@@ -641,7 +643,7 @@ BEGIN
             oe_sync => "0",
             output_clk_en => 0,
             output_clock_mode => "0",
-            output_conn => "0",
+            output_conn => "1",
             output_mode => "0",
             output_reset => 0,
             output_sync => "0",
@@ -655,7 +657,7 @@ BEGIN
             pa_out_clock_en => -1,
             pa_out_reset => -1,
             pin_aliases => "",
-            pin_mode => "B",
+            pin_mode => "O",
             por_state => 4,
             port_alias_group => "",
             port_alias_required => 0,
@@ -672,7 +674,7 @@ BEGIN
             spanning => 0,
             sw_only => 0,
             use_annotation => "1",
-            vtrip => "00",
+            vtrip => "10",
             width => 1,
             in_clk_inv => 0,
             in_clken_inv => 0,
@@ -686,38 +688,36 @@ BEGIN
             in_clock_en => open,
             in_reset => open,
             out_clock_en => open,
-            out_reset => open,
-            in_clock => open);
+            out_reset => open);
 
-    SCL_1(0):iocell
+    Tx_1(0):iocell
         GENERIC MAP(
-            in_sync_mode => 2,
+            in_sync_mode => 0,
             out_sync_mode => 0,
             oe_sync_mode => 0,
-            logicalport => "SCL_1",
+            logicalport => "Tx_1",
             logicalport_pin_id => 0,
             io_capabilities => "0000000000000000000000000000000000000000000000000000000000000101")
         PORT MAP(
-            pa_out => SCL_1(0)__PA,
+            pa_out => Tx_1(0)__PA,
             oe => open,
-            fb => \I2C_Master:Net_1109_0\,
-            pin_input => \I2C_Master:Net_643_0\,
-            pad_out => SCL_1(0)_PAD,
-            pad_in => SCL_1(0)_PAD,
-            in_clock => ClockBlock_BUS_CLK,
+            pin_input => Net_405,
+            pad_out => Tx_1(0)_PAD,
+            pad_in => Tx_1(0)_PAD,
+            in_clock => open,
             in_clock_en => '1',
             in_reset => '0',
             out_clock => open,
             out_clock_en => '1',
             out_reset => '0');
 
-    Net_2:macrocell
+    Net_405:macrocell
         GENERIC MAP(
             eqn_main => "(!main_0)",
             regmode => 0,
             clken_mode => 1)
         PORT MAP(
-            q => Net_2,
+            q => Net_405,
             main_0 => \UART_Debug:BUART:txn\);
 
     \UART_Debug:BUART:counter_load_not\:macrocell
@@ -754,6 +754,27 @@ BEGIN
             q => \UART_Debug:BUART:tx_status_2\,
             main_0 => \UART_Debug:BUART:tx_fifo_notfull\);
 
+    ISR_Acc:interrupt
+        GENERIC MAP(
+            int_type => "00",
+            is_nmi => 0)
+        PORT MAP(
+            interrupt => Net_399,
+            clock => ClockBlock_BUS_CLK);
+
+    \ISR_Timer:TimerHW\:timercell
+        GENERIC MAP(
+            cy_registers => "")
+        PORT MAP(
+            clock => \ClockBlock.dclk_glb_ff_1__sig\,
+            kill => open,
+            enable => __ONE__,
+            capture => open,
+            timer_reset => open,
+            tc => Net_399,
+            cmp => \ISR_Timer:Net_261\,
+            irq => \ISR_Timer:Net_57\);
+
     __ONE__:macrocell
         GENERIC MAP(
             eqn_main => "1'b0",
@@ -761,6 +782,26 @@ BEGIN
             clken_mode => 1)
         PORT MAP(
             q => __ONE__);
+
+    \I2C_Master:I2C_IRQ\:interrupt
+        GENERIC MAP(
+            int_type => "00",
+            is_nmi => 0)
+        PORT MAP(
+            interrupt => \I2C_Master:Net_697\,
+            clock => ClockBlock_BUS_CLK);
+
+    \I2C_Master:I2C_FF\:i2ccell
+        GENERIC MAP(
+            cy_registers => "",
+            use_wakeup => 0)
+        PORT MAP(
+            clock => \ClockBlock.clk_bus_glb_ff__sig\,
+            scl_in => \I2C_Master:Net_1109_0\,
+            sda_in => \I2C_Master:Net_1109_1\,
+            scl_out => \I2C_Master:Net_643_0\,
+            sda_out => \I2C_Master:sda_x_wire\,
+            interrupt => \I2C_Master:Net_697\);
 
     \UART_Debug:BUART:sTX:TxShifter:u0\:datapathcell
         GENERIC MAP(
@@ -852,47 +893,6 @@ BEGIN
             status_2 => \UART_Debug:BUART:tx_status_2\,
             status_1 => \UART_Debug:BUART:tx_fifo_empty\,
             status_0 => \UART_Debug:BUART:tx_status_0\);
-
-    \I2C_Master:I2C_IRQ\:interrupt
-        GENERIC MAP(
-            int_type => "00",
-            is_nmi => 0)
-        PORT MAP(
-            interrupt => \I2C_Master:Net_697\,
-            clock => ClockBlock_BUS_CLK);
-
-    \I2C_Master:I2C_FF\:i2ccell
-        GENERIC MAP(
-            cy_registers => "",
-            use_wakeup => 0)
-        PORT MAP(
-            clock => \ClockBlock.clk_bus_glb_ff__sig\,
-            scl_in => \I2C_Master:Net_1109_0\,
-            sda_in => \I2C_Master:Net_1109_1\,
-            scl_out => \I2C_Master:Net_643_0\,
-            sda_out => \I2C_Master:sda_x_wire\,
-            interrupt => \I2C_Master:Net_697\);
-
-    \ISR_Timer:TimerHW\:timercell
-        GENERIC MAP(
-            cy_registers => "")
-        PORT MAP(
-            clock => \ClockBlock.dclk_glb_ff_1__sig\,
-            kill => open,
-            enable => __ONE__,
-            capture => open,
-            timer_reset => open,
-            tc => Net_399,
-            cmp => \ISR_Timer:Net_261\,
-            irq => \ISR_Timer:Net_57\);
-
-    ISR_Acc:interrupt
-        GENERIC MAP(
-            int_type => "00",
-            is_nmi => 0)
-        PORT MAP(
-            interrupt => Net_399,
-            clock => ClockBlock_BUS_CLK);
 
     \UART_Debug:BUART:txn\:macrocell
         GENERIC MAP(

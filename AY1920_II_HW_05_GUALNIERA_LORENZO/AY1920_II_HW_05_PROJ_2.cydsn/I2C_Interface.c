@@ -1,7 +1,7 @@
 /* ========================================
  *
  * This file includes all the required source 
- * code to interface the I2C peripheral.
+ * code to interface with the I2C peripheral.
  *
  * Functions:
  * -> I2C_Peripheral_Start
@@ -14,7 +14,6 @@
  *
  * ========================================
 */
-
 
 
 /* Value returned if device present on I2C bus. */

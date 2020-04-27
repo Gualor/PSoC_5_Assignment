@@ -296,14 +296,14 @@ net \UART_Debug:Net_9\
 end \UART_Debug:Net_9\
 net ClockBlock_BUS_CLK
 	term   ":clockblockcell.clk_bus_glb"
+	switch ":clockblockcell.clk_bus_glb==>:interrupt_0.clock"
+	term   ":interrupt_0.clock"
+	switch ":clockblockcell.clk_bus_glb==>:interrupt_15.clock"
+	term   ":interrupt_15.clock"
 	switch ":clockblockcell.clk_bus_glb==>:udb@[UDB=(0,0)]:dp_wrapper:datapath.busclk"
 	term   ":udb@[UDB=(0,0)]:dp_wrapper:datapath.busclk"
 	switch ":clockblockcell.clk_bus_glb==>:udb@[UDB=(1,0)]:dp_wrapper:datapath.busclk"
 	term   ":udb@[UDB=(1,0)]:dp_wrapper:datapath.busclk"
-	switch ":clockblockcell.clk_bus_glb==>:interrupt_15.clock"
-	term   ":interrupt_15.clock"
-	switch ":clockblockcell.clk_bus_glb==>:interrupt_0.clock"
-	term   ":interrupt_0.clock"
 end ClockBlock_BUS_CLK
 net \UART_Debug:BUART:tx_fifo_notfull\
 	term   ":udb@[UDB=(0,0)]:dp_wrapper:datapath.f0_bus_stat_comb"
@@ -322,21 +322,6 @@ net \UART_Debug:BUART:tx_fifo_notfull\
 	switch "Stub-:udbswitch@[UDB=(0,0)][side=top]:v94==>:udb@[UDB=(0,0)]:statusicell.status_3"
 	term   ":udb@[UDB=(0,0)]:statusicell.status_3"
 end \UART_Debug:BUART:tx_fifo_notfull\
-net Net_2
-	term   ":udb@[UDB=(0,0)]:pld0:mc3.q"
-	switch ":udb@[UDB=(0,0)]:pld0:mc3.q==>:udb@[UDB=(0,0)]:pld0:output_permute2.q_3"
-	switch ":udb@[UDB=(0,0)]:pld0:output_permute2.output_2==>Stub-:udbswitch@[UDB=(0,0)][side=top]:v28"
-	switch "OStub-:udbswitch@[UDB=(0,0)][side=top]:v28"
-	switch ":udbswitch@[UDB=(0,0)][side=top]:28,89"
-	switch ":hvswitch@[UDB=(1,0)][side=left]:6,89_f"
-	switch ":hvswitch@[UDB=(1,0)][side=left]:vseg_6_top_b"
-	switch ":hvswitch@[UDB=(0,0)][side=left]:6,3_b"
-	switch ":dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:118,3_f"
-	switch "IStub-:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v116+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v118+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v120"
-	switch "Stub-:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v116+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v118+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v120==>:ioport12:inputs2_mux.in_2"
-	switch ":ioport12:inputs2_mux.pin7__pin_input==>:ioport12:pin7.pin_input"
-	term   ":ioport12:pin7.pin_input"
-end Net_2
 net Net_399
 	term   ":timercell_0.tc"
 	switch ":timercell_0.tc==>Stub-:dsiswitch_bottom@[DSI=(1,3)][side=bottom]:dsihc_bottom:v16+:dsiswitch_bottom@[DSI=(1,3)][side=bottom]:dsihc_bottom:v18"
@@ -350,6 +335,21 @@ net Net_399
 	switch ":interrupt_idmux_0.interrupt_idmux_0__out==>:interrupt_0.interrupt"
 	term   ":interrupt_0.interrupt"
 end Net_399
+net Net_405
+	term   ":udb@[UDB=(0,0)]:pld0:mc3.q"
+	switch ":udb@[UDB=(0,0)]:pld0:mc3.q==>:udb@[UDB=(0,0)]:pld0:output_permute2.q_3"
+	switch ":udb@[UDB=(0,0)]:pld0:output_permute2.output_2==>Stub-:udbswitch@[UDB=(0,0)][side=top]:v28"
+	switch "OStub-:udbswitch@[UDB=(0,0)][side=top]:v28"
+	switch ":udbswitch@[UDB=(0,0)][side=top]:28,89"
+	switch ":hvswitch@[UDB=(1,0)][side=left]:6,89_f"
+	switch ":hvswitch@[UDB=(1,0)][side=left]:vseg_6_top_b"
+	switch ":hvswitch@[UDB=(0,0)][side=left]:6,3_b"
+	switch ":dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:118,3_f"
+	switch "IStub-:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v116+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v118+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v120"
+	switch "Stub-:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v116+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v118+:dsiswitch_top@[DSI=(0,0)][side=top]:dsihc_top:v120==>:ioport12:inputs2_mux.in_2"
+	switch ":ioport12:inputs2_mux.pin7__pin_input==>:ioport12:pin7.pin_input"
+	term   ":ioport12:pin7.pin_input"
+end Net_405
 net \I2C_Master:Net_1109_0\
 	term   ":ioport12:pin0.fb"
 	switch ":ioport12:pin0.fb==>Stub-:dsiswitch_bottom@[DSI=(1,0)][side=bottom]:dsihc_bottom:v16+:dsiswitch_bottom@[DSI=(1,0)][side=bottom]:dsihc_bottom:v18"

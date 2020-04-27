@@ -2,7 +2,8 @@
  * In this file the main function is defined.
  * The purpose of the main is to setup peripherals
  * to ensure the correct functioning of the accelerometer
- * and properly retrieve/send inertial measurements data.
+ * and properly retrieve inertial measurements data
+ * as well as transmitting it over UART communication.
  *
  * PSoC setup:
  * -> Enable global interrupts;
@@ -17,6 +18,7 @@
  * -> Setup control register 1;
  * -> Setup control register 4;
  */
+
 
 /* Include project dependencies. */
 #include "stdio.h"
@@ -149,6 +151,7 @@ int main(void)
     UART_Debug_PutString("\r\nWriting new values..\r\n");
     if (ctrl_reg4 != LIS3DH_CTRL_REG4_BDU_ACTIVE)
     {
+        ctrl_reg4 = LIS3DH_CTRL_REG4_BDU_ACTIVE;
         error = I2C_Peripheral_WriteRegister(LIS3DH_DEVICE_ADDRESS,
                                              LIS3DH_CTRL_REG4,
                                              ctrl_reg4);
@@ -172,10 +175,21 @@ int main(void)
     /* Enable accelerometer custom interrupt. */
     ISR_Acc_StartEx(ISR_ACC_CUSTOM);
     
-    /* Setup complete, do nothing. */
+    /* Initialize data syncronization flag. */
+    packetReadyFlag = false;
+    
+    /* Transmit incoming data over UART comm. */
     for(;;)
     {
-        
+        /* New data is available. */
+        if (packetReadyFlag == true)
+        {
+            /* Send 64-bit data buffer over UART. */
+            UART_Debug_PutArray(dataBuffer, 8);
+            
+            /* Ready to send next packet. */
+            packetReadyFlag = false;
+        }
     }
     
     return 0;
