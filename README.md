@@ -2,6 +2,7 @@
 <img src="https://upload.wikimedia.org/wikipedia/it/b/be/Logo_Politecnico_Milano.png" alt="Logo of Politecnico di Milano" height="120" align="right">
 Electronic Technologies and Biosensors Laboratory<br>A.Y. 2019/2020 – II Semester
 </p>
+<br>
 
 # ASSIGNMENT 05: &emsp;PSoc I<sup>2</sup>C
 
