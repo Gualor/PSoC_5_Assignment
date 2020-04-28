@@ -1,9 +1,0 @@
-C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_1.cydsn\AY1920_II_HW_05_PROJ_1.cyprj|d4bcedbb-fa67-4fec-adb4-af9a13885135
-C:\Users\Lory\Desktop\Laboratorio di Tecnologie Elettroniche e Biosensori\MATERIALE_SUPPORTO\PSoC\PSoC_AnnotationLibrary\AnnotationLibrary\AnnotationLibrary_lib\AnnotationLibrary_lib.cylib\AnnotationLibrary_lib.cyprj|ca7152ec-bf5e-4d20-bffc-1f1c3729bbfe
-C:\Program Files (x86)\Cypress\PSoC Creator\4.3\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|347935fe-d96f-4dfc-a0a5-f33a4f121e40
-C:\Users\Lory\Documents\PSoC Creator\4.3\Downloads ( 4.3).cylib\Downloads ( 4.3).cyprj|6e515a38-645b-45fb-aff4-afd7b55212a9
-C:\Program Files (x86)\Cypress\PSoC Creator\4.3\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|25a5b2cc-79a2-4c40-859e-76e6d9e9ebf5
-C:\Program Files (x86)\Cypress\PSoC Creator\4.3\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|03310393-fc05-4bde-9136-8648f75dc46e
-C:\Program Files (x86)\Cypress\PSoC Creator\4.3\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|0276916f-9775-4881-b840-4c14bee762d7
-C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_2.cydsn\AY1920_II_HW_05_PROJ_2.cyprj|a4a2bd39-d905-4b9b-8805-30bb769bebba
-C:\Users\Lory\Desktop\psoc_assignment_git\PSoC_5_Assignment\AY1920_II_HW_05_GUALNIERA_LORENZO\AY1920_II_HW_05_PROJ_3.cydsn\AY1920_II_HW_05_PROJ_3.cyprj|b5e7f4ce-2872-420e-98ba-7f7f315fab4a
